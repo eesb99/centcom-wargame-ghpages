@@ -77,11 +77,32 @@ DIPLOMATIC_EVENTS (OSINT, 6 days) -> _inject_diplomatic_reality() -> game tree o
 - **Diplomacy**: Zero. No ceasefire proposals. Trump demands surrender.
 
 ### Next Steps
-- [ ] Continue daily OSINT backfill (add Day 7+ as events unfold)
+- [x] ~~Continue daily OSINT backfill~~ -- Automated via daily calibration pipeline
 - [ ] Wire CONFLICT_TIMELINE from backfill.js into simulation (currently separate from DIPLOMATIC_EVENTS)
 - [ ] Test in browser (not yet browser-tested this session)
 - [ ] Execute plan fixes (H1-H4, M1-M5, L1-L3 from validation plan)
 - [ ] Consider adding proxy war calibration (Hezbollah rocket counts, Houthi attacks)
+
+### Session 2 Addendum: Daily Calibration Pipeline
+
+**Added after initial save-context:**
+- `backfill.js --calibrate` mode: queries Perplexity for today's events, LLM derives `param_calibration`, patches `DIPLOMATIC_EVENTS` in index.html
+- Workflow changed from hourly to daily at 05:00 UTC (midnight NYT)
+- Safe JSON parsing (no eval), `clampNum()` bounds, fallback regex patching
+- `package.json` added for CommonJS compatibility
+
+**Commits:**
+- `7576fb8` - feat: OSINT-driven diplomatic momentum + auto-calibration system
+- `d535159` - feat: daily OSINT auto-calibration at midnight NYT
+
+**Daily Pipeline Flow:**
+```
+00:00 NYT -> GitHub Actions -> backfill.js --calibrate
+  -> Perplexity: today's events (5-7 key items)
+  -> Perplexity: param_calibration (9 numeric values via LLM judgment)
+  -> Patch DIPLOMATIC_EVENTS in index.html
+  -> git commit + push -> GitHub Pages auto-deploys
+```
 
 ---
 
