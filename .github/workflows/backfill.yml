@@ -1,9 +1,9 @@
 name: Daily OSINT Calibration
 on:
   schedule:
-    # 05:00 UTC = 00:00 EST (midnight New York Time)
-    # During EDT (Mar-Nov): this runs at 01:00 local. Acceptable 1h drift.
-    - cron: '0 5 * * *'
+    # 07:00 UTC — fallback, 4h after Mac Mini launchd (03:00 UTC)
+    # Mac Mini is primary; GH Actions skips if no diff remains
+    - cron: '0 7 * * *'
   workflow_dispatch:
     inputs:
       mode:

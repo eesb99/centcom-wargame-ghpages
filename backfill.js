@@ -287,31 +287,75 @@ function patchIndexHtml(timeline) {
 // Queries Perplexity for today's events, derives param_calibration,
 // and patches DIPLOMATIC_EVENTS in index.html.
 
+function getExistingDayNumbers() {
+  if (!fs.existsSync(CONFIG.index_path)) return [];
+  const html = fs.readFileSync(CONFIG.index_path, 'utf8');
+  const startMarker = 'const DIPLOMATIC_EVENTS = {';
+  const startIdx = html.indexOf(startMarker);
+  if (startIdx === -1) return [];
+  // Find end of DIPLOMATIC_EVENTS
+  let braces = 0, endIdx = -1;
+  for (let i = startIdx + startMarker.length - 1; i < html.length; i++) {
+    if (html[i] === '{') braces++;
+    if (html[i] === '}') braces--;
+    if (braces === 0) { endIdx = i + 1; break; }
+  }
+  if (endIdx === -1) return [];
+  const block = html.substring(startIdx, endIdx);
+  // Match day number keys inside the days object: "N:" or N:
+  const daysMatch = block.match(/days\s*:\s*\{([\s\S]*)\}\s*$/);
+  if (!daysMatch) return [];
+  const dayKeys = [...daysMatch[1].matchAll(/(?:^|[,{]\s*)"?(\d+)"?\s*:/gm)];
+  return dayKeys.map(m => parseInt(m[1]));
+}
+
 async function runDailyCalibration(dryRun) {
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
   const start = new Date(CONFIG.conflict_start);
   const dayNumber = Math.floor((today - start) / 86400000) + 1;
-  const dateLabel = formatDate(todayStr);
 
   if (dayNumber < 1) {
     console.log('Conflict has not started yet. No calibration needed.');
     return;
   }
 
-  console.log(`\n=== Daily Calibration: Day ${dayNumber} (${dateLabel}) ===\n`);
+  // Gap detection: find missing days and backfill them first
+  const existingDays = new Set(getExistingDayNumbers());
+  const missingDays = [];
+  for (let d = 1; d < dayNumber; d++) {
+    if (!existingDays.has(d)) missingDays.push(d);
+  }
+  if (missingDays.length > 0) {
+    console.log(`\n=== Gap Detection: ${missingDays.length} missing day(s): [${missingDays.join(', ')}] ===\n`);
+    for (const missedDay of missingDays) {
+      const missedDate = new Date(start);
+      missedDate.setDate(missedDate.getDate() + missedDay - 1);
+      const missedStr = missedDate.toISOString().split('T')[0];
+      console.log(`  Backfilling Day ${missedDay} (${formatDate(missedStr)})...`);
+      await runCalibrationForDay(missedDay, missedStr, dryRun);
+    }
+  }
 
-  // Step 1: Query for today's key events
+  const dateLabel = formatDate(todayStr);
+  console.log(`\n=== Daily Calibration: Day ${dayNumber} (${dateLabel}) ===\n`);
+  await runCalibrationForDay(dayNumber, todayStr, dryRun);
+}
+
+async function runCalibrationForDay(dayNumber, dateStr, dryRun) {
+  const dateLabel = formatDate(dateStr);
+
+  // Step 1: Query for this day's key events
   let events = [];
   try {
-    const eventsQuery = `Operation Epic Fury ${dateLabel} ${todayStr} Day ${dayNumber} summary:
-List the 5-7 most important military and diplomatic events that happened TODAY.
+    const eventsQuery = `Operation Epic Fury ${dateLabel} ${dateStr} Day ${dayNumber} summary:
+List the 5-7 most important military and diplomatic events that happened on this day.
 Include: US/coalition strikes, Iranian retaliation, proxy attacks (Hezbollah/Houthi/Iraqi militia),
 casualties (US and Iranian), naval operations, Strait of Hormuz status, diplomatic developments,
 ceasefire proposals, UN activity, oil price movements.
 Be specific with numbers and sources. Return as a JSON array of strings.`;
 
-    console.log('  Querying today\'s events...');
+    console.log('  Querying events...');
     const eventsRaw = await queryPerplexity(eventsQuery);
     if (eventsRaw) {
       try {
@@ -386,7 +430,7 @@ Base your estimates on the actual military situation. Be precise.`;
 
   // Step 3: Build DIPLOMATIC_EVENTS day entry
   const dayEntry = {
-    date: todayStr,
+    date: dateStr,
     diplomatic_momentum: clampNum(calibration.diplomatic_momentum, 0, 1, 0),
     mediation_active: !!calibration.mediation_active,
     ceasefire_signals: clampNum(calibration.ceasefire_signals, 0, 1, 0),
