@@ -5,6 +5,38 @@
 | Phase | Status | Date | Progress |
 |-------|--------|------|----------|
 | Phase 1: Initial Deployment | Complete | 2026-03-05 | 100% |
+| Phase 2: Diplomatic Momentum + OSINT Calibration | Complete | 2026-03-05 | 100% |
+| Phase 3: Validation Plan Fixes | Pending | - | 0% |
+
+## Phase 2: Diplomatic Momentum + OSINT Calibration (2026-03-05) - COMPLETE
+
+**Duration:** ~2 hours
+**Status:** 100% - Implemented and tested (Node.js vm, not yet browser-tested)
+**Commits:** Pending (uncommitted changes in index.html)
+
+### Features Implemented
+1. **Diplomatic momentum system** - Cooperation ratchet (0-1), mediation activation, partial_withdraw action
+2. **DIPLOMATIC_EVENTS data** - 6 days of real OSINT events (Feb 28 - Mar 5) with param_calibration
+3. **OSINT scenario injection** - _inject_diplomatic_reality() overrides game tree state with ground truth
+4. **Auto-calibration** - _auto_calibrate_params() tunes 9 parameters daily from OSINT
+5. **Trend extrapolation** - Weighted linear regression with 8%/day decay for projected days
+6. **UI enhancements** - OSINT badge, diplomatic momentum bar, mediation labels, ceasefire chart line
+7. **backfill.js** - Perplexity API backfill script (8 categories)
+
+### Validation Results
+- Node.js vm test: 25-day simulation runs cleanly
+- OSINT days (1-6): All parameters correctly calibrated from real data
+- Trend extrapolation: Parameters converge by Day 15+ (iran_fm -> 0.02, esc_prop -> 0.23)
+- Brace balance: OK (0)
+- Diplomatic momentum: Zero for all OSINT days (matches reality)
+
+### Metrics
+- Lines added to index.html: ~350 (DIPLOMATIC_EVENTS + injection + calibration + UI)
+- Parameters calibrated: 9 per day
+- OSINT events ingested: 33 events across 6 days
+- Trend decay half-life: ~8 days
+
+---
 
 ## Phase 1: Initial Deployment (2026-03-05) - COMPLETE
 

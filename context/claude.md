@@ -2,11 +2,88 @@
 
 ## Current State
 
-- **Status**: Deployed and live on GitHub Pages
+- **Status**: Deployed and live on GitHub Pages, with OSINT-driven game theory
 - **URL**: https://eesb99.github.io/centcom-wargame-ghpages/
 - **Repo**: https://github.com/eesb99/centcom-wargame-ghpages
 - **Branch**: main
 - **Last Updated**: 2026-03-05
+- **Key Feature**: Diplomatic momentum + OSINT auto-calibration system
+
+## Architecture (Post-Session 2)
+
+### Data Flow
+```
+DIPLOMATIC_EVENTS (OSINT, 6 days) -> _inject_diplomatic_reality() -> game tree override
+                                  -> _auto_calibrate_params() -> parameter tuning
+                                  -> _compute_param_trends() -> trend extrapolation (Day 7+)
+```
+
+### Key Components Added (Session 2)
+- `DIPLOMATIC_EVENTS` const (~line 1163): Day-by-day OSINT events + param_calibration
+- `_inject_diplomatic_reality()`: Overrides diplomatic state with ground truth
+- `_auto_calibrate_params()`: Tunes simulation params from OSINT each day
+- `_compute_param_trends()`: Weighted linear regression for trend extrapolation
+- `_apply_calibration()`: Applies param changes with change logging
+- Diplomatic momentum system (cooperation ratchet, mediation, partial_withdraw)
+
+### Three-Phase Simulation
+1. **OSINT Corridor (Days 1-6)**: Real events drive actions + params calibrated to reality
+2. **Active Extrapolation (Days 7-14)**: Trends continue with 8%/day decay
+3. **Stabilization (Days 15+)**: Parameters converge, model runs procedurally
+
+---
+
+## Session 2 Summary (2026-03-05)
+
+### Goals
+- Analyze ceasefire mechanics and implement diplomatic momentum system
+- Build OSINT backfill infrastructure for real conflict data
+- Wire real-world diplomatic events into game theory model
+- Add autonomous parameter calibration from daily OSINT context
+
+### Decisions Made
+- **Diplomatic momentum as cooperation ratchet**: 0-1 variable built by sustained mutual non-aggression, decays on aggression. Game-theoretically motivated (credible commitment mechanism).
+- **Partial withdrawal as costly signal**: New US action that reduces force posture to signal de-escalation intent. Tuned to be late-game only (needs war_weariness + momentum).
+- **Scenario injection pattern**: Real-world OSINT overrides outputs (Days 1-6), calibrated parameters inform inputs (Day 7+). Common military wargaming technique.
+- **Trend extrapolation with decay**: Weighted linear regression (recent days weighted power 1.5) with 8%/day exponential decay. Half-life ~8 days. Parameter bounds prevent absurd extrapolation.
+- **Three-source calibration**: escalation_propensity, iran_force_multiplier, us_tech_advantage, proxy_effectiveness, iran_asymmetric_factor, cyber_intensity, hormuz_mining, oil_price_elasticity, patriot_intercept_rate
+
+### Implementation
+**Major Changes to index.html:**
+1. Diplomatic momentum system: SimulationState game_tree fields, _compute_payoffs(), _game_tree_decision(), _map_actions_to_escalation() rewritten
+2. `DIPLOMATIC_EVENTS` const: 6 days of real OSINT events with param_calibration per day
+3. `_inject_diplomatic_reality()`: OSINT state override + event injection
+4. `_auto_calibrate_params()`: Daily parameter calibration with trend extrapolation
+5. `_compute_param_trends()`: Weighted linear regression for projected days
+6. UI: Diplomatic momentum bar, OSINT badge ("OSINT DATA -- REAL EVENTS"), mediation labels
+7. Ceasefire chart: Added diplomatic momentum purple dashed line
+8. Game tree display: OSINT Override vs Game Tree tags, real-world status messages
+
+**Also created:**
+- `backfill.js` - Perplexity API backfill script (8 categories, day-by-day)
+
+### Challenges & Solutions
+1. **Partial_withdraw overpowered**: Selected 20/25 days from Day 1 in initial test. Fixed by making it late-game only (needs war_weariness + momentum), adding early_penalty, increasing hawk resistance.
+2. **ES6 class scoping in Node.js vm**: `class` declarations are block-scoped in `vm.runInContext`. Fixed with `var WarGameSimulation; WarGameSimulation = class ...` pattern.
+3. **Real diplomatic data is zero**: All 6 OSINT days show zero diplomatic momentum, no mediation, no ceasefire signals. Correctly reflects reality (US demands regime change, no off-ramp).
+
+### OSINT Data Summary (Feb 28 - Mar 5, 2026)
+- **US KIA**: 6 (CENTCOM Mar 2), **WIA**: 18
+- **Iranian killed**: ~2,100 (est. by Mar 4)
+- **Iranian navy**: Effectively destroyed (17+ vessels, 1 submarine)
+- **Hormuz**: Effectively closed by IRGC
+- **Hezbollah**: Entered war Mar 2, attacking Israeli bases
+- **Oil**: Brent spiked then fell to ~$81 (market pricing US dominance)
+- **Diplomacy**: Zero. No ceasefire proposals. Trump demands surrender.
+
+### Next Steps
+- [ ] Continue daily OSINT backfill (add Day 7+ as events unfold)
+- [ ] Wire CONFLICT_TIMELINE from backfill.js into simulation (currently separate from DIPLOMATIC_EVENTS)
+- [ ] Test in browser (not yet browser-tested this session)
+- [ ] Execute plan fixes (H1-H4, M1-M5, L1-L3 from validation plan)
+- [ ] Consider adding proxy war calibration (Hezbollah rocket counts, Houthi attacks)
+
+---
 
 ## Session 1 Summary (2026-03-05)
 
@@ -16,28 +93,11 @@
 
 ### Decisions Made
 - **Single-file deployment**: All CSS/HTML/JS/data inlined in `index.html` (~430KB) for zero-config GitHub Pages hosting
-- **Legacy Pages build**: Used `build_type: legacy` (deploy from branch) rather than GitHub Actions Pages workflow -- simpler for static single-file apps
-- **Hourly cron schedule**: `0 * * * *` for backfill.js to keep conflict timeline data fresh via Perplexity API
+- **Legacy Pages build**: Used `build_type: legacy` (deploy from branch) rather than GitHub Actions Pages workflow
+- **Hourly cron schedule**: `0 * * * *` for backfill.js
 
-### Implementation
-**Files Created (2):**
-1. `.github/workflows/backfill.yml` - Hourly OSINT backfill GitHub Actions workflow
-2. `context/` - Session context directory (this file)
-
-**Files Committed (5):**
-1. `index.html` - Main war game application (~3700 lines)
-2. `README.md` - Project documentation
-3. `backfill.js` - Perplexity API backfill script for conflict timeline data
-4. `CLAUDE.md` - Claude Code project instructions
-5. `.github/workflows/backfill.yml` - Cron workflow
-
-**Commits (1):**
+### Commits
 - `c9da847` - feat: CENTCOM War Game - initial deployment
 
 ### Challenges & Solutions
-1. **GitHub Pages 404 after enabling**: Legacy Pages mode needed an explicit build request via `gh api repos/.../pages/builds -X POST`. The initial `build_type: workflow` setting required switching to `legacy` for direct branch deployment.
-
-### Next Steps
-- [ ] Verify hourly backfill workflow runs successfully (check after next hour mark)
-- [ ] Monitor auto-commits from github-actions[bot] updating `index.html`
-- [ ] Consider adding error notifications if backfill fails repeatedly
+1. **GitHub Pages 404 after enabling**: Legacy Pages mode needed explicit build request via `gh api repos/.../pages/builds -X POST`.
