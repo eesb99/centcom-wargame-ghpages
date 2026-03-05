@@ -1384,6 +1384,66 @@ const DIPLOMATIC_EVENTS = {
         patriot_intercept_rate: 0.90,   // Optimized
       }
     }
+    1: {
+          "date": "2026-02-28",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [
+                "US and partner forces launched **Operation Epic Fury** at 1:15 am ET on February 28, 2026, striking over **1,700 targets** in Iran including IRGC command centers, air defenses, missile/drone sites, airfields, nuclear infrastructure, missile production, naval assets, and sites near Supreme Leader's office (CENTCOM press release[1][3][5]; FDD[2]; Economic Times[4]).",
+                "Strikes employed precision munitions from air, land, sea platforms plus first combat use of low-cost one-way **LUCAS drones** by Task Force Scorpion Strike, involving B-1/B-2/B-52 bombers, F-15/16/18/22/35 jets, A-10s, carriers, destroyers, HIMARS, Patriots, THAAD, MQ-9s, and special capabilities[1][5].",
+                "Iran retaliated with **hundreds of missile and drone attacks** on US bases and Israel; CENTCOM forces defended successfully with **no US casualties** or injuries reported and only minimal damage to installations[1].",
+                "**Coordinated US-Israel action**: Operation Epic Fury (US) alongside Israel's Operation Roaring Lion, targeting Iran's nuclear/missile threats, described as largest joint military action in history[2].",
+                "President Trump announced strikes in video, declaring **major combat operations** to destroy Iran's missiles/industry, called on IRGC to surrender for immunity or face death, urged Iranian people to overthrow regime[2].",
+                "**Iranian casualties not specified** for Day 1; prior context notes IRGC killed >1,000 Americans over 47 years and >3,117-36,500 protesters recently, but no Day 1 proxy attacks (Hezbollah/Houthi/militias), naval ops details, Hormuz status, diplomacy, UN activity, or oil prices reported in sources[1][2][5][6].",
+                "Operation represents largest regional US military concentration in a generation, aimed at dismantling Iranian security apparatus posing imminent threats[1][5]."
+          ],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "proxy_escalation",
+          "param_calibration": {
+                "escalation_propensity": 0.85,
+                "iran_force_multiplier": 0.15,
+                "us_tech_advantage": 2.2,
+                "iran_asymmetric_factor": 1.2,
+                "proxy_effectiveness": 0.7,
+                "cyber_intensity": 0.6,
+                "hormuz_mining_probability": 0.4,
+                "oil_price_elasticity": -0.15,
+                "patriot_intercept_rate": 0.95
+          }
+    },
+    6: {
+          "date": "2026-03-05",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "proxy_escalation",
+          "param_calibration": {
+                "escalation_propensity": 0.85,
+                "iran_force_multiplier": 0.25,
+                "us_tech_advantage": 2.2,
+                "iran_asymmetric_factor": 1.5,
+                "proxy_effectiveness": 0.7,
+                "cyber_intensity": 0.4,
+                "hormuz_mining_probability": 0.6,
+                "oil_price_elasticity": -0.15,
+                "patriot_intercept_rate": 0.92
+          }
+    },
   }
 };
 
