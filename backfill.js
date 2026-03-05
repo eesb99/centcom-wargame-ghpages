@@ -1,23 +1,25 @@
 #!/usr/bin/env node
 /**
- * CENTCOM War Game — OSINT Backfill Script
+ * CENTCOM War Game — OSINT Backfill & Daily Calibration Script
  *
- * Queries Perplexity MCP for day-by-day conflict data from Operation Epic Fury
- * and generates an updated CONFLICT_TIMELINE JSON for the simulation.
+ * Queries Perplexity API for day-by-day conflict data from Operation Epic Fury
+ * and generates updated simulation data.
  *
  * Usage:
  *   node backfill.js                    # Run full backfill (all days)
  *   node backfill.js --day 3            # Backfill specific day only
  *   node backfill.js --dry-run          # Query but don't patch index.html
  *   node backfill.js --patch            # Apply timeline to index.html
+ *   node backfill.js --calibrate        # Daily calibration: query today's OSINT,
+ *                                       #   derive param_calibration, patch
+ *                                       #   DIPLOMATIC_EVENTS in index.html
  *
  * Requirements:
  *   - Perplexity API key in PERPLEXITY_API_KEY env var
- *   - Or run via Claude Code with Perplexity MCP available
  *
  * Output:
  *   - conflict_timeline.json            # Structured day-by-day data
- *   - index.html (patched, if --patch)  # Updated simulation file
+ *   - index.html (patched, if --patch or --calibrate)
  */
 
 const fs = require('fs');
@@ -248,6 +250,241 @@ function patchIndexHtml(timeline) {
   return true;
 }
 
+// ── Daily Calibration Mode ──
+// Queries Perplexity for today's events, derives param_calibration,
+// and patches DIPLOMATIC_EVENTS in index.html.
+
+async function runDailyCalibration(dryRun) {
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const start = new Date(CONFIG.conflict_start);
+  const dayNumber = Math.floor((today - start) / 86400000) + 1;
+  const dateLabel = formatDate(todayStr);
+
+  if (dayNumber < 1) {
+    console.log('Conflict has not started yet. No calibration needed.');
+    return;
+  }
+
+  console.log(`\n=== Daily Calibration: Day ${dayNumber} (${dateLabel}) ===\n`);
+
+  // Step 1: Query for today's key events
+  const eventsQuery = `Operation Epic Fury ${dateLabel} ${todayStr} Day ${dayNumber} summary:
+List the 5-7 most important military and diplomatic events that happened TODAY.
+Include: US/coalition strikes, Iranian retaliation, proxy attacks (Hezbollah/Houthi/Iraqi militia),
+casualties (US and Iranian), naval operations, Strait of Hormuz status, diplomatic developments,
+ceasefire proposals, UN activity, oil price movements.
+Be specific with numbers and sources. Return as a JSON array of strings.`;
+
+  console.log('  Querying today\'s events...');
+  const eventsRaw = await queryPerplexity(eventsQuery);
+  let events = [];
+  if (eventsRaw) {
+    try {
+      const match = eventsRaw.match(/\[[\s\S]*\]/);
+      if (match) events = JSON.parse(match[0]);
+    } catch (e) {
+      // Fallback: split by newlines/bullets
+      events = eventsRaw.split(/[\n\r]+/)
+        .map(l => l.replace(/^[-*\d.)\s]+/, '').trim())
+        .filter(l => l.length > 20)
+        .slice(0, 7);
+    }
+  }
+  console.log(`  Events found: ${events.length}`);
+
+  // Step 2: Query for parameter calibration
+  const calibQuery = `You are a military analyst calibrating a war simulation of Operation Epic Fury (US-Iran conflict).
+Based on events from ${dateLabel} (Day ${dayNumber}), provide numeric parameter estimates.
+
+Context events:
+${events.map((e, i) => `${i + 1}. ${e}`).join('\n')}
+
+Return ONLY a JSON object with these fields (all numbers between the given ranges):
+{
+  "escalation_propensity": <0.1-0.95, how likely is further escalation? 0.1=war winding down, 0.95=maximum aggression>,
+  "iran_force_multiplier": <0.02-1.0, Iran's remaining conventional military capability. 1.0=full, 0.02=destroyed>,
+  "us_tech_advantage": <1.0-2.5, US technological/tactical edge. Higher=more dominant>,
+  "iran_asymmetric_factor": <0.1-2.0, Iran's asymmetric warfare capability (drones, mines, fast boats). Below 1.0=degraded>,
+  "proxy_effectiveness": <0.1-1.0, how active/effective are proxy forces (Hezbollah, Houthis, Iraqi militia)?>,
+  "cyber_intensity": <0.05-1.0, cyber warfare tempo>,
+  "hormuz_mining_probability": <0.01-1.0, probability of new mines being laid in Hormuz>,
+  "oil_price_elasticity": <-0.20 to -0.01, market sensitivity to disruption. More negative=more reactive>,
+  "patriot_intercept_rate": <0.5-0.98, US air defense intercept success rate>,
+  "us_posture": <one of: "maximum_force", "sustained_operations", "partial_withdrawal", "ceasefire">,
+  "iran_posture": <one of: "full_retaliation", "proxy_escalation", "fragmented_command", "fragmented_resistance", "negotiate">,
+  "diplomatic_momentum": <0-1, are there any ceasefire/diplomatic signals? 0=none, 1=ceasefire imminent>,
+  "mediation_active": <true/false, is third-party mediation underway?>,
+  "ceasefire_signals": <0-1, strength of ceasefire signals from either side>,
+  "proxy_hezbollah": <true/false>,
+  "proxy_houthi": <true/false>,
+  "proxy_iraqi_militia": <true/false>
+}
+
+Base your estimates on the actual military situation. Be precise.`;
+
+  console.log('  Querying parameter calibration...');
+  const calibRaw = await queryPerplexity(calibQuery);
+  let calibration = null;
+  if (calibRaw) {
+    try {
+      const match = calibRaw.match(/\{[\s\S]*\}/);
+      if (match) calibration = JSON.parse(match[0]);
+    } catch (e) {
+      console.error('  Failed to parse calibration JSON:', e.message);
+    }
+  }
+
+  if (!calibration) {
+    console.error('  ERROR: Could not get calibration data. Aborting.');
+    return;
+  }
+
+  console.log('  Calibration received:');
+  console.log('   ', JSON.stringify(calibration, null, 2).split('\n').join('\n    '));
+
+  // Step 3: Build DIPLOMATIC_EVENTS day entry
+  const dayEntry = {
+    date: todayStr,
+    diplomatic_momentum: clampNum(calibration.diplomatic_momentum, 0, 1, 0),
+    mediation_active: !!calibration.mediation_active,
+    ceasefire_signals: clampNum(calibration.ceasefire_signals, 0, 1, 0),
+    escalation_override: calibration.escalation_propensity > 0.7 ? 5 :
+                          calibration.escalation_propensity > 0.4 ? 4 :
+                          calibration.escalation_propensity > 0.2 ? 3 : 2,
+    events: events.slice(0, 7),
+    proxy: {
+      hezbollah_active: !!calibration.proxy_hezbollah,
+      houthi_active: !!calibration.proxy_houthi,
+      iraqi_militia_active: !!calibration.proxy_iraqi_militia,
+    },
+    us_posture: calibration.us_posture || 'sustained_operations',
+    iran_posture: calibration.iran_posture || 'fragmented_resistance',
+    param_calibration: {
+      escalation_propensity: clampNum(calibration.escalation_propensity, 0.1, 0.95, 0.5),
+      iran_force_multiplier: clampNum(calibration.iran_force_multiplier, 0.02, 1.0, 0.3),
+      us_tech_advantage: clampNum(calibration.us_tech_advantage, 1.0, 2.5, 1.8),
+      iran_asymmetric_factor: clampNum(calibration.iran_asymmetric_factor, 0.1, 2.0, 0.8),
+      proxy_effectiveness: clampNum(calibration.proxy_effectiveness, 0.1, 1.0, 0.6),
+      cyber_intensity: clampNum(calibration.cyber_intensity, 0.05, 1.0, 0.4),
+      hormuz_mining_probability: clampNum(calibration.hormuz_mining_probability, 0.01, 1.0, 0.2),
+      oil_price_elasticity: clampNum(calibration.oil_price_elasticity, -0.20, -0.01, -0.05),
+      patriot_intercept_rate: clampNum(calibration.patriot_intercept_rate, 0.5, 0.98, 0.88),
+    }
+  };
+
+  console.log(`\n  Day ${dayNumber} entry built.`);
+
+  if (dryRun) {
+    console.log('\n  [DRY RUN] Would patch DIPLOMATIC_EVENTS with:');
+    console.log('  ', JSON.stringify(dayEntry, null, 2).split('\n').join('\n    '));
+    return;
+  }
+
+  // Step 4: Patch DIPLOMATIC_EVENTS in index.html
+  patchDiplomaticEvents(dayNumber, dayEntry);
+  console.log(`\n  Patched DIPLOMATIC_EVENTS day ${dayNumber} in index.html`);
+}
+
+function clampNum(val, min, max, fallback) {
+  if (typeof val !== 'number' || isNaN(val)) return fallback;
+  return Math.max(min, Math.min(max, val));
+}
+
+function patchDiplomaticEvents(dayNumber, dayEntry) {
+  let html = fs.readFileSync(CONFIG.index_path, 'utf8');
+
+  // Find DIPLOMATIC_EVENTS block
+  const startMarker = 'const DIPLOMATIC_EVENTS = {';
+  const startIdx = html.indexOf(startMarker);
+  if (startIdx === -1) {
+    console.error('  ERROR: DIPLOMATIC_EVENTS not found in index.html');
+    return false;
+  }
+
+  // Find the closing of DIPLOMATIC_EVENTS (matching brace + semicolon)
+  let braces = 0;
+  let endIdx = -1;
+  for (let i = startIdx + startMarker.length - 1; i < html.length; i++) {
+    if (html[i] === '{') braces++;
+    if (html[i] === '}') braces--;
+    if (braces === 0) { endIdx = i + 1; break; }
+  }
+  if (endIdx === -1) {
+    console.error('  ERROR: Could not find end of DIPLOMATIC_EVENTS');
+    return false;
+  }
+
+  // Extract the JS object text and convert to JSON-parseable format:
+  // - Strip comments (// ...)
+  // - Add quotes to unquoted keys
+  // - Handle trailing commas
+  let objText = html.substring(startIdx + 'const DIPLOMATIC_EVENTS = '.length, endIdx);
+  let jsonText = objText
+    .replace(/\/\/[^\n]*/g, '')                           // strip line comments
+    .replace(/,(\s*[}\]])/g, '$1')                        // remove trailing commas
+    .replace(/([{,]\s*)([a-zA-Z_]\w*)(\s*:)/g, '$1"$2"$3'); // quote unquoted keys
+
+  let diplo;
+  try {
+    diplo = JSON.parse(jsonText);
+  } catch (e) {
+    console.error('  ERROR: Could not parse DIPLOMATIC_EVENTS as JSON:', e.message);
+    // Fallback: rebuild from scratch preserving existing days via regex
+    console.log('  Attempting regex-based day insertion...');
+    return patchDiplomaticEventsFallback(html, startIdx, endIdx, dayNumber, dayEntry);
+  }
+
+  // Add or update the day
+  diplo.days[dayNumber] = dayEntry;
+  diplo.last_updated = new Date().toISOString().split('T')[0];
+
+  // Serialize back as JS (JSON is valid JS)
+  const newBlock = JSON.stringify(diplo, null, 2);
+  // Find the semicolon after the closing brace
+  const semiIdx = html.indexOf(';', endIdx - 1);
+  const patched = html.substring(0, startIdx) +
+    'const DIPLOMATIC_EVENTS = ' + newBlock + ';' +
+    html.substring(semiIdx + 1);
+
+  fs.writeFileSync(CONFIG.index_path, patched);
+  return true;
+}
+
+// Fallback: insert a new day entry before the closing of the days object
+function patchDiplomaticEventsFallback(html, startIdx, endIdx, dayNumber, dayEntry) {
+  // Find the last "}" before endIdx that closes the "days" object
+  // Strategy: insert new day entry as text before the closing "}  }"
+  const entryJson = JSON.stringify(dayEntry, null, 6).replace(/\n/g, '\n    ');
+  const insertion = `    ${dayNumber}: ${entryJson},\n`;
+
+  // Find "days: {" inside DIPLOMATIC_EVENTS
+  const daysMarker = html.indexOf('"days":', startIdx) !== -1 ?
+    html.indexOf('"days":', startIdx) : html.indexOf('days:', startIdx);
+  if (daysMarker === -1 || daysMarker > endIdx) {
+    console.error('  FALLBACK ERROR: Could not find days object');
+    return false;
+  }
+
+  // Find the closing brace of the days object (second-to-last } before endIdx)
+  // We look for the pattern "}\n}" which closes days then DIPLOMATIC_EVENTS
+  const closingPattern = html.lastIndexOf('  }', endIdx - 2);
+  if (closingPattern === -1) {
+    console.error('  FALLBACK ERROR: Could not find days closing brace');
+    return false;
+  }
+
+  const patched = html.substring(0, closingPattern) + insertion + html.substring(closingPattern);
+  // Update last_updated
+  const finalPatched = patched.replace(
+    /last_updated:\s*['"][^'"]*['"]/,
+    `last_updated: '${new Date().toISOString().split('T')[0]}'`
+  );
+
+  fs.writeFileSync(CONFIG.index_path, finalPatched);
+  return true;
+}
+
 // ── Generate Claude Code MCP Version ──
 // This generates prompts that can be run via Claude Code's Perplexity MCP
 function generateMcpPrompts() {
@@ -280,13 +517,19 @@ async function main() {
   const dryRun = args.includes('--dry-run');
   const patch = args.includes('--patch');
   const mcpMode = args.includes('--mcp-prompts');
+  const calibrate = args.includes('--calibrate');
   const specificDay = args.indexOf('--day') !== -1 ? parseInt(args[args.indexOf('--day') + 1]) : null;
 
   console.log('CENTCOM War Game — OSINT Backfill');
   console.log('=================================');
   console.log(`Conflict start: ${CONFIG.conflict_start}`);
   console.log(`Operation: ${CONFIG.operation_name}`);
-  console.log(`Mode: ${dryRun ? 'dry-run' : patch ? 'patch' : 'generate JSON'}`);
+  console.log(`Mode: ${calibrate ? 'daily-calibration' : dryRun ? 'dry-run' : patch ? 'patch' : 'generate JSON'}`);
+
+  if (calibrate) {
+    await runDailyCalibration(dryRun);
+    return;
+  }
 
   if (mcpMode) {
     generateMcpPrompts();

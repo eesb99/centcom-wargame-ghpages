@@ -1,10 +1,21 @@
-name: Hourly OSINT Backfill
+name: Daily OSINT Calibration
 on:
   schedule:
-    - cron: '0 * * * *'
+    # 05:00 UTC = 00:00 EST (midnight New York Time)
+    # During EDT (Mar-Nov): this runs at 01:00 local. Acceptable 1h drift.
+    - cron: '0 5 * * *'
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode: calibrate (default) or backfill'
+        required: false
+        default: 'calibrate'
+        type: choice
+        options:
+          - calibrate
+          - backfill
 jobs:
-  backfill:
+  calibrate:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -13,12 +24,25 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Run backfill
+
+      - name: Run daily calibration
         env:
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
-        run: node backfill.js --patch
+          RUN_MODE: ${{ github.event.inputs.mode || 'calibrate' }}
+        run: |
+          if [ "$RUN_MODE" = "backfill" ]; then
+            node backfill.js --patch
+          else
+            node backfill.js --calibrate
+          fi
+
       - name: Commit & push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git diff --quiet || (git add index.html conflict_timeline.json && git commit -m "chore: hourly OSINT backfill $(date -u +%Y-%m-%dT%H:%M)" && git push)
+          if ! git diff --quiet; then
+            git add index.html
+            git add conflict_timeline.json 2>/dev/null || true
+            git commit -m "chore: daily OSINT calibration $(date -u +%Y-%m-%d)"
+            git push
+          fi
