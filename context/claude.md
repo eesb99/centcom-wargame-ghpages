@@ -2,12 +2,14 @@
 
 ## Current State
 
-- **Status**: Professional-grade modular app, deployed on GitHub Pages
+- **Status**: Combat model calibrated, live on GitHub Pages
 - **URL**: https://eesb99.github.io/centcom-wargame-ghpages/
 - **Repo**: https://github.com/eesb99/centcom-wargame-ghpages
 - **Branch**: main
-- **Last Updated**: 2026-03-05
-- **Key Features**: Modular src/ extraction, 26 unit tests, sensitivity analysis, historical validation, light/dark theme
+- **Last Updated**: 2026-03-06
+- **Primary Instance**: Mac Mini (launchd daily calibration at 03:00 UTC)
+- **Fallback**: GitHub Actions (07:00 UTC)
+- **Key Features**: Shooter-target SEAD model, asymmetric dominance, naval capacity gating, 26 unit tests, sensitivity analysis, historical validation
 
 ## Architecture (Post-Session 3)
 
@@ -16,7 +18,7 @@
 src/template.html + src/**/*.js  -->  build.sh  -->  index.html (single-file deploy)
 ```
 - Zero npm deps, concatenation-based build (~50-line bash script)
-- `<!-- INSERT_JS -->` marker in template.html replaced with all JS files in dependency order
+- `// INSERT_JS` marker in template.html (inside `<script>` block) replaced with all JS files in dependency order
 
 ### Source Structure
 ```
@@ -38,6 +40,77 @@ tests/        7 files - combat, game-tree, escalation, monte-carlo, integration,
 1. **OSINT Corridor (Days 1-6)**: Real events drive actions + params calibrated to reality
 2. **Active Extrapolation (Days 7-14)**: Trends continue with 8%/day decay
 3. **Stabilization (Days 15+)**: Parameters converge, model runs procedurally
+
+---
+
+## Session 4 Summary (2026-03-06)
+
+### Goals
+- Validate casualty realism against OSINT ground truth
+- Fix combat model producing 25x too many US casualties
+- Fix unrealistic US ship losses (navy destroyed but still attacking)
+- Migrate primary instance to Mac Mini
+- Fix template script injection bug (JS inside HTML comment)
+
+### Decisions Made
+- **Shooter-target over Lanchester for SEAD**: Symmetric mutual-attrition is wrong for one-sided precision strikes. Replaced with one-sided damage model where only specific threat vectors (BM leakers, IADS shootback) cause US casualties.
+- **Asymmetric dominance suppression**: When force_ratio > 0.75, weaker side inflicts only 15% normal damage. Models standoff precision strikes vs degraded defender.
+- **Naval capacity gating at 0.3**: Skip Iranian naval/coastal attacks entirely when iran_force_multiplier < 0.3 (navy confirmed destroyed by OSINT Day 5).
+- **Template fix**: `<!-- INSERT_JS -->` was inside an unclosed HTML comment. Changed to `// INSERT_JS` inside proper `<script>` tags.
+
+### Implementation
+
+**`src/sim/constants.js`** -- 16 named constants extracted:
+- `ATTRITION_COEFF_BASE`: 0.04 -> 0.015 (was producing 25x too many US casualties)
+- `ASYMMETRIC_DOMINANCE_THRESHOLD`: 0.75 (new)
+- `ASYMMETRIC_DOMINANCE_SUPPRESSION`: 0.15 (new)
+- `FAST_BOAT_ATTACK_PROB`: 0.35 -> 0.15
+- `COASTAL_ASHM_ATTACK_PROB`: 0.25 -> 0.12
+- `SUB_ATTACK_PROB`: 0.1 -> 0.05
+- `DRONE_INTERCEPT_RATE`: 0.75 -> 0.92
+- `BM_LEAKER_CASUALTY_MAX`: 5 -> 3
+
+**`src/sim/combat.js`** -- Asymmetric dominance modifier in Lanchester:
+- Dominant side suppresses weaker side's damage output to 15%
+
+**`src/sim/naval-air-model.js`** -- Structural fixes:
+- Naval capacity gate: skip attacks when iran_force_multiplier < 0.3
+- Coastal AShM gate: same capacity check
+- AShM intercept rate: 0.85 -> 0.95 (Aegis vs small salvo)
+- SEAD: Replaced Lanchester with shooter-target model
+- IADS shootback: Low-probability roll (8% base * ad_lethality * (1-degradation))
+
+**`src/template.html`** -- Fixed script injection:
+- Closed unclosed HTML comment, added proper `<script>` wrapper
+
+**`src/ui/app-init.js`** -- Removed stray `</script>` tag
+
+### Results (30 MC, Epic Fury Day 7, 25 days)
+
+| Metric | Before | After | Target |
+|--------|--------|-------|--------|
+| US KIA median | 192 | 144 | 10-12 by Day 6 |
+| Iran KIA median | 1342 | 2069 | thousands |
+| Kill ratio | 7:1 | 14.4:1 | 12-57:1 |
+| US Ships median | 6 | 4 | 0-1 |
+| Historical: Desert Storm | -- | 18.8:1 | 20-120:1 |
+| Historical: Iraq 2003 | -- | 18.9:1 | 50-80:1 |
+
+### Commits
+- `86dc3e5` - feat: migrate daily calibration to Mac Mini + gap backfill
+- `6e19b61` - fix: combat model realism -- shooter-target SEAD, asymmetric dominance, naval gating
+- `2b094d8` - fix: template script injection -- JS was inside unclosed HTML comment
+
+### Challenges & Solutions
+1. **JS not executing in browser**: All application JS was inside an unclosed HTML comment (`<!-- ════...` opened but never closed before INSERT_JS). Fixed template to close comment and wrap JS in `<script>` tags.
+2. **Coastal AShM still firing after navy destroyed**: Batteries weren't gated by iran_force_multiplier like naval units. Added same capacity gate.
+3. **Kill ratio 7:1 (target 12-57:1)**: Lanchester symmetric model fundamentally wrong for asymmetric precision warfare. Dual fix: constant tuning + structural shooter-target replacement.
+
+### Next Steps
+- [ ] Further reduce US ship losses (median 4, target 0-1)
+- [ ] Wire CONFLICT_TIMELINE from backfill.js into simulation
+- [ ] Proxy war calibration (Hezbollah rocket counts, Houthi attacks)
+- [ ] BMD interceptor exhaustion model (Day 2 ammo depletion causing BM leakers)
 
 ---
 

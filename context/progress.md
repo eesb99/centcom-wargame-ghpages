@@ -8,7 +8,48 @@
 | Phase 2: Diplomatic Momentum + OSINT Calibration | Complete | 2026-03-05 | 100% |
 | Phase 2b: Daily Calibration Pipeline | Complete | 2026-03-05 | 100% |
 | Phase 3: Professional-Grade Upgrade | Complete | 2026-03-05 | 100% |
-| Phase 4: Validation Plan Fixes | Pending | - | 0% |
+| Phase 4: Combat Model Calibration | Complete | 2026-03-06 | 100% |
+| Phase 4b: Template Script Fix | Complete | 2026-03-06 | 100% |
+| Phase 5: Mac Mini Migration | Complete | 2026-03-06 | 100% |
+
+## Phase 5: Mac Mini Migration (2026-03-06) - COMPLETE
+
+**Status:** 100% - Primary instance running on Mac Mini
+- Repo cloned at `~/Claude/projects/centcom-wargame-ghpages` on Mac Mini
+- launchd agent `com.eesb99.centcom-calibrate` runs daily at 03:00 UTC
+- GitHub Actions offset to 07:00 UTC as fallback
+- Mac Mini uses fish shell; launchd plist uses `/opt/homebrew/bin/bash` explicitly
+
+---
+
+## Phase 4b: Template Script Fix (2026-03-06) - COMPLETE
+
+**Commit:** `2b094d8`
+- `<!-- INSERT_JS -->` was inside unclosed HTML comment -- all JS treated as comment
+- Fixed: closed comment, added `<script>` wrapper, removed stray `</script>` from app-init.js
+
+---
+
+## Phase 4: Combat Model Calibration (2026-03-06) - COMPLETE
+
+**Duration:** ~2 hours
+**Status:** 100% - Kill ratio 14.4:1, all 26 tests passing
+**Commit:** `6e19b61`
+
+### Changes
+1. Reduced ATTRITION_COEFF_BASE 0.04->0.015 (25x US casualty inflation fix)
+2. Added asymmetric dominance: force_ratio>0.75 suppresses weaker side to 15%
+3. Replaced Lanchester SEAD with shooter-target model
+4. Naval/coastal capacity gating at iran_force_multiplier<0.3
+5. Raised drone intercept 0.75->0.92, AShM intercept 0.85->0.95
+6. Extracted 16 named constants from hardcoded values
+
+### Validation
+- Kill ratio: 7:1 -> 14.4:1 (target 12-57:1)
+- Desert Storm: 18.8:1, Iraq 2003: 18.9:1
+- 26/26 tests passing
+
+---
 
 ## Phase 2: Diplomatic Momentum + OSINT Calibration (2026-03-05) - COMPLETE
 
