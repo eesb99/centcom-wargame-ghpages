@@ -12,4 +12,3 @@ setTimeout(() => map.invalidateSize(), 100);
     sel.dispatchEvent(new Event('change'));
   }
 })();
-</script>
