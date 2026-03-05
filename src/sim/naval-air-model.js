@@ -36,12 +36,15 @@
   _process_naval_warfare() {
     if (this.state.escalation_level < EscalationLevel.LIMITED_NAVAL) return;
 
+    // Gate: skip if Iran's naval capacity is too degraded to mount attacks
+    if (this.params.iran_force_multiplier < NAVAL_CAPACITY_GATE) return;
+
     const fac = this.state.iran_units.find(u =>
       u.sub_type === 'fast_attack' && u.status === 'active');
     const us_naval = this.state.us_units.filter(u =>
       u.unit_type === 'naval' && u.status === 'active');
 
-    if (fac && us_naval.length > 0 && rngRandom() < 0.35) {
+    if (fac && us_naval.length > 0 && rngRandom() < FAST_BOAT_ATTACK_PROB) {
       const target = rngChoice(us_naval);
       const swarm_size = rngRandInt(10, 40);
       const result = this._lanchester_engagement(fac, target,
@@ -73,7 +76,7 @@
     const subs = this.state.iran_units.filter(u =>
       (u.sub_type === 'ssk' || u.sub_type === 'midget_sub') && u.status === 'active');
     for (const sub of subs) {
-      if (rngRandom() < 0.1) {
+      if (rngRandom() < SUB_ATTACK_PROB) {
         const target = us_naval.length > 0 ? rngChoice(us_naval) : null;
         if (target) {
           const result = this._lanchester_engagement(sub, target);
@@ -94,15 +97,16 @@
       }
     }
 
-    // Coastal AShM salvos
+    // Coastal AShM salvos — gated by remaining Iranian capacity
+    if (this.params.iran_force_multiplier < NAVAL_CAPACITY_GATE) return;
     const coastal_batteries = this.state.iran_units.filter(u =>
       u.sub_type === 'coastal_ashm' && u.status === 'active');
     for (const battery of coastal_batteries) {
-      if (us_naval.length > 0 && rngRandom() < 0.25) {
+      if (us_naval.length > 0 && rngRandom() < COASTAL_ASHM_ATTACK_PROB) {
         const salvo = battery.fire_missiles(rngRandInt(2, 6));
         this.state.missiles_fired.iran_ashm += salvo;
         const target = rngChoice(us_naval);
-        const intercept_rate = 0.85;
+        const intercept_rate = 0.95; // Aegis CIWS/SM-2 vs small salvo
         const leakers = Math.max(0, salvo - Math.floor(salvo * intercept_rate));
         const counter_cas = rngRandInt(5, 20);
         this.state.casualties.iran += counter_cas;
@@ -152,27 +156,25 @@
     let iran_cas_today = 0;
 
     for (let pkg = 0; pkg < num_packages; pkg++) {
-      // SEAD/DEAD component
+      // SEAD/DEAD: Shooter-target model (not Lanchester)
+      // US standoff strikes suppress IADS; Iran AD has low probability of shooting back
       if (iran_ad.length > 0) {
         const ad = rngChoice(iran_ad);
-        const attacker = us_air.length > 0 ? rngChoice(us_air) : null;
-        if (attacker) {
-          const sead_eff = this.params.us_sead_effectiveness * (1 + iads_degrade * 0.5);
-          const result = this._lanchester_engagement(attacker, ad, sead_eff);
-          attacker.take_damage(result.attacker_damage * this.params.iran_ad_lethality * 0.3);
-          ad.take_damage(result.defender_damage);
+        const sead_eff = this.params.us_sead_effectiveness * (1 + iads_degrade * 0.5);
 
-          const tlam_fired = rngRandInt(4, 12);
-          this.state.missiles_fired.us_tomahawk += tlam_fired;
+        const tlam_fired = rngRandInt(4, 12);
+        this.state.missiles_fired.us_tomahawk += tlam_fired;
 
-          const ad_cas = rngRandInt(10, 50);
-          this.state.casualties.iran += ad_cas;
-          iran_cas_today += ad_cas;
+        // Shooter-target: strike damage based on sortie effectiveness, not mutual Lanchester
+        ad.take_damage(tlam_fired * sead_eff * rngUniform(0.8, 1.5));
+        const ad_cas = rngRandInt(STRIKE_CASUALTY_BASE, STRIKE_CASUALTY_BASE + STRIKE_CASUALTY_NOISE);
+        this.state.casualties.iran += ad_cas;
+        iran_cas_today += ad_cas;
 
-          if (result.attacker_damage > 8) {
-            this.state.aircraft_lost.us += 1;
-            us_ac_lost_today += 1;
-          }
+        // IADS shootback: low probability standoff engagement
+        if (rngRandom() < IADS_SHOOTBACK_PROB * this.params.iran_ad_lethality * (1 - iads_degrade)) {
+          this.state.aircraft_lost.us += 1;
+          us_ac_lost_today += 1;
         }
       }
 
@@ -305,7 +307,7 @@
 
           const leakers = Math.max(0, fired - intercepted);
           if (leakers > 0) {
-            const cas = Math.round(leakers * rngRandInt(1, 5) * this.params.iran_ballistic_cep_factor);
+            const cas = Math.round(leakers * rngRandInt(1, BM_LEAKER_CASUALTY_MAX) * this.params.iran_ballistic_cep_factor);
             this.state.casualties.us += cas;
             this.state.day_log.push(
               `Day ${this.state.day}: Iran fires ${fired} ${msl_unit.sub_type.toUpperCase()}s at US bases` +
@@ -323,7 +325,7 @@
         const swarm = rngRandInt(15, 60);
         const launched = drone_unit.fire_missiles(swarm);
         this.state.missiles_fired.iran_drone += launched;
-        const drone_intercept_rate = 0.75;
+        const drone_intercept_rate = DRONE_INTERCEPT_RATE;
         const leakers = Math.max(0, launched - Math.floor(launched * drone_intercept_rate));
         if (leakers > 0) {
           const cas = rngRandInt(0, leakers * 2);

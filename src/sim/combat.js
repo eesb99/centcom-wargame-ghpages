@@ -21,8 +21,20 @@
     const noise = rngGauss(0, 0.08);
     const attrition_coeff = ATTRITION_COEFF_BASE + rngUniform(0, ATTRITION_COEFF_NOISE);
 
-    const defender_damage = a_eff * attrition_coeff * (force_ratio + noise);
-    const attacker_damage = d_eff * attrition_coeff * ((1 - force_ratio) + noise);
+    // Asymmetric dominance: when one side dominates (force_ratio > threshold),
+    // the weaker side can barely inflict damage (standoff strikes vs. degraded defender)
+    let attacker_suppression = 1.0;
+    let defender_suppression = 1.0;
+    if (force_ratio > ASYMMETRIC_DOMINANCE_THRESHOLD) {
+      // Attacker dominates -- defender can barely shoot back
+      attacker_suppression = ASYMMETRIC_DOMINANCE_SUPPRESSION;
+    } else if (force_ratio < (1 - ASYMMETRIC_DOMINANCE_THRESHOLD)) {
+      // Defender dominates -- attacker can barely inflict damage
+      defender_suppression = ASYMMETRIC_DOMINANCE_SUPPRESSION;
+    }
+
+    const defender_damage = a_eff * attrition_coeff * (force_ratio + noise) * defender_suppression;
+    const attacker_damage = d_eff * attrition_coeff * ((1 - force_ratio) + noise) * attacker_suppression;
 
     return {
       attacker_damage: Math.max(0, Math.round(attacker_damage * 100) / 100),

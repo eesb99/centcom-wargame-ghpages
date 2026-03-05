@@ -1384,66 +1384,6 @@ const DIPLOMATIC_EVENTS = {
         patriot_intercept_rate: 0.90,   // Optimized
       }
     }
-    1: {
-          "date": "2026-02-28",
-          "diplomatic_momentum": 0.1,
-          "mediation_active": false,
-          "ceasefire_signals": 0.05,
-          "escalation_override": 5,
-          "events": [
-                "US and partner forces launched **Operation Epic Fury** at 1:15 am ET on February 28, 2026, striking over **1,700 targets** in Iran including IRGC command centers, air defenses, missile/drone sites, airfields, nuclear infrastructure, missile production, naval assets, and sites near Supreme Leader's office (CENTCOM press release[1][3][5]; FDD[2]; Economic Times[4]).",
-                "Strikes employed precision munitions from air, land, sea platforms plus first combat use of low-cost one-way **LUCAS drones** by Task Force Scorpion Strike, involving B-1/B-2/B-52 bombers, F-15/16/18/22/35 jets, A-10s, carriers, destroyers, HIMARS, Patriots, THAAD, MQ-9s, and special capabilities[1][5].",
-                "Iran retaliated with **hundreds of missile and drone attacks** on US bases and Israel; CENTCOM forces defended successfully with **no US casualties** or injuries reported and only minimal damage to installations[1].",
-                "**Coordinated US-Israel action**: Operation Epic Fury (US) alongside Israel's Operation Roaring Lion, targeting Iran's nuclear/missile threats, described as largest joint military action in history[2].",
-                "President Trump announced strikes in video, declaring **major combat operations** to destroy Iran's missiles/industry, called on IRGC to surrender for immunity or face death, urged Iranian people to overthrow regime[2].",
-                "**Iranian casualties not specified** for Day 1; prior context notes IRGC killed >1,000 Americans over 47 years and >3,117-36,500 protesters recently, but no Day 1 proxy attacks (Hezbollah/Houthi/militias), naval ops details, Hormuz status, diplomacy, UN activity, or oil prices reported in sources[1][2][5][6].",
-                "Operation represents largest regional US military concentration in a generation, aimed at dismantling Iranian security apparatus posing imminent threats[1][5]."
-          ],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "proxy_escalation",
-          "param_calibration": {
-                "escalation_propensity": 0.85,
-                "iran_force_multiplier": 0.15,
-                "us_tech_advantage": 2.2,
-                "iran_asymmetric_factor": 1.2,
-                "proxy_effectiveness": 0.7,
-                "cyber_intensity": 0.6,
-                "hormuz_mining_probability": 0.4,
-                "oil_price_elasticity": -0.15,
-                "patriot_intercept_rate": 0.95
-          }
-    },
-    6: {
-          "date": "2026-03-05",
-          "diplomatic_momentum": 0.1,
-          "mediation_active": false,
-          "ceasefire_signals": 0.05,
-          "escalation_override": 5,
-          "events": [],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "proxy_escalation",
-          "param_calibration": {
-                "escalation_propensity": 0.85,
-                "iran_force_multiplier": 0.25,
-                "us_tech_advantage": 2.2,
-                "iran_asymmetric_factor": 1.5,
-                "proxy_effectiveness": 0.7,
-                "cyber_intensity": 0.4,
-                "hormuz_mining_probability": 0.6,
-                "oil_price_elasticity": -0.15,
-                "patriot_intercept_rate": 0.92
-          }
-    },
   }
 };
 
@@ -1452,11 +1392,26 @@ const DIPLOMATIC_EVENTS = {
 // Changing these values changes model behavior -- see VALIDATION.md for calibration rationale.
 
 // ── Combat Model ──
-const ATTRITION_COEFF_BASE = 0.04;
-const ATTRITION_COEFF_NOISE = 0.025;
+const ATTRITION_COEFF_BASE = 0.015;  // reduced from 0.04; was producing ~25x too many US casualties
+const ATTRITION_COEFF_NOISE = 0.01;  // reduced from 0.025 to match lower base
 const MORALE_DAMAGE_RATE = 0.003;
 const PLATFORM_LOSS_DIVISOR = 15;
 const PLATFORM_LOSS_THRESHOLD = 8;
+// Asymmetric dominance: when force_ratio > this threshold, the weaker side
+// can barely inflict damage (standoff precision strikes vs. degraded defender)
+const ASYMMETRIC_DOMINANCE_THRESHOLD = 0.75;
+const ASYMMETRIC_DOMINANCE_SUPPRESSION = 0.15; // weaker side does only 15% of normal damage
+
+// ── Naval / Air Constants ──
+const DRONE_INTERCEPT_RATE = 0.92;          // real-world >90% (Israel April 2024: 99%)
+const NAVAL_CAPACITY_GATE = 0.3;            // skip naval attacks if iran_force_multiplier below this
+const FAST_BOAT_ATTACK_PROB = 0.15;         // reduced from 0.35; Iran fast boats rarely reach US ships
+const COASTAL_ASHM_ATTACK_PROB = 0.12;      // reduced from 0.25; batteries suppressed by SEAD
+const SUB_ATTACK_PROB = 0.05;               // reduced from 0.1; ASW dominance
+const STRIKE_CASUALTY_BASE = 30;            // base Iran KIA per strike package (shooter-target)
+const STRIKE_CASUALTY_NOISE = 50;           // max additional randomness
+const IADS_SHOOTBACK_PROB = 0.08;           // prob of US aircraft loss per SEAD package
+const BM_LEAKER_CASUALTY_MAX = 3;           // reduced from 5; most leakers hit empty terrain
 
 // ── Game Tree / War Weariness ──
 const WAR_WEARINESS_RATE = 0.005;
@@ -2349,8 +2304,20 @@ class WarGameSimulation {
     const noise = rngGauss(0, 0.08);
     const attrition_coeff = ATTRITION_COEFF_BASE + rngUniform(0, ATTRITION_COEFF_NOISE);
 
-    const defender_damage = a_eff * attrition_coeff * (force_ratio + noise);
-    const attacker_damage = d_eff * attrition_coeff * ((1 - force_ratio) + noise);
+    // Asymmetric dominance: when one side dominates (force_ratio > threshold),
+    // the weaker side can barely inflict damage (standoff strikes vs. degraded defender)
+    let attacker_suppression = 1.0;
+    let defender_suppression = 1.0;
+    if (force_ratio > ASYMMETRIC_DOMINANCE_THRESHOLD) {
+      // Attacker dominates -- defender can barely shoot back
+      attacker_suppression = ASYMMETRIC_DOMINANCE_SUPPRESSION;
+    } else if (force_ratio < (1 - ASYMMETRIC_DOMINANCE_THRESHOLD)) {
+      // Defender dominates -- attacker can barely inflict damage
+      defender_suppression = ASYMMETRIC_DOMINANCE_SUPPRESSION;
+    }
+
+    const defender_damage = a_eff * attrition_coeff * (force_ratio + noise) * defender_suppression;
+    const attacker_damage = d_eff * attrition_coeff * ((1 - force_ratio) + noise) * attacker_suppression;
 
     return {
       attacker_damage: Math.max(0, Math.round(attacker_damage * 100) / 100),
@@ -3059,12 +3026,15 @@ class WarGameSimulation {
   _process_naval_warfare() {
     if (this.state.escalation_level < EscalationLevel.LIMITED_NAVAL) return;
 
+    // Gate: skip if Iran's naval capacity is too degraded to mount attacks
+    if (this.params.iran_force_multiplier < NAVAL_CAPACITY_GATE) return;
+
     const fac = this.state.iran_units.find(u =>
       u.sub_type === 'fast_attack' && u.status === 'active');
     const us_naval = this.state.us_units.filter(u =>
       u.unit_type === 'naval' && u.status === 'active');
 
-    if (fac && us_naval.length > 0 && rngRandom() < 0.35) {
+    if (fac && us_naval.length > 0 && rngRandom() < FAST_BOAT_ATTACK_PROB) {
       const target = rngChoice(us_naval);
       const swarm_size = rngRandInt(10, 40);
       const result = this._lanchester_engagement(fac, target,
@@ -3096,7 +3066,7 @@ class WarGameSimulation {
     const subs = this.state.iran_units.filter(u =>
       (u.sub_type === 'ssk' || u.sub_type === 'midget_sub') && u.status === 'active');
     for (const sub of subs) {
-      if (rngRandom() < 0.1) {
+      if (rngRandom() < SUB_ATTACK_PROB) {
         const target = us_naval.length > 0 ? rngChoice(us_naval) : null;
         if (target) {
           const result = this._lanchester_engagement(sub, target);
@@ -3117,15 +3087,16 @@ class WarGameSimulation {
       }
     }
 
-    // Coastal AShM salvos
+    // Coastal AShM salvos — gated by remaining Iranian capacity
+    if (this.params.iran_force_multiplier < NAVAL_CAPACITY_GATE) return;
     const coastal_batteries = this.state.iran_units.filter(u =>
       u.sub_type === 'coastal_ashm' && u.status === 'active');
     for (const battery of coastal_batteries) {
-      if (us_naval.length > 0 && rngRandom() < 0.25) {
+      if (us_naval.length > 0 && rngRandom() < COASTAL_ASHM_ATTACK_PROB) {
         const salvo = battery.fire_missiles(rngRandInt(2, 6));
         this.state.missiles_fired.iran_ashm += salvo;
         const target = rngChoice(us_naval);
-        const intercept_rate = 0.85;
+        const intercept_rate = 0.95; // Aegis CIWS/SM-2 vs small salvo
         const leakers = Math.max(0, salvo - Math.floor(salvo * intercept_rate));
         const counter_cas = rngRandInt(5, 20);
         this.state.casualties.iran += counter_cas;
@@ -3175,27 +3146,25 @@ class WarGameSimulation {
     let iran_cas_today = 0;
 
     for (let pkg = 0; pkg < num_packages; pkg++) {
-      // SEAD/DEAD component
+      // SEAD/DEAD: Shooter-target model (not Lanchester)
+      // US standoff strikes suppress IADS; Iran AD has low probability of shooting back
       if (iran_ad.length > 0) {
         const ad = rngChoice(iran_ad);
-        const attacker = us_air.length > 0 ? rngChoice(us_air) : null;
-        if (attacker) {
-          const sead_eff = this.params.us_sead_effectiveness * (1 + iads_degrade * 0.5);
-          const result = this._lanchester_engagement(attacker, ad, sead_eff);
-          attacker.take_damage(result.attacker_damage * this.params.iran_ad_lethality * 0.3);
-          ad.take_damage(result.defender_damage);
+        const sead_eff = this.params.us_sead_effectiveness * (1 + iads_degrade * 0.5);
 
-          const tlam_fired = rngRandInt(4, 12);
-          this.state.missiles_fired.us_tomahawk += tlam_fired;
+        const tlam_fired = rngRandInt(4, 12);
+        this.state.missiles_fired.us_tomahawk += tlam_fired;
 
-          const ad_cas = rngRandInt(10, 50);
-          this.state.casualties.iran += ad_cas;
-          iran_cas_today += ad_cas;
+        // Shooter-target: strike damage based on sortie effectiveness, not mutual Lanchester
+        ad.take_damage(tlam_fired * sead_eff * rngUniform(0.8, 1.5));
+        const ad_cas = rngRandInt(STRIKE_CASUALTY_BASE, STRIKE_CASUALTY_BASE + STRIKE_CASUALTY_NOISE);
+        this.state.casualties.iran += ad_cas;
+        iran_cas_today += ad_cas;
 
-          if (result.attacker_damage > 8) {
-            this.state.aircraft_lost.us += 1;
-            us_ac_lost_today += 1;
-          }
+        // IADS shootback: low probability standoff engagement
+        if (rngRandom() < IADS_SHOOTBACK_PROB * this.params.iran_ad_lethality * (1 - iads_degrade)) {
+          this.state.aircraft_lost.us += 1;
+          us_ac_lost_today += 1;
         }
       }
 
@@ -3328,7 +3297,7 @@ class WarGameSimulation {
 
           const leakers = Math.max(0, fired - intercepted);
           if (leakers > 0) {
-            const cas = Math.round(leakers * rngRandInt(1, 5) * this.params.iran_ballistic_cep_factor);
+            const cas = Math.round(leakers * rngRandInt(1, BM_LEAKER_CASUALTY_MAX) * this.params.iran_ballistic_cep_factor);
             this.state.casualties.us += cas;
             this.state.day_log.push(
               `Day ${this.state.day}: Iran fires ${fired} ${msl_unit.sub_type.toUpperCase()}s at US bases` +
@@ -3346,7 +3315,7 @@ class WarGameSimulation {
         const swarm = rngRandInt(15, 60);
         const launched = drone_unit.fire_missiles(swarm);
         this.state.missiles_fired.iran_drone += launched;
-        const drone_intercept_rate = 0.75;
+        const drone_intercept_rate = DRONE_INTERCEPT_RATE;
         const leakers = Math.max(0, launched - Math.floor(launched * drone_intercept_rate));
         if (leakers > 0) {
           const cas = rngRandInt(0, leakers * 2);
