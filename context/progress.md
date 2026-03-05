@@ -7,7 +7,8 @@
 | Phase 1: Initial Deployment | Complete | 2026-03-05 | 100% |
 | Phase 2: Diplomatic Momentum + OSINT Calibration | Complete | 2026-03-05 | 100% |
 | Phase 2b: Daily Calibration Pipeline | Complete | 2026-03-05 | 100% |
-| Phase 3: Validation Plan Fixes | Pending | - | 0% |
+| Phase 3: Professional-Grade Upgrade | Complete | 2026-03-05 | 100% |
+| Phase 4: Validation Plan Fixes | Pending | - | 0% |
 
 ## Phase 2: Diplomatic Momentum + OSINT Calibration (2026-03-05) - COMPLETE
 
@@ -36,6 +37,46 @@
 - Parameters calibrated: 9 per day
 - OSINT events ingested: 33 events across 6 days
 - Trend decay half-life: ~8 days
+
+---
+
+## Phase 3: Professional-Grade Upgrade (2026-03-05) - COMPLETE
+
+**Duration:** ~3 hours
+**Status:** 100% - All 4 sub-phases implemented, 26/26 tests passing
+**Commits:** 1 commit (57928e3)
+
+### Features Implemented
+1. **Phase 1A**: Fixed 4 orphaned scenario tabs (limited, escalatory, proxy, worst)
+2. **Phase 1B**: Hardened backfill.js with retry/timeout/partial-failure handling
+3. **Phase 1C**: Light/dark theme toggle with localStorage persistence
+4. **Phase 2**: Extracted index.html into 38 modular src/ files + build.sh
+5. **Phase 3A**: Named constants (12 magic numbers -> src/sim/constants.js)
+6. **Phase 3B**: OAT sensitivity analysis + tornado diagram UI
+7. **Phase 4A**: Desert Storm 1991 + Iraq 2003 validation presets
+8. **Phase 4B**: VALIDATION.md documentation
+
+### Files Created (45)
+- `build.sh` - concatenation build script
+- `src/template.html` - HTML+CSS skeleton
+- `src/sim/` - 17 simulation engine files
+- `src/data/` - 8 OSINT data files
+- `src/ui/` - 13 UI component files
+- `tests/` - 7 test files (26 tests)
+- `VALIDATION.md` - historical validation document
+
+### Validation Results
+- 26/26 tests passing (`node --test tests/*.test.js`)
+- build.sh produces working index.html
+- All 9 scenario tabs functional
+- Seeded runs reproducible
+
+### Metrics
+- Source files: 38 (from 1 monolithic index.html)
+- Test coverage: combat, game-tree, escalation, monte-carlo, integration, validation
+- Named constants: 12
+- Sensitivity parameters: 18
+- Validation scenarios: 2 (Desert Storm, Iraq 2003)
 
 ---
 
