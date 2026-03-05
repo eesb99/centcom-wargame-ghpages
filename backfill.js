@@ -91,37 +91,70 @@ async function queryPerplexity(query) {
     process.exit(1);
   }
 
-  const response = await fetch(CONFIG.api_url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${CONFIG.api_key}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: CONFIG.model,
-      messages: [
-        {
-          role: 'system',
-          content: `You are an OSINT analyst extracting structured data about Operation Epic Fury (US-Iran conflict, Feb 2026).
+  const MAX_RETRIES = 3;
+  const TIMEOUT_MS = 30000;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+      const response = await fetch(CONFIG.api_url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${CONFIG.api_key}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: CONFIG.model,
+          messages: [
+            {
+              role: 'system',
+              content: `You are an OSINT analyst extracting structured data about Operation Epic Fury (US-Iran conflict, Feb 2026).
 Return ONLY valid JSON with the requested fields. Use null for unknown values. Use numbers not strings for numeric fields.
 Be precise — cite specific numbers from CENTCOM statements, news reports, and defense sources.`
-        },
-        {
-          role: 'user',
-          content: query
-        }
-      ],
-      temperature: 0.1,
-      max_tokens: 1500,
-    })
-  });
+            },
+            {
+              role: 'user',
+              content: query
+            }
+          ],
+          temperature: 0.1,
+          max_tokens: 1500,
+        }),
+        signal: controller.signal,
+      });
 
-  const data = await response.json();
-  if (data.error) {
-    console.error('Perplexity API error:', data.error);
-    return null;
+      clearTimeout(timeout);
+
+      const data = await response.json();
+      if (data.error) {
+        console.error(`Perplexity API error (attempt ${attempt}/${MAX_RETRIES}):`, data.error);
+        if (attempt < MAX_RETRIES) {
+          const delay = Math.pow(2, attempt - 1) * 1000;
+          console.log(`  Retrying in ${delay / 1000}s...`);
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+        return null;
+      }
+      return data.choices?.[0]?.message?.content || null;
+    } catch (e) {
+      if (e.name === 'AbortError') {
+        console.error(`  Request timed out after ${TIMEOUT_MS / 1000}s (attempt ${attempt}/${MAX_RETRIES})`);
+      } else {
+        console.error(`  Fetch error (attempt ${attempt}/${MAX_RETRIES}):`, e.message);
+      }
+      if (attempt < MAX_RETRIES) {
+        const delay = Math.pow(2, attempt - 1) * 1000;
+        console.log(`  Retrying in ${delay / 1000}s...`);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
   }
-  return data.choices?.[0]?.message?.content || null;
+
+  console.error('  All retry attempts exhausted. Returning null.');
+  return null;
 }
 
 // ── Date Utilities ──
@@ -269,32 +302,38 @@ async function runDailyCalibration(dryRun) {
   console.log(`\n=== Daily Calibration: Day ${dayNumber} (${dateLabel}) ===\n`);
 
   // Step 1: Query for today's key events
-  const eventsQuery = `Operation Epic Fury ${dateLabel} ${todayStr} Day ${dayNumber} summary:
+  let events = [];
+  try {
+    const eventsQuery = `Operation Epic Fury ${dateLabel} ${todayStr} Day ${dayNumber} summary:
 List the 5-7 most important military and diplomatic events that happened TODAY.
 Include: US/coalition strikes, Iranian retaliation, proxy attacks (Hezbollah/Houthi/Iraqi militia),
 casualties (US and Iranian), naval operations, Strait of Hormuz status, diplomatic developments,
 ceasefire proposals, UN activity, oil price movements.
 Be specific with numbers and sources. Return as a JSON array of strings.`;
 
-  console.log('  Querying today\'s events...');
-  const eventsRaw = await queryPerplexity(eventsQuery);
-  let events = [];
-  if (eventsRaw) {
-    try {
-      const match = eventsRaw.match(/\[[\s\S]*\]/);
-      if (match) events = JSON.parse(match[0]);
-    } catch (e) {
-      // Fallback: split by newlines/bullets
-      events = eventsRaw.split(/[\n\r]+/)
-        .map(l => l.replace(/^[-*\d.)\s]+/, '').trim())
-        .filter(l => l.length > 20)
-        .slice(0, 7);
+    console.log('  Querying today\'s events...');
+    const eventsRaw = await queryPerplexity(eventsQuery);
+    if (eventsRaw) {
+      try {
+        const match = eventsRaw.match(/\[[\s\S]*\]/);
+        if (match) events = JSON.parse(match[0]);
+      } catch (e) {
+        // Fallback: split by newlines/bullets
+        events = eventsRaw.split(/[\n\r]+/)
+          .map(l => l.replace(/^[-*\d.)\s]+/, '').trim())
+          .filter(l => l.length > 20)
+          .slice(0, 7);
+      }
     }
+    console.log(`  Events found: ${events.length}`);
+  } catch (e) {
+    console.error(`  Error querying events: ${e.message}. Continuing with empty events.`);
   }
-  console.log(`  Events found: ${events.length}`);
 
   // Step 2: Query for parameter calibration
-  const calibQuery = `You are a military analyst calibrating a war simulation of Operation Epic Fury (US-Iran conflict).
+  let calibration = null;
+  try {
+    const calibQuery = `You are a military analyst calibrating a war simulation of Operation Epic Fury (US-Iran conflict).
 Based on events from ${dateLabel} (Day ${dayNumber}), provide numeric parameter estimates.
 
 Context events:
@@ -323,16 +362,18 @@ Return ONLY a JSON object with these fields (all numbers between the given range
 
 Base your estimates on the actual military situation. Be precise.`;
 
-  console.log('  Querying parameter calibration...');
-  const calibRaw = await queryPerplexity(calibQuery);
-  let calibration = null;
-  if (calibRaw) {
-    try {
-      const match = calibRaw.match(/\{[\s\S]*\}/);
-      if (match) calibration = JSON.parse(match[0]);
-    } catch (e) {
-      console.error('  Failed to parse calibration JSON:', e.message);
+    console.log('  Querying parameter calibration...');
+    const calibRaw = await queryPerplexity(calibQuery);
+    if (calibRaw) {
+      try {
+        const match = calibRaw.match(/\{[\s\S]*\}/);
+        if (match) calibration = JSON.parse(match[0]);
+      } catch (e) {
+        console.error('  Failed to parse calibration JSON:', e.message);
+      }
     }
+  } catch (e) {
+    console.error(`  Error querying calibration: ${e.message}`);
   }
 
   if (!calibration) {
@@ -561,8 +602,18 @@ async function main() {
       }
     }
 
-    const dayData = await backfillDay(day);
-    results.push(dayData);
+    try {
+      const dayData = await backfillDay(day);
+      results.push(dayData);
+
+      // Save partial results after each successful day
+      const partialTimeline = buildTimeline(results);
+      fs.writeFileSync(CONFIG.timeline_path, JSON.stringify(partialTimeline, null, 2));
+      console.log(`    Saved partial progress (${results.length} days)`);
+    } catch (e) {
+      console.error(`\n  ERROR processing Day ${day.day_number} (${day.date}): ${e.message}`);
+      console.error('  Continuing to next day...');
+    }
   }
 
   // Merge with existing data

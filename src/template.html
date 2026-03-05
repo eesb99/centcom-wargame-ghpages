@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+
+<!-- Perplexity Computer Attribution — SEO Meta Tags -->
+<meta name="generator" content="Perplexity Computer">
+<meta name="author" content="Perplexity Computer">
+<meta property="og:see_also" content="https://www.perplexity.ai/computer">
+<link rel="author" href="https://www.perplexity.ai/computer">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CENTCOM War Game — US/Iran Conflict Simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════════════ */
+:root {
+  --bg: #0a0e14;
+  --surface: rgba(15, 20, 30, 0.92);
+  --surface-solid: #0f141e;
+  --surface-2: rgba(20, 28, 40, 0.95);
+  --surface-3: rgba(30, 40, 55, 0.9);
+  --border: rgba(255,255,255,0.08);
+  --border-active: rgba(255,255,255,0.15);
+  --text: #e8edf3;
+  --text-muted: #8b949e;
+  --text-faint: #545d68;
+  --accent: #22d3ee;
+  --accent-dim: rgba(34,211,238,0.15);
+  --red: #f85149;
+  --red-dim: rgba(248,81,73,0.15);
+  --orange: #f0883e;
+  --orange-dim: rgba(240,136,62,0.15);
+  --green: #3fb950;
+  --green-dim: rgba(63,185,80,0.15);
+  --yellow: #d29922;
+  --yellow-dim: rgba(210,153,34,0.15);
+  --blue: #58a6ff;
+  --blue-dim: rgba(88,166,255,0.15);
+  --purple: #bc8cff;
+  --purple-dim: rgba(188,140,255,0.15);
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-ui: 'Inter', system-ui, sans-serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --radius: 8px;
+  --radius-sm: 4px;
+  --blur: blur(12px);
+  --sidebar-w: 360px;
+  --topnav-h: 44px;
+  --timeline-h: 40px;
+}
+
+[data-theme="light"] {
+  --bg: #f0f2f5;
+  --surface: rgba(255, 255, 255, 0.95);
+  --surface-solid: #ffffff;
+  --surface-2: rgba(245, 247, 250, 0.95);
+  --surface-3: rgba(235, 240, 245, 0.9);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-active: rgba(0, 0, 0, 0.2);
+  --text: #1a1a2e;
+  --text-muted: #4a4a6a;
+  --text-faint: #8b8ba0;
+  --accent: #0891b2;
+  --accent-dim: rgba(8, 145, 178, 0.12);
+  --red: #dc2626;
+  --red-dim: rgba(220, 38, 38, 0.1);
+  --orange: #ea580c;
+  --orange-dim: rgba(234, 88, 12, 0.1);
+  --green: #16a34a;
+  --green-dim: rgba(22, 163, 74, 0.1);
+  --yellow: #ca8a04;
+  --yellow-dim: rgba(202, 138, 4, 0.1);
+  --blue: #2563eb;
+  --blue-dim: rgba(37, 99, 235, 0.1);
+  --purple: #7c3aed;
+  --purple-dim: rgba(124, 58, 237, 0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  height: 100%; overflow: hidden; background: var(--bg); color: var(--text);
+  font-family: var(--font-ui); font-size: 12px; -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ═══════════════════════════════════════════════════
+   LAYOUT — Full-bleed map with floating overlays
+   ═══════════════════════════════════════════════════ */
+
+/* Map fills entire viewport */
+#map {
+  position: fixed; inset: 0; z-index: 0;
+  background: var(--bg);
+}
+
+/* ── Top Navigation Bar ── */
+.topnav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  height: var(--topnav-h);
+  background: var(--surface);
+  backdrop-filter: var(--blur);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 14px;
+  gap: 12px;
+}
+.topnav-left {
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.topnav-logo {
+  display: flex; align-items: center; gap: 8px;
+}
+.live-badge {
+  background: var(--red);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  animation: livePulse 2s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+.topnav-title {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.topnav-center {
+  display: flex; align-items: center; gap: 2px;
+  flex: 1; justify-content: center;
+}
+.scenario-tab {
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: none;
+  font-family: var(--font-ui);
+  transition: all 180ms var(--ease);
+  white-space: nowrap;
+}
+.scenario-tab:hover {
+  color: var(--text);
+  background: rgba(255,255,255,0.05);
+}
+.scenario-tab.active {
+  color: var(--accent);
+  background: var(--accent-dim);
+  font-weight: 600;
+}
+.topnav-right {
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+}
+.nav-badge {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 600;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.nav-badge.day { background: var(--accent-dim); color: var(--accent); }
+.nav-badge.esc { background: var(--red-dim); color: var(--red); }
+.nav-badge .dot {
+  width: 5px; height: 5px; border-radius: 50%; background: currentColor;
+  animation: livePulse 2s ease-in-out infinite;
+}
+.nav-btn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 180ms var(--ease);
+  font-size: 14px;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+.nav-btn.active { background: var(--accent-dim); color: var(--accent); border-color: rgba(34,211,238,0.3); }
+
+/* ── Right Sidebar ── */
+.right-sidebar {
+  position: fixed;
+  top: var(--topnav-h);
+  right: 0;
+  bottom: var(--timeline-h);
+  width: var(--sidebar-w);
+  z-index: 900;
+  background: var(--surface);
+  backdrop-filter: var(--blur);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sidebar-header {
+  padding: 12px 14px 0;
+  flex-shrink: 0;
+}
+.sidebar-title-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.sidebar-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.sidebar-updated {
+  font-size: 9px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+}
+.sidebar-tabs {
+  display: flex; gap: 2px;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+}
+.sidebar-tab {
+  flex: 1;
+  padding: 6px 0;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 3px;
+  border: none;
+  background: none;
+  font-family: var(--font-ui);
+  transition: all 180ms var(--ease);
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.sidebar-tab:hover { color: var(--text); }
+.sidebar-tab.active { background: rgba(255,255,255,0.1); color: var(--text); }
+
+/* Sidebar tab content */
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px 10px 10px;
+}
+.sidebar-content::-webkit-scrollbar { width: 4px; }
+.sidebar-content::-webkit-scrollbar-track { background: transparent; }
+.sidebar-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Event feed items */
+.event-card {
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: background 180ms var(--ease);
+  cursor: default;
+}
+.event-card:hover {
+  background: rgba(255,255,255,0.06);
+}
+.event-card-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 5px;
+}
+.event-icon {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+.event-icon.airstrike { background: var(--orange-dim); color: var(--orange); }
+.event-icon.naval { background: var(--blue-dim); color: var(--blue); }
+.event-icon.cyber { background: var(--purple-dim); color: var(--purple); }
+.event-icon.economic { background: var(--yellow-dim); color: var(--yellow); }
+.event-icon.escalation { background: var(--red-dim); color: var(--red); }
+.event-icon.default { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+.event-timestamp {
+  font-size: 9px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+.event-category {
+  font-size: 8px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-left: auto;
+}
+.event-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-faint);
+  font-size: 11px;
+}
+.empty-state svg { margin-bottom: 8px; opacity: 0.3; }
+
+/* Charts tab — compact charts */
+.chart-section {
+  margin-bottom: 12px;
+}
+.chart-section-title {
+  font-size: 9px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 6px;
+  padding: 0 2px;
+}
+.chart-compact {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  height: 150px;
+  position: relative;
+}
+.chart-compact canvas { width: 100% !important; height: 100% !important; }
+
+/* Force status & missile inv in timeline tab */
+.info-panel {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.info-panel-header {
+  padding: 8px 10px;
+  font-size: 9px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+.info-panel-header:hover { background: rgba(255,255,255,0.03); }
+.info-panel-body {
+  padding: 10px;
+}
+.info-panel-body.collapsed { display: none; }
+
+/* ── Left-edge Map Controls ── */
+.map-controls {
+  position: fixed;
+  left: 12px;
+  bottom: calc(var(--timeline-h) + 70px);
+  z-index: 800;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.map-ctrl-btn {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 180ms var(--ease);
+}
+.map-ctrl-btn:first-child { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+.map-ctrl-btn:last-child { border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
+.map-ctrl-btn:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+.map-ctrl-btn.active { color: var(--accent); background: var(--accent-dim); }
+.map-ctrl-sep {
+  height: 6px;
+}
+
+/* ── Floating KPI Cards ── */
+.kpi-float-group {
+  position: fixed;
+  top: calc(var(--topnav-h) + 12px);
+  left: 12px;
+  z-index: 800;
+  display: flex; gap: 8px;
+  flex-wrap: wrap;
+  max-width: calc(100vw - var(--sidebar-w) - 40px);
+}
+.kpi-card {
+  background: var(--surface);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  min-width: 120px;
+  transition: border-color 300ms var(--ease);
+}
+.kpi-card:hover { border-color: var(--border-active); }
+.kpi-label {
+  font-size: 8px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-faint);
+  margin-bottom: 2px; white-space: nowrap;
+}
+.kpi-value {
+  font-family: var(--font-mono); font-size: 16px; font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums; line-height: 1.2;
+}
+.kpi-delta {
+  font-size: 9px; font-family: var(--font-mono); font-weight: 500;
+  margin-top: 1px;
+}
+.kpi-delta.up { color: var(--green); }
+.kpi-delta.down { color: var(--red); }
+.kpi-delta.neutral { color: var(--text-faint); }
+
+/* ── Bottom Timeline Slider ── */
+.bottom-timeline {
+  position: fixed;
+  bottom: 0; left: 0;
+  right: 0;
+  height: var(--timeline-h);
+  z-index: 1000;
+  background: var(--surface);
+  backdrop-filter: var(--blur);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 14px;
+  gap: 10px;
+}
+.timeline-play {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-dim);
+  border: 1px solid rgba(34,211,238,0.2);
+  border-radius: 50%;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 11px;
+  flex-shrink: 0;
+  transition: all 180ms var(--ease);
+}
+.timeline-play:hover { background: rgba(34,211,238,0.25); }
+.timeline-day-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 52px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.timeline-slider-wrap {
+  flex: 1;
+  display: flex; align-items: center;
+  position: relative;
+  margin-right: calc(var(--sidebar-w) + 0px);
+}
+.timeline-slider {
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none; appearance: none;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.timeline-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 6px rgba(34,211,238,0.4);
+}
+.timeline-slider::-moz-range-thumb {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--bg);
+}
+.timeline-max-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  min-width: 44px;
+  text-align: right;
+}
+.timeline-esc-label {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--red);
+  flex-shrink: 0;
+  max-width: 160px;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Floating Map Legend ── */
+.map-legend {
+  position: fixed;
+  bottom: calc(var(--timeline-h) + 12px);
+  left: 12px;
+  z-index: 800;
+  background: var(--surface);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-size: 10px;
+}
+.legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.legend-item:last-child { margin-bottom: 0; }
+.legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Floating Escalation Indicator ── */
+.esc-float {
+  position: fixed;
+  top: calc(var(--topnav-h) + 12px);
+  right: calc(var(--sidebar-w) + 14px);
+  z-index: 800;
+  background: var(--surface);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  min-width: 180px;
+}
+.esc-float-title {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 10px; font-weight: 600;
+}
+.esc-bar-track {
+  height: 5px; background: rgba(255,255,255,0.06);
+  border-radius: 3px; margin-top: 5px; overflow: hidden;
+}
+.esc-bar-fill {
+  height: 100%; border-radius: 3px; transition: width 600ms var(--ease);
+}
+.esc-name {
+  font-size: 9px; color: var(--text-muted); margin-top: 3px;
+  font-family: var(--font-mono);
+}
+
+/* ── Settings Panel (floating drawer) ── */
+.settings-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0,0,0,0.4);
+}
+.settings-overlay.active { display: block; }
+.settings-panel {
+  position: fixed;
+  top: var(--topnav-h);
+  right: var(--sidebar-w);
+  z-index: 2001;
+  width: 340px;
+  max-height: calc(100vh - var(--topnav-h) - var(--timeline-h) - 20px);
+  overflow-y: auto;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: 0 0 0 var(--radius);
+  padding: 16px;
+  display: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.settings-panel.active { display: block; }
+.settings-panel::-webkit-scrollbar { width: 4px; }
+.settings-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.settings-section {
+  margin-bottom: 14px;
+}
+.settings-section:last-child { margin-bottom: 0; }
+.settings-section-title {
+  font-size: 9px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-faint);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.control-group { margin-bottom: 8px; }
+.control-group:last-child { margin-bottom: 0; }
+.control-label {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 3px; font-size: 10px; color: var(--text-muted);
+}
+.control-value { font-family: var(--font-mono); font-weight: 600; color: var(--accent); font-size: 10px; }
+input[type="range"] {
+  width: 100%; height: 3px; -webkit-appearance: none; appearance: none;
+  background: rgba(255,255,255,0.08); border-radius: 2px; outline: none; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--accent); cursor: pointer; border: 2px solid var(--bg);
+}
+
+select {
+  width: 100%; padding: 6px 10px; background: rgba(255,255,255,0.06); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 11px;
+  font-family: var(--font-ui); cursor: pointer; outline: none;
+}
+select:focus { border-color: var(--accent); }
+
+/* Buttons */
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 7px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.06); color: var(--text); font-size: 11px; font-weight: 600;
+  font-family: var(--font-ui); cursor: pointer; transition: all 180ms var(--ease); width: 100%;
+}
+.btn:hover { background: rgba(255,255,255,0.1); border-color: var(--border-active); }
+.btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.1); }
+.btn.danger { background: var(--red-dim); color: var(--red); border-color: rgba(248,81,73,0.3); }
+.btn-row { display: flex; gap: 6px; }
+.btn-row .btn { flex: 1; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Missile inventory bars */
+.inv-row { margin-bottom: 5px; }
+.inv-row:last-child { margin-bottom: 0; }
+.inv-label { display: flex; justify-content: space-between; font-size: 9px; margin-bottom: 2px; }
+.inv-label span:first-child { color: var(--text-muted); }
+.inv-label span:last-child { font-family: var(--font-mono); font-weight: 600; }
+.inv-bar { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+.inv-bar-fill { height: 100%; border-radius: 2px; transition: width 400ms var(--ease); }
+
+/* Loading spinner */
+.loading { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 11px; }
+.spinner {
+  width: 12px; height: 12px; border: 2px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Monte Carlo Modal ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--surface-solid); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px; max-width: 800px; width: 90%;
+  max-height: 80vh; overflow-y: auto; position: relative;
+}
+.modal h2 { font-size: 15px; font-weight: 700; margin-bottom: 16px; font-family: var(--font-mono); }
+.modal-close {
+  position: absolute; top: 14px; right: 14px;
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: 18px; line-height: 1;
+}
+.modal-close:hover { color: var(--text); }
+.mc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.mc-stat {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px;
+}
+.mc-stat-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-faint); margin-bottom: 4px; }
+.mc-stat-value { font-family: var(--font-mono); font-size: 15px; font-weight: 700; }
+.mc-stat-range { font-size: 8px; color: var(--text-muted); font-family: var(--font-mono); margin-top: 2px; }
+.mc-dist { margin-top: 16px; }
+.mc-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.mc-bar-label { font-size: 10px; width: 150px; color: var(--text-muted); }
+.mc-bar { flex: 1; height: 14px; background: rgba(255,255,255,0.04); border-radius: 3px; overflow: hidden; }
+.mc-bar-fill { height: 100%; border-radius: 3px; transition: width 600ms var(--ease); }
+.mc-bar-count { font-family: var(--font-mono); font-size: 10px; width: 40px; text-align: right; }
+
+/* ── Leaflet Overrides ── */
+.leaflet-container { background: var(--bg) !important; }
+.leaflet-control-zoom { display: none !important; }
+.leaflet-control-attribution { display: none !important; }
+.leaflet-popup-content-wrapper {
+  background: var(--surface-solid) !important; color: var(--text) !important;
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--border) !important; box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+}
+.leaflet-popup-tip { background: var(--surface-solid) !important; }
+.leaflet-popup-content { margin: 10px !important; font-size: 11px !important; font-family: var(--font-ui) !important; }
+
+/* ── Footer attribution ── */
+.footer-attr {
+  position: fixed;
+  bottom: calc(var(--timeline-h) + 4px);
+  right: calc(var(--sidebar-w) + 12px);
+  z-index: 800;
+  font-size: 8px;
+}
+.footer-attr a {
+  color: var(--text-faint); text-decoration: none; opacity: 0.6;
+}
+.footer-attr a:hover { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  :root { --sidebar-w: 300px; }
+}
+@media (max-width: 900px) {
+  :root { --sidebar-w: 0px; }
+  .right-sidebar { display: none; }
+  .esc-float { right: 14px; }
+  .kpi-float-group { max-width: calc(100vw - 30px); }
+  .timeline-slider-wrap { margin-right: 0; }
+  .settings-panel { right: 0; }
+  .footer-attr { right: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════
+     MAP — Full viewport
+     ════════════════════════════════════════════════ -->
+<div id="map"></div>
+
+<!-- ════════════════════════════════════════════════
+     TOP NAVIGATION BAR
+     ════════════════════════════════════════════════ -->
+<nav class="topnav">
+  <div class="topnav-left">
+    <div class="topnav-logo">
+      <span class="live-badge">LIVE</span>
+      <span class="topnav-title">CENTCOM WAR GAME</span>
+    </div>
+  </div>
+  <div class="topnav-center" id="scenario-tabs">
+    <!-- Filled by JS -->
+  </div>
+  <div class="topnav-right">
+    <div class="nav-badge day">
+      <span class="dot"></span>
+      <span id="hdr-day">DAY 0</span>
+    </div>
+    <div class="nav-badge esc">
+      <span class="dot"></span>
+      <span id="hdr-escalation">DIPLOMATIC TENSIONS</span>
+    </div>
+    <button class="nav-btn" id="btn-theme" title="Toggle Light/Dark Theme" onclick="toggleTheme()">
+      <svg id="theme-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg id="theme-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <button class="nav-btn" id="btn-settings" title="Settings & Parameters" onclick="toggleSettings()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════
+     FLOATING KPI CARDS
+     ════════════════════════════════════════════════ -->
+<div class="kpi-float-group">
+  <div class="kpi-card">
+    <div class="kpi-label">Brent Oil</div>
+    <div class="kpi-value" id="kpi-oil" style="color:var(--yellow)">$81.00</div>
+    <div class="kpi-delta neutral" id="kpi-oil-delta">Baseline</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Hormuz Flow</div>
+    <div class="kpi-value" id="kpi-hormuz" style="color:var(--blue)">100%</div>
+    <div class="kpi-delta neutral" id="kpi-hormuz-delta">Normal</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">US Casualties</div>
+    <div class="kpi-value" id="kpi-us-cas" style="color:var(--blue)">0</div>
+    <div class="kpi-delta neutral" id="kpi-us-cas-delta">—</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Iran Casualties</div>
+    <div class="kpi-value" id="kpi-iran-cas" style="color:var(--red)">0</div>
+    <div class="kpi-delta neutral" id="kpi-iran-cas-delta">—</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">US Cost ($B)</div>
+    <div class="kpi-value" id="kpi-cost" style="color:var(--orange)">$0.00</div>
+    <div class="kpi-delta neutral" id="kpi-cost-delta">—</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     FLOATING ESCALATION INDICATOR
+     ════════════════════════════════════════════════ -->
+<div class="esc-float">
+  <div class="esc-float-title">
+    <span>Escalation Level</span>
+    <span id="esc-label" style="color:var(--red);font-family:var(--font-mono);font-weight:600;font-size:10px">0 / 7</span>
+  </div>
+  <div class="esc-bar-track">
+    <div class="esc-bar-fill" id="esc-bar" style="width:0%;background:var(--green)"></div>
+  </div>
+  <div class="esc-name" id="esc-name">Diplomatic Tensions</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     LEFT-EDGE MAP CONTROLS
+     ════════════════════════════════════════════════ -->
+<div class="map-controls">
+  <button class="map-ctrl-btn" title="Toggle layers" onclick="toggleLayers()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+  </button>
+  <button class="map-ctrl-btn" id="btn-sat" title="Satellite view" onclick="toggleSatellite()">SAT</button>
+  <div class="map-ctrl-sep"></div>
+  <button class="map-ctrl-btn" title="Zoom in" onclick="map.zoomIn()">+</button>
+  <button class="map-ctrl-btn" title="Zoom out" onclick="map.zoomOut()">−</button>
+  <div class="map-ctrl-sep"></div>
+  <button class="map-ctrl-btn" title="Measure" style="font-size:11px">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg>
+  </button>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     MAP LEGEND (floating bottom-left)
+     ════════════════════════════════════════════════ -->
+<div class="map-legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> US Forces</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Iran Forces</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Proxy Forces</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> Nuclear Sites</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Oil Infrastructure</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     RIGHT SIDEBAR
+     ════════════════════════════════════════════════ -->
+<aside class="right-sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-title-row">
+      <div class="sidebar-title">Simulation Live</div>
+      <div class="sidebar-updated" id="sidebar-updated">Ready</div>
+    </div>
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" data-tab="events" onclick="switchTab('events')">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        Events
+      </button>
+      <button class="sidebar-tab" data-tab="timeline" onclick="switchTab('timeline')">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Intel
+      </button>
+      <button class="sidebar-tab" data-tab="charts" onclick="switchTab('charts')">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Charts
+      </button>
+      <button class="sidebar-tab" data-tab="gametree" onclick="switchTab('gametree')">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="5" y2="16"/><line x1="12" y1="8" x2="19" y2="16"/></svg>
+        Strategy
+      </button>
+    </div>
+  </div>
+  <div class="sidebar-content">
+    <!-- Events Tab -->
+    <div class="tab-panel active" id="tab-events">
+      <div class="empty-state" id="events-empty">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+        <div>Run simulation to see live events</div>
+        <div style="margin-top:4px;color:var(--accent);cursor:pointer" onclick="toggleSettings()">Open settings to begin →</div>
+      </div>
+      <div id="event-log"></div>
+      <div id="event-count" style="display:none"></div>
+    </div>
+
+    <!-- Intel Tab (Force Status + Missiles) -->
+    <div class="tab-panel" id="tab-timeline">
+      <div class="info-panel">
+        <div class="info-panel-header" onclick="togglePanel('missile-body')">
+          Missile Inventory
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="info-panel-body" id="missile-body">
+          <div id="missile-inventory">
+            <div style="color:var(--text-faint);font-size:10px">Run simulation to view</div>
+          </div>
+        </div>
+      </div>
+      <div class="info-panel">
+        <div class="info-panel-header" onclick="togglePanel('force-body')">
+          Force Status
+          <span id="force-count" style="font-weight:400;color:var(--text-faint);font-size:9px"></span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="info-panel-body" id="force-body">
+          <div id="force-status">
+            <div style="color:var(--text-faint);font-size:10px">Initialize simulation to view</div>
+          </div>
+        </div>
+      </div>
+      <!-- Additional KPIs that didn't fit in floating cards -->
+      <div class="info-panel">
+        <div class="info-panel-header">Additional Metrics</div>
+        <div class="info-panel-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div>
+              <div style="font-size:8px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px">Bab al-Mandeb</div>
+              <div id="kpi-bam" style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--accent)">100%</div>
+              <div class="kpi-delta neutral" id="kpi-bam-delta" style="font-size:8px">Normal</div>
+            </div>
+            <div>
+              <div style="font-size:8px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px">Mines Active</div>
+              <div id="kpi-mines" style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--purple)">0</div>
+              <div class="kpi-delta neutral" id="kpi-mines-delta" style="font-size:8px">—</div>
+            </div>
+            <div>
+              <div style="font-size:8px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px">War Premium</div>
+              <div id="kpi-wrp" style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--yellow)">1.0%</div>
+              <div class="kpi-delta neutral" id="kpi-wrp-delta" style="font-size:8px">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Tree / Strategy Tab -->
+    <div class="tab-panel" id="tab-gametree">
+      <div class="info-panel">
+        <div class="info-panel-header">Current Strategic Decision</div>
+        <div class="info-panel-body">
+          <div id="gt-decision-matrix" style="font-family:var(--font-mono);font-size:10px">
+            <div style="color:var(--text-faint);font-size:10px">Run simulation to view</div>
+          </div>
+        </div>
+      </div>
+      <div class="info-panel">
+        <div class="info-panel-header">
+          Diplomatic Momentum
+          <span id="gt-diplo-label" style="font-weight:400;color:var(--text-faint);font-size:9px;margin-left:auto">0%</span>
+        </div>
+        <div class="info-panel-body">
+          <div style="background:rgba(255,255,255,0.05);border-radius:4px;height:18px;overflow:hidden;position:relative">
+            <div id="gt-diplo-bar" style="height:100%;width:0%;border-radius:4px;transition:width 300ms ease,background 300ms ease;background:#a371f7"></div>
+            <div id="gt-diplo-text" style="position:absolute;top:0;left:0;right:0;text-align:center;font-size:9px;line-height:18px;color:var(--text);font-weight:600"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <span id="gt-mediation-label" style="font-size:8px;color:var(--text-faint)">No mediation</span>
+            <span id="gt-posture-label" style="font-size:8px;color:var(--text-faint)">Normal posture</span>
+          </div>
+        </div>
+      </div>
+      <div class="info-panel">
+        <div class="info-panel-header">
+          Ceasefire Probability
+          <span id="gt-ceasefire-label" style="font-weight:400;color:var(--text-faint);font-size:9px;margin-left:auto">0%</span>
+        </div>
+        <div class="info-panel-body">
+          <div style="background:rgba(255,255,255,0.05);border-radius:4px;height:18px;overflow:hidden;position:relative">
+            <div id="gt-ceasefire-bar" style="height:100%;width:0%;border-radius:4px;transition:width 300ms ease,background 300ms ease;background:var(--green)"></div>
+            <div id="gt-ceasefire-text" style="position:absolute;top:0;left:0;right:0;text-align:center;font-size:9px;line-height:18px;color:var(--text);font-weight:600"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <span style="font-size:8px;color:var(--text-faint)">Active Combat</span>
+            <span id="gt-subsiding-label" style="font-size:8px;color:var(--text-faint)">0 peaceful days</span>
+            <span style="font-size:8px;color:var(--text-faint)">Ceasefire</span>
+          </div>
+        </div>
+      </div>
+      <div class="info-panel">
+        <div class="info-panel-header">Action History</div>
+        <div class="info-panel-body">
+          <div id="gt-action-history" style="max-height:120px;overflow-y:auto;font-size:9px;font-family:var(--font-mono)"></div>
+        </div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-section-title">Strategic Payoffs Over Time</div>
+        <div class="chart-compact"><canvas id="chart-payoffs"></canvas></div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-section-title">Ceasefire & Diplomatic Momentum Over Time</div>
+        <div class="chart-compact"><canvas id="chart-ceasefire"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Charts Tab -->
+    <div class="tab-panel" id="tab-charts">
+      <div class="chart-section">
+        <div class="chart-section-title">Force Strength Over Time</div>
+        <div class="chart-compact"><canvas id="chart-force"></canvas></div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-section-title">Oil Price & Chokepoint Flow</div>
+        <div class="chart-compact"><canvas id="chart-econ"></canvas></div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-section-title">Cumulative Casualties</div>
+        <div class="chart-compact"><canvas id="chart-casualties"></canvas></div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-section-title">Missile Inventory Depletion</div>
+        <div class="chart-compact"><canvas id="chart-missiles"></canvas></div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ════════════════════════════════════════════════
+     BOTTOM TIMELINE SLIDER
+     ════════════════════════════════════════════════ -->
+<div class="bottom-timeline">
+  <button class="timeline-play" id="btn-play" onclick="togglePlayback()" title="Play/Pause">
+    <svg id="play-icon" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    <svg id="pause-icon" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+  </button>
+  <div class="timeline-day-label" id="timeline-day">DAY 0</div>
+  <div class="timeline-slider-wrap">
+    <input type="range" class="timeline-slider" id="timeline-slider" min="0" max="0" value="0" step="1">
+  </div>
+  <div class="timeline-max-label" id="timeline-max">/ 0</div>
+  <div class="timeline-esc-label" id="timeline-esc">Diplomatic Tensions</div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SETTINGS PANEL (gear icon drawer)
+     ════════════════════════════════════════════════ -->
+<div class="settings-overlay" id="settings-overlay" onclick="toggleSettings()"></div>
+<div class="settings-panel" id="settings-panel">
+  <div class="settings-section">
+    <div class="settings-section-title">Scenario</div>
+    <select id="scenario-select">
+      <option value="custom">Custom Parameters</option>
+      <option value="epic_fury_day7" selected>⚔️ Op. Epic Fury Day 7 (Current)</option>
+      <option value="epic_fury_day5">⚔️ Op. Epic Fury Day 5</option>
+      <option value="epic_fury_day1">⚔️ Op. Epic Fury Day 1</option>
+      <option value="pre_war">Pre-War Baseline</option>
+      <option value="what_if_ground_invasion">What-If: Ground Invasion</option>
+      <option value="limited">Limited Naval Confrontation</option>
+      <option value="escalatory">Rapid Escalation</option>
+      <option value="proxy">Proxy War Focus</option>
+      <option value="worst">Worst Case</option>
+    </select>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Parameters</div>
+    <div class="control-group">
+      <div class="control-label">
+        <span>Escalation Propensity</span>
+        <span class="control-value" id="val-escalation">0.50</span>
+      </div>
+      <input type="range" id="param-escalation" min="0" max="1" step="0.05" value="0.5">
+    </div>
+    <div class="control-group">
+      <div class="control-label">
+        <span>US Force Multiplier</span>
+        <span class="control-value" id="val-us-force">1.00</span>
+      </div>
+      <input type="range" id="param-us-force" min="0.5" max="2.0" step="0.1" value="1.0">
+    </div>
+    <div class="control-group">
+      <div class="control-label">
+        <span>Iran Force Multiplier</span>
+        <span class="control-value" id="val-iran-force">1.00</span>
+      </div>
+      <input type="range" id="param-iran-force" min="0.5" max="2.0" step="0.1" value="1.0">
+    </div>
+    <div class="control-group">
+      <div class="control-label">
+        <span>Proxy Effectiveness</span>
+        <span class="control-value" id="val-proxy">0.70</span>
+      </div>
+      <input type="range" id="param-proxy" min="0" max="1" step="0.05" value="0.7">
+    </div>
+    <div class="control-group">
+      <div class="control-label">
+        <span>Cyber Intensity</span>
+        <span class="control-value" id="val-cyber">0.50</span>
+      </div>
+      <input type="range" id="param-cyber" min="0" max="1" step="0.05" value="0.5">
+    </div>
+    <div class="control-group">
+      <div class="control-label">
+        <span>Iran A2/AD Factor</span>
+        <span class="control-value" id="val-asymmetric">1.30</span>
+      </div>
+      <input type="range" id="param-asymmetric" min="0.1" max="2.0" step="0.1" value="1.3">
+    </div>
+    <div class="control-group">
+      <div class="control-label">
+        <span>US Tech Advantage</span>
+        <span class="control-value" id="val-tech">1.50</span>
+      </div>
+      <input type="range" id="param-tech" min="1.0" max="2.5" step="0.1" value="1.5">
+    </div>
+    <div class="control-group">
+      <div class="control-label">
+        <span>Nuclear Threshold</span>
+        <span class="control-value" id="val-nuke">0.05</span>
+      </div>
+      <input type="range" id="param-nuke" min="0" max="0.3" step="0.01" value="0.05">
+    </div>
+    <div class="control-group">
+      <div class="control-label">
+        <span>Simulation Days</span>
+        <span class="control-value" id="val-days">90</span>
+      </div>
+      <input type="range" id="param-days" min="7" max="365" step="1" value="90">
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Simulation</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <button class="btn primary" id="btn-run" onclick="runSim()">Run Full Simulation</button>
+      <div class="btn-row">
+        <button class="btn" id="btn-step" onclick="stepSim()">Step +1</button>
+        <button class="btn" id="btn-step5" onclick="stepSimN(5)">+5 Days</button>
+      </div>
+      <button class="btn" id="btn-reset" onclick="resetSim()">Reset</button>
+      <button class="btn" style="color:var(--purple)" id="btn-mc" onclick="runMonteCarlo()">
+        Monte Carlo (100 runs)
+      </button>
+      <button class="btn" style="color:var(--orange)" id="btn-sens" onclick="openSensitivityModal()">
+        Sensitivity
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     MONTE CARLO MODAL
+     ════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="mc-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('mc-modal').classList.remove('active')">&times;</button>
+    <h2 style="color:var(--purple)">Monte Carlo Analysis</h2>
+    <div id="mc-content"><div class="loading"><div class="spinner"></div> Running 100 simulations...</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     FOOTER ATTRIBUTION
+     ════════════════════════════════════════════════ -->
+<div class="footer-attr">
+  <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">Created with Perplexity Computer</a>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+<\!-- INSERT_JS -->
+</script>
+</body>
+</html>
