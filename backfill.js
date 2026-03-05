@@ -1,0 +1,366 @@
+#!/usr/bin/env node
+/**
+ * CENTCOM War Game — OSINT Backfill Script
+ *
+ * Queries Perplexity MCP for day-by-day conflict data from Operation Epic Fury
+ * and generates an updated CONFLICT_TIMELINE JSON for the simulation.
+ *
+ * Usage:
+ *   node backfill.js                    # Run full backfill (all days)
+ *   node backfill.js --day 3            # Backfill specific day only
+ *   node backfill.js --dry-run          # Query but don't patch index.html
+ *   node backfill.js --patch            # Apply timeline to index.html
+ *
+ * Requirements:
+ *   - Perplexity API key in PERPLEXITY_API_KEY env var
+ *   - Or run via Claude Code with Perplexity MCP available
+ *
+ * Output:
+ *   - conflict_timeline.json            # Structured day-by-day data
+ *   - index.html (patched, if --patch)  # Updated simulation file
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+// ── Configuration ──
+const CONFIG = {
+  conflict_start: '2026-02-28',
+  operation_name: 'Operation Epic Fury',
+  index_path: path.join(__dirname, 'index.html'),
+  timeline_path: path.join(__dirname, 'conflict_timeline.json'),
+
+  // Perplexity API (when running standalone, not via Claude Code MCP)
+  api_key: process.env.PERPLEXITY_API_KEY || null,
+  api_url: 'https://api.perplexity.ai/chat/completions',
+  model: 'sonar',
+
+  // Data categories to query per day
+  categories: [
+    {
+      id: 'military_ops',
+      query_template: 'Operation Epic Fury military operations strikes targets DATE_PLACEHOLDER CENTCOM update results',
+      fields: ['strikes_count', 'targets_hit', 'sorties', 'key_operations']
+    },
+    {
+      id: 'casualties',
+      query_template: 'US military casualties killed wounded Iran military casualties DATE_PLACEHOLDER Operation Epic Fury',
+      fields: ['us_kia', 'us_wia', 'iran_military_killed_est', 'civilian_casualties_est']
+    },
+    {
+      id: 'naval',
+      query_template: 'Iran navy ships destroyed sunk damaged US naval operations Strait of Hormuz DATE_PLACEHOLDER',
+      fields: ['iran_ships_destroyed', 'us_ships_damaged', 'hormuz_status', 'mines_detected']
+    },
+    {
+      id: 'missiles',
+      query_template: 'Iran ballistic missile launches retaliation Patriot THAAD intercept rate DATE_PLACEHOLDER',
+      fields: ['iran_missiles_fired', 'intercepted', 'leakers', 'damage_from_missiles']
+    },
+    {
+      id: 'air',
+      query_template: 'Iran air force aircraft destroyed air defense IADS neutralized DATE_PLACEHOLDER Epic Fury',
+      fields: ['iran_aircraft_destroyed', 'iads_sites_neutralized', 'us_aircraft_lost', 'air_superiority_pct']
+    },
+    {
+      id: 'economic',
+      query_template: 'Brent crude oil price Strait of Hormuz shipping traffic DATE_PLACEHOLDER Iran war economic impact',
+      fields: ['brent_oil_usd', 'wti_oil_usd', 'hormuz_flow_pct', 'shipping_disruption']
+    },
+    {
+      id: 'proxy',
+      query_template: 'Hezbollah rockets Israel Houthi Red Sea attacks Iraqi militia DATE_PLACEHOLDER proxy war',
+      fields: ['hezbollah_rockets_fired', 'houthi_attacks', 'iraqi_militia_attacks', 'proxy_casualties']
+    },
+    {
+      id: 'cyber_diplomatic',
+      query_template: 'Iran cyber attacks US infrastructure diplomatic efforts ceasefire UN DATE_PLACEHOLDER',
+      fields: ['cyber_incidents', 'diplomatic_developments', 'un_action', 'ceasefire_talks']
+    }
+  ]
+};
+
+// ── Perplexity API Client ──
+async function queryPerplexity(query) {
+  if (!CONFIG.api_key) {
+    console.error('ERROR: PERPLEXITY_API_KEY not set.');
+    console.error('Set it via: export PERPLEXITY_API_KEY=your_key');
+    console.error('Or run this script through Claude Code with Perplexity MCP.');
+    process.exit(1);
+  }
+
+  const response = await fetch(CONFIG.api_url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${CONFIG.api_key}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: CONFIG.model,
+      messages: [
+        {
+          role: 'system',
+          content: `You are an OSINT analyst extracting structured data about Operation Epic Fury (US-Iran conflict, Feb 2026).
+Return ONLY valid JSON with the requested fields. Use null for unknown values. Use numbers not strings for numeric fields.
+Be precise — cite specific numbers from CENTCOM statements, news reports, and defense sources.`
+        },
+        {
+          role: 'user',
+          content: query
+        }
+      ],
+      temperature: 0.1,
+      max_tokens: 1500,
+    })
+  });
+
+  const data = await response.json();
+  if (data.error) {
+    console.error('Perplexity API error:', data.error);
+    return null;
+  }
+  return data.choices?.[0]?.message?.content || null;
+}
+
+// ── Date Utilities ──
+function getConflictDays(upToDate) {
+  const start = new Date(CONFIG.conflict_start);
+  const end = upToDate ? new Date(upToDate) : new Date();
+  const days = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    days.push({
+      date: d.toISOString().split('T')[0],
+      day_number: Math.floor((d - start) / 86400000) + 1,
+    });
+  }
+  return days;
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+// ── Backfill a Single Day ──
+async function backfillDay(dayInfo) {
+  const { date, day_number } = dayInfo;
+  const dateLabel = formatDate(date);
+  console.log(`\n--- Day ${day_number} (${dateLabel}) ---`);
+
+  const dayData = {
+    date: date,
+    day_number: day_number,
+    date_label: dateLabel,
+    sources: [],
+    data: {}
+  };
+
+  for (const cat of CONFIG.categories) {
+    const query = cat.query_template.replace('DATE_PLACEHOLDER', `${dateLabel} ${date}`);
+
+    const structuredQuery = `For ${dateLabel} (Day ${day_number} of Operation Epic Fury), extract these fields as JSON:
+${JSON.stringify(cat.fields)}
+
+Query context: ${query}
+
+Return JSON object with exactly these keys. Use null for unknown/unreported values. Use numbers for numeric fields.
+Include a "sources" array with URLs or source names you referenced.
+Include a "confidence" field (0-1) indicating data reliability.`;
+
+    console.log(`  Querying: ${cat.id}...`);
+    const raw = await queryPerplexity(structuredQuery);
+
+    if (raw) {
+      try {
+        // Extract JSON from response (may have markdown wrapping)
+        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          dayData.data[cat.id] = parsed;
+          if (parsed.sources) {
+            dayData.sources.push(...parsed.sources);
+            delete parsed.sources;
+          }
+          console.log(`    OK:`, JSON.stringify(parsed).substring(0, 120));
+        }
+      } catch (e) {
+        console.log(`    Parse error: ${e.message}`);
+        dayData.data[cat.id] = { _raw: raw.substring(0, 500), _error: e.message };
+      }
+    }
+
+    // Rate limit courtesy
+    await new Promise(r => setTimeout(r, 500));
+  }
+
+  return dayData;
+}
+
+// ── Build Aggregated Timeline ──
+function buildTimeline(dayResults) {
+  return {
+    _metadata: {
+      title: 'Operation Epic Fury — Day-by-Day OSINT Timeline',
+      generated: new Date().toISOString(),
+      conflict_start: CONFIG.conflict_start,
+      days_covered: dayResults.length,
+      data_source: 'Perplexity AI (OSINT aggregation)',
+      note: 'Auto-generated backfill. Values marked null are unconfirmed. Verify against primary sources.',
+    },
+    days: dayResults
+  };
+}
+
+// ── Patch index.html with Timeline Data ──
+function patchIndexHtml(timeline) {
+  const html = fs.readFileSync(CONFIG.index_path, 'utf8');
+
+  const timelineJson = JSON.stringify(timeline);
+  const constDecl = `const CONFLICT_TIMELINE = ${timelineJson};`;
+
+  // Check if CONFLICT_TIMELINE already exists
+  if (html.includes('const CONFLICT_TIMELINE')) {
+    // Replace existing
+    const patched = html.replace(
+      /const CONFLICT_TIMELINE = \{.*?\};/s,
+      constDecl
+    );
+    fs.writeFileSync(CONFIG.index_path, patched);
+    console.log('\nPatched existing CONFLICT_TIMELINE in index.html');
+  } else {
+    // Insert after ECON_BACKFILL
+    const insertPoint = html.indexOf('const ECON_BACKFILL');
+    if (insertPoint === -1) {
+      console.error('Could not find ECON_BACKFILL in index.html');
+      return false;
+    }
+    // Find the end of the ECON_BACKFILL line (next semicolon + newline)
+    const lineEnd = html.indexOf(';\n', insertPoint);
+    if (lineEnd === -1) {
+      console.error('Could not find end of ECON_BACKFILL declaration');
+      return false;
+    }
+    const patched = html.substring(0, lineEnd + 2) + constDecl + '\n' + html.substring(lineEnd + 2);
+    fs.writeFileSync(CONFIG.index_path, patched);
+    console.log('\nInserted CONFLICT_TIMELINE after ECON_BACKFILL in index.html');
+  }
+
+  return true;
+}
+
+// ── Generate Claude Code MCP Version ──
+// This generates prompts that can be run via Claude Code's Perplexity MCP
+function generateMcpPrompts() {
+  const days = getConflictDays();
+  console.log('\n=== Claude Code MCP Prompts ===');
+  console.log('Run these via mcp__perplexity-code__perplexity_execute:\n');
+
+  for (const day of days) {
+    const dateLabel = formatDate(day.date);
+    console.log(`# Day ${day.day_number} (${dateLabel})`);
+    console.log(`perplexity.research("""
+Operation Epic Fury Day ${day.day_number} (${dateLabel}):
+Extract structured OSINT data as JSON with these sections:
+- military_ops: {strikes_count, targets_hit, sorties, key_operations}
+- casualties: {us_kia, us_wia, iran_military_killed_est, civilian_casualties_est}
+- naval: {iran_ships_destroyed, us_ships_damaged, hormuz_status, mines_detected}
+- missiles: {iran_missiles_fired, intercepted, leakers, damage_from_missiles}
+- air: {iran_aircraft_destroyed, iads_sites_neutralized, us_aircraft_lost, air_superiority_pct}
+- economic: {brent_oil_usd, wti_oil_usd, hormuz_flow_pct, shipping_disruption}
+- proxy: {hezbollah_rockets_fired, houthi_attacks, iraqi_militia_attacks}
+- escalation: {level_description, diplomatic_developments}
+Use CENTCOM statements, Reuters, AP, defense news. Return null for unknown values.
+""")\n`);
+  }
+}
+
+// ── Main ──
+async function main() {
+  const args = process.argv.slice(2);
+  const dryRun = args.includes('--dry-run');
+  const patch = args.includes('--patch');
+  const mcpMode = args.includes('--mcp-prompts');
+  const specificDay = args.indexOf('--day') !== -1 ? parseInt(args[args.indexOf('--day') + 1]) : null;
+
+  console.log('CENTCOM War Game — OSINT Backfill');
+  console.log('=================================');
+  console.log(`Conflict start: ${CONFIG.conflict_start}`);
+  console.log(`Operation: ${CONFIG.operation_name}`);
+  console.log(`Mode: ${dryRun ? 'dry-run' : patch ? 'patch' : 'generate JSON'}`);
+
+  if (mcpMode) {
+    generateMcpPrompts();
+    return;
+  }
+
+  const allDays = getConflictDays();
+  const days = specificDay ? allDays.filter(d => d.day_number === specificDay) : allDays;
+
+  console.log(`Days to backfill: ${days.length} (Day ${days[0]?.day_number} to Day ${days[days.length-1]?.day_number})`);
+
+  // Load existing timeline if any
+  let existingTimeline = null;
+  if (fs.existsSync(CONFIG.timeline_path)) {
+    existingTimeline = JSON.parse(fs.readFileSync(CONFIG.timeline_path, 'utf8'));
+    console.log(`Existing timeline found: ${existingTimeline.days?.length || 0} days`);
+  }
+
+  // Backfill each day
+  const results = [];
+  for (const day of days) {
+    // Skip if already in existing timeline (unless specific day requested)
+    if (!specificDay && existingTimeline) {
+      const existing = existingTimeline.days?.find(d => d.date === day.date);
+      if (existing && Object.keys(existing.data).length >= 6) {
+        console.log(`\n--- Day ${day.day_number} (${day.date}) --- CACHED, skipping`);
+        results.push(existing);
+        continue;
+      }
+    }
+
+    const dayData = await backfillDay(day);
+    results.push(dayData);
+  }
+
+  // Merge with existing data
+  if (existingTimeline && !specificDay) {
+    for (const existing of existingTimeline.days || []) {
+      if (!results.find(r => r.date === existing.date)) {
+        results.push(existing);
+      }
+    }
+  }
+
+  // Sort by date
+  results.sort((a, b) => a.date.localeCompare(b.date));
+
+  // Build timeline
+  const timeline = buildTimeline(results);
+
+  // Save JSON
+  fs.writeFileSync(CONFIG.timeline_path, JSON.stringify(timeline, null, 2));
+  console.log(`\nSaved: ${CONFIG.timeline_path}`);
+  console.log(`  Days: ${timeline.days.length}`);
+  console.log(`  Size: ${Math.round(fs.statSync(CONFIG.timeline_path).size / 1024)}KB`);
+
+  // Patch index.html if requested
+  if (patch && !dryRun) {
+    patchIndexHtml(timeline);
+  }
+
+  // Summary
+  console.log('\n=== Backfill Summary ===');
+  for (const day of timeline.days) {
+    const cats = Object.keys(day.data || {});
+    const filled = cats.filter(c => {
+      const d = day.data[c];
+      return d && !d._error && Object.values(d).some(v => v !== null);
+    });
+    console.log(`  Day ${day.day_number} (${day.date}): ${filled.length}/${cats.length} categories filled`);
+  }
+}
+
+main().catch(e => {
+  console.error('Fatal error:', e);
+  process.exit(1);
+});
