@@ -305,7 +305,7 @@ function getExistingDayNumbers() {
   // Match day number keys inside the days object: "N:" or N:
   const daysMatch = block.match(/days\s*:\s*\{([\s\S]*)\}\s*$/);
   if (!daysMatch) return [];
-  const dayKeys = [...daysMatch[1].matchAll(/(?:^|[,{]\s*)"?(\d+)"?\s*:/gm)];
+  const dayKeys = [...daysMatch[1].matchAll(/^\s*"?(\d+)"?\s*:/gm)];
   return dayKeys.map(m => parseInt(m[1]));
 }
 
@@ -508,7 +508,9 @@ function patchDiplomaticEvents(dayNumber, dayEntry) {
   let jsonText = objText
     .replace(/\/\/[^\n]*/g, '')                           // strip line comments
     .replace(/,(\s*[}\]])/g, '$1')                        // remove trailing commas
-    .replace(/([{,]\s*)([a-zA-Z_]\w*)(\s*:)/g, '$1"$2"$3'); // quote unquoted keys
+    .replace(/([{,]\s*)([a-zA-Z_]\w*)(\s*:)/g, '$1"$2"$3') // quote unquoted alpha keys
+    .replace(/^(\s+)(\d+)(\s*:)/gm, '$1"$2"$3')             // quote unquoted numeric keys (line-anchored)
+    .replace(/'([^'\\]*(\\.[^'\\]*)*)'/g, (m, inner) => '"' + inner.replace(/"/g, '\\"') + '"'); // single->double quotes, escape inner "s
 
   let diplo;
   try {
