@@ -9,7 +9,7 @@
 - **Last Updated**: 2026-03-06
 - **Primary Instance**: Mac Mini (launchd daily calibration at 03:00 UTC)
 - **Fallback**: GitHub Actions (07:00 UTC)
-- **Key Features**: Shooter-target SEAD model, asymmetric dominance, naval capacity gating, 26 unit tests, sensitivity analysis, historical validation
+- **Key Features**: Shooter-target SEAD model, asymmetric dominance, naval capacity gating, 26 unit tests, sensitivity analysis, historical validation, nonlinear war weariness, amplified economic pressure, coalition pressure index, congressional authorization clock
 
 ## Architecture (Post-Session 3)
 
@@ -40,6 +40,44 @@ tests/        7 files - combat, game-tree, escalation, monte-carlo, integration,
 1. **OSINT Corridor (Days 1-6)**: Real events drive actions + params calibrated to reality
 2. **Active Extrapolation (Days 7-14)**: Trends continue with 8%/day decay
 3. **Stabilization (Days 15+)**: Parameters converge, model runs procedurally
+
+---
+
+## Session 5 Summary (2026-03-06)
+
+### Goals
+- Add political pressure model to game-theoretic engine (plan from previous session)
+- Make wars end due to political constraints, not just military outcomes
+
+### Decisions Made
+- **Nonlinear shocks over continuous functions**: Step-function casualty/civilian thresholds model real public opinion better than smooth curves. The "CNN effect" creates discrete jumps.
+- **Economic cap raised 0.12 -> 0.8**: Iraq War cost $2T; old model couldn't represent economic pressure as a primary withdrawal driver.
+- **Coalition pressure as accumulating state**: Not a parameter but a growing pressure variable with daily base rate + event spikes. Models allied government fatigue.
+- **War Powers 60-day clock**: Congressional authorization lapses at day 60 if escalation < 6. Real constraint that historically limits US operations.
+- **Feature branch workflow**: Created feat/political-pressure-model, merged with --no-ff.
+
+### Implementation
+- All edits on Mac Mini via SSH (macmini-cmd)
+- Used Python scripts uploaded via heredoc for multi-line replacements (sed insufficient)
+- Headless testing via Node.js Function constructor (vm.createContext failed on large OSINT data)
+- Architecture diagram updated with D2 (dark theme 200, dagre layout)
+
+### Commits
+- `8a7608a` - feat: add political pressure model to game-theoretic engine
+- `6644d9a` - Merge feat/political-pressure-model
+
+### Challenges & Solutions
+1. **SSH sed escaping**: Shell interpreting `[Politics]` brackets in day log strings. Solved by uploading Python patch scripts via heredoc.
+2. **Headless test vm.createContext**: Failed silently on large embedded OSINT JSON objects. Fixed by using `new Function()` constructor instead.
+3. **D2 auto-layout with feedback arrows**: Cross-connections (oil->political, combat->political) caused chaotic layout. Solved by linearizing the flow and using annotation box for feedback description.
+4. **Snapshot field names**: Test assumed `oil_price_bbl` but snapshot uses `oil_price`. Found via key inspection.
+
+### Next Steps
+- [ ] Tune coalition pressure ramp rate (saturates at 1.0 by day 20 in high-intensity scenarios)
+- [ ] Add OSINT override for coalition_pressure (backfill.js already has the field)
+- [ ] Wire real coalition events (UK parliament debates, congressional votes) into DIPLOMATIC_EVENTS
+- [ ] Further reduce US ship losses (median 4, target 0-1)
+- [ ] Proxy war calibration (Hezbollah rocket counts, Houthi attacks)
 
 ---
 

@@ -11,6 +11,44 @@
 | Phase 4: Combat Model Calibration | Complete | 2026-03-06 | 100% |
 | Phase 4b: Template Script Fix | Complete | 2026-03-06 | 100% |
 | Phase 5: Mac Mini Migration | Complete | 2026-03-06 | 100% |
+| Phase 6: Political Pressure Model | Complete | 2026-03-06 | 100% |
+
+
+
+## Phase 6: Political Pressure Model (2026-03-06) - COMPLETE
+
+**Duration:** ~1.5 hours
+**Status:** 100% - All 4 features implemented, tested, deployed
+**Commits:** `8a7608a` (feat), `6644d9a` (merge)
+**Branch:** feat/political-pressure-model -> main
+
+### Problem
+Game-theoretic model was too militarily determined. Linear war weariness (day * 0.005), economic pressure capped at 0.12, and no coalition politics meant simulations produced outcomes driven by force ratios, underweighting political factors that historically drive de-escalation.
+
+### Features Implemented
+1. **Nonlinear War Weariness** -- Replaced linear model with compound shocks: casualty thresholds (50/100 US, 200/500 civilian), oil price >$120. Models "CNN effect" of focusing events.
+2. **Amplified Economic Pressure** -- 3-factor model: direct cost + oil price spike + Hormuz closure. Max raised from 0.12 to 0.8. Creates Hormuz->oil->economy feedback loop.
+3. **Coalition Pressure Index** -- New state variable (0-1) with daily accumulation (+0.008), event spikes (casualty/civilian/oil), War Powers Resolution 60-day congressional authorization clock. Day log events at 0.3/0.6 thresholds.
+4. **UI Indicator Bars** -- War weariness, economic pressure, coalition pressure bars + congressional authorization status in game tree panel.
+
+### Files Modified
+- `index.html` -- 122 insertions, 6 deletions (constants, state, payoffs, UI)
+- `backfill.js` -- 1 insertion (coalition_pressure in calibration)
+
+### Validation Results (Headless Node.js, 65-day Epic Fury Day 1)
+- War weariness: Both casualty shock thresholds triggered (US cas=214 by day 10)
+- Economic pressure: 0.229 at day 10 (exceeds old 0.12 cap), driven by Hormuz closure
+- Coalition pressure: Reaches 1.0 by day 20 (fast ramp from casualty spikes)
+- Congressional auth: Correctly lapses at day 60 (escalation=0)
+- Political events: 2 day log events fire (coalition mounting day 7, congress lapsed day 60)
+- Behavioral shift: 82% negotiate across 65 days, 100% negotiate/withdraw days 30-60
+- Ceasefire probability crosses 50% by day 25
+
+### Diagram
+- Updated architecture diagram: `2026-03-06_wargame_algorithms_v2.d2` (D2, dark theme)
+- Added "Political Pressure Engine [NEW]" section with 3 sub-components
+
+---
 
 ## Phase 5: Mac Mini Migration (2026-03-06) - COMPLETE
 
