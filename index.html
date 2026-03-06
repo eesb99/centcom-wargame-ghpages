@@ -997,6 +997,41 @@ select:focus { border-color: var(--accent); }
         </div>
       </div>
       <div class="info-panel">
+        <div class="info-panel-header">Political Pressure Indicators</div>
+        <div class="info-panel-body">
+          <div class="gt-indicator" style="margin-bottom:6px">
+            <div style="display:flex;justify-content:space-between">
+              <span style="font-size:9px;color:var(--text-faint)">War Weariness</span>
+              <span id="gt-weariness-label" style="font-size:9px;color:var(--text-faint)">0%</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.05);border-radius:3px;height:6px;overflow:hidden">
+              <div id="gt-weariness-bar" style="height:100%;background:var(--orange);width:0%;transition:width 0.3s"></div>
+            </div>
+          </div>
+          <div class="gt-indicator" style="margin-bottom:6px">
+            <div style="display:flex;justify-content:space-between">
+              <span style="font-size:9px;color:var(--text-faint)">Economic Pressure</span>
+              <span id="gt-econ-label" style="font-size:9px;color:var(--text-faint)">0%</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.05);border-radius:3px;height:6px;overflow:hidden">
+              <div id="gt-econ-bar" style="height:100%;background:var(--red);width:0%;transition:width 0.3s"></div>
+            </div>
+          </div>
+          <div class="gt-indicator" style="margin-bottom:6px">
+            <div style="display:flex;justify-content:space-between">
+              <span style="font-size:9px;color:var(--text-faint)">Coalition Pressure</span>
+              <span id="gt-coalition-label" style="font-size:9px;color:var(--text-faint)">0%</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.05);border-radius:3px;height:6px;overflow:hidden">
+              <div id="gt-coalition-bar" style="height:100%;background:#a371f7;width:0%;transition:width 0.3s"></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <span id="gt-congress-label" style="font-size:8px;color:var(--text-faint)">Congress: Authorized</span>
+          </div>
+        </div>
+      </div>
+      <div class="info-panel">
         <div class="info-panel-header">Action History</div>
         <div class="info-panel-body">
           <div id="gt-action-history" style="max-height:120px;overflow-y:auto;font-size:9px;font-family:var(--font-mono)"></div>
@@ -1464,6 +1499,12 @@ const US_CASUALTY_COST_CAP = 0.8;
 const ECONOMIC_COST_DIVISOR = 80;
 const ECONOMIC_COST_CAP = 0.4;
 
+// -- Coalition Pressure --
+const COALITION_PRESSURE_RATE = 0.008;
+const COALITION_CASUALTY_SPIKE = 0.05;
+const COALITION_CIVILIAN_SPIKE = 0.08;
+const CONGRESSIONAL_AUTH_DAY = 60;
+
 // ── Escalation / Calibration ──
 const TREND_DECAY_RATE = 0.92;
 
@@ -1666,6 +1707,8 @@ class SimulationState {
       mediation_active: false,  // third-party mediation kicks in after sustained conflict
       mediation_day: 0,         // day mediation began
       us_posture_reduced: false, // US has signaled partial withdrawal
+      coalition_pressure: 0,       // 0-1, political pressure from allies/congress
+      congressional_authorization: true, // War Powers Resolution authorization
     };
   }
 }
@@ -2398,6 +2441,8 @@ class WarGameSimulation {
       diplomatic_momentum: this.state.game_tree.diplomatic_momentum,
       mediation_active: this.state.game_tree.mediation_active,
       us_posture_reduced: this.state.game_tree.us_posture_reduced,
+      coalition_pressure: this.state.game_tree.coalition_pressure,
+      congressional_authorization: this.state.game_tree.congressional_authorization,
     };
   }
 
@@ -2408,10 +2453,19 @@ class WarGameSimulation {
 
     // ── US Payoff ──
     let us_pay = 0;
-    const war_weariness = Math.min(WAR_WEARINESS_CAP, st.day * WAR_WEARINESS_RATE);   // slow burn — 0.175 at day 35
+    // Nonlinear war weariness: base linear + event-driven shocks
+    const base_weariness = Math.min(WAR_WEARINESS_CAP, st.day * WAR_WEARINESS_RATE);
+    const casualty_shock = (st.us_casualties > 100) ? 0.15 : (st.us_casualties > 50) ? 0.08 : 0;
+    const civilian_shock = (st.civilian_casualties > 500) ? 0.12 : (st.civilian_casualties > 200) ? 0.06 : 0;
+    const oil_shock = (st.oil_price > 120) ? 0.1 * Math.min(1, (st.oil_price - 120) / 80) : 0;
+    const war_weariness = Math.min(WAR_WEARINESS_CAP, base_weariness + casualty_shock + civilian_shock + oil_shock);
     const target_value = st.iran_strength / 100;             // diminishing returns as Iran weakens
     const us_casualty_cost = Math.min(US_CASUALTY_COST_CAP, st.us_casualties / US_CASUALTY_COST_DIVISOR) * 0.5;
-    const economic_cost = Math.min(ECONOMIC_COST_CAP, st.us_cost_billion / ECONOMIC_COST_DIVISOR) * 0.3;
+    // Amplified economic pressure: direct cost + oil price + Hormuz closure feedback
+    const direct_cost = Math.min(0.6, st.us_cost_billion / 50) * 0.4;
+    const oil_price_pressure = Math.max(0, (st.oil_price - 90) / 100) * 0.3;
+    const hormuz_pressure = Math.max(0, (100 - st.hormuz_flow) / 100) * 0.2;
+    const economic_cost = Math.min(0.8, direct_cost + oil_price_pressure + hormuz_pressure);
     const mediation_bonus = st.mediation_active ? 0.15 : 0; // third-party pressure to negotiate
 
     if (us_action === 'strike') {
@@ -2423,7 +2477,9 @@ class WarGameSimulation {
              - war_weariness * 0.4 * (1 - prop * 0.5)   // hawks tolerate war longer
              + (st.escalation < 3 ? 0.15 * prop : 0)    // early escalation pressure
              + (st.ships_damaged_us > 0 ? 0.2 * prop : 0) // retaliation motivation
-             - diplo * 0.25;                              // breaking diplomatic progress costs credibility
+             - diplo * 0.25                               // breaking diplomatic progress costs credibility
+             - st.coalition_pressure * 0.35               // coalition fractures penalize continued strikes
+             - (st.congressional_authorization ? 0 : 0.3); // no authorization = major political cost
     } else if (us_action === 'hold') {
       us_pay = 0.05 * (1 - prop)                         // doves prefer caution
              - 0.15 * prop                                // hawks dislike inaction
@@ -2441,7 +2497,8 @@ class WarGameSimulation {
              - vulnerability_cost
              - (st.ships_damaged_us > 0 ? 0.15 : 0)     // risky if still taking fire
              + (st.iran_strength < 15 ? 0.1 : 0)        // safer when Iran nearly gone
-             + early_penalty;
+             + early_penalty
+             + st.coalition_pressure * 0.3;               // coalition pressure makes withdrawal attractive
     } else { // negotiate
       const termination_value = war_weariness * 0.5
                               + us_casualty_cost * 0.4
@@ -2451,7 +2508,8 @@ class WarGameSimulation {
       const reputation_cost = 0.3 * prop * (1 - war_weariness) * (1 - diplo * 0.6); // momentum reduces face-loss
       us_pay = termination_value - reputation_cost
              + diplo * 0.2                                // diplomatic progress makes negotiation easier
-             + mediation_bonus;                           // third-party facilitation
+             + mediation_bonus                            // third-party facilitation
+             + st.coalition_pressure * 0.25;              // political pressure rewards negotiation
     }
 
     // ── Iran Payoff ──
@@ -2492,7 +2550,8 @@ class WarGameSimulation {
               - iran_resolve * 0.2 * (1 - diplo * 0.4)  // hawks soften with diplomatic progress
               + diplo * 0.25                              // cooperation ratchet rewards
               + mediation_bonus                           // third-party facilitation
-              + (st.us_posture_reduced ? 0.25 : 0);      // US withdrawal signal boosts Iran negotiate
+              + (st.us_posture_reduced ? 0.25 : 0)       // US withdrawal signal boosts Iran negotiate
+              + hormuz_pressure * 0.2;                    // Iran trades Hormuz reopening for concessions
     }
 
     // Cross-effects
@@ -2619,6 +2678,28 @@ class WarGameSimulation {
         this.state.day_log.push(
           'Day ' + st.day + ': [Diplomacy] Mediation collapsed — sustained hostilities');
       }
+    }
+
+    // Coalition pressure: grows daily + spikes on events
+    gt.coalition_pressure = Math.min(1.0, gt.coalition_pressure + COALITION_PRESSURE_RATE);
+    if (st.us_casualties > 50) gt.coalition_pressure = Math.min(1.0, gt.coalition_pressure + COALITION_CASUALTY_SPIKE);
+    if (st.civilian_casualties > 200) gt.coalition_pressure = Math.min(1.0, gt.coalition_pressure + COALITION_CIVILIAN_SPIKE);
+    if (st.oil_price > 120) gt.coalition_pressure = Math.min(1.0, gt.coalition_pressure + 0.03);
+
+    // Congressional authorization expires after 60 days (War Powers Resolution)
+    if (st.day >= CONGRESSIONAL_AUTH_DAY && st.escalation < 6) {
+      gt.congressional_authorization = false;
+    }
+
+    // Day log events at coalition pressure thresholds
+    if (gt.coalition_pressure > 0.3 && gt.coalition_pressure - COALITION_PRESSURE_RATE <= 0.3) {
+      this.state.day_log.push('Day ' + st.day + ': [Politics] Coalition pressure mounting -- allied parliaments debate continued support');
+    }
+    if (gt.coalition_pressure > 0.6 && gt.coalition_pressure - COALITION_PRESSURE_RATE <= 0.6) {
+      this.state.day_log.push('Day ' + st.day + ': [Politics] Coalition fracturing -- UK suspends operational support');
+    }
+    if (!gt.congressional_authorization && st.day === CONGRESSIONAL_AUTH_DAY) {
+      this.state.day_log.push('Day ' + st.day + ': [Politics] War Powers clock expired -- congressional authorization lapsed');
     }
 
     // Ceasefire probability: combines subsiding days + diplomatic momentum
@@ -3596,6 +3677,8 @@ class WarGameSimulation {
         diplomatic_momentum: Math.round(this.state.game_tree.diplomatic_momentum * 1000) / 1000,
         mediation_active: this.state.game_tree.mediation_active,
         us_posture_reduced: this.state.game_tree.us_posture_reduced,
+        coalition_pressure: Math.round(this.state.game_tree.coalition_pressure * 1000) / 1000,
+        congressional_authorization: this.state.game_tree.congressional_authorization,
         osint_driven: !!(typeof DIPLOMATIC_EVENTS !== 'undefined' && DIPLOMATIC_EVENTS.days[this.state.day]),
       },
       events: this.state.day_log.slice(),
@@ -4890,6 +4973,38 @@ function updateGameTree(s, dayIdx) {
   const postureEl = document.getElementById('gt-posture-label');
   postureEl.textContent = gt.us_posture_reduced ? 'US posture reduced' : 'Normal posture';
   postureEl.style.color = gt.us_posture_reduced ? '#a371f7' : 'var(--text-faint)';
+
+  // Political pressure indicator bars
+  if (s.day !== undefined) {
+    const base_ww = Math.min(WAR_WEARINESS_CAP, s.day * WAR_WEARINESS_RATE);
+    const cas_shock = (s.casualties && s.casualties.us > 100) ? 0.15 : (s.casualties && s.casualties.us > 50) ? 0.08 : 0;
+    const civ_shock = (s.casualties && s.casualties.civilian > 500) ? 0.12 : (s.casualties && s.casualties.civilian > 200) ? 0.06 : 0;
+    const oilp = s.oil_price_bbl || 80;
+    const oil_shk = (oilp > 120) ? 0.1 * Math.min(1, (oilp - 120) / 80) : 0;
+    const ww = Math.min(WAR_WEARINESS_CAP, base_ww + cas_shock + civ_shock + oil_shk);
+    const wwPct = Math.round(ww / WAR_WEARINESS_CAP * 100);
+    document.getElementById('gt-weariness-bar').style.width = wwPct + '%';
+    document.getElementById('gt-weariness-label').textContent = wwPct + '%';
+
+    const costB = s.us_total_cost_billion || 0;
+    const hormuzF = s.hormuz_flow_pct !== undefined ? s.hormuz_flow_pct : 100;
+    const dc = Math.min(0.6, costB / 50) * 0.4;
+    const opp = Math.max(0, (oilp - 90) / 100) * 0.3;
+    const hp = Math.max(0, (100 - hormuzF) / 100) * 0.2;
+    const econ = Math.min(0.8, dc + opp + hp);
+    const econPct = Math.round(econ / 0.8 * 100);
+    document.getElementById('gt-econ-bar').style.width = econPct + '%';
+    document.getElementById('gt-econ-label').textContent = econPct + '%';
+
+    const coalPct = Math.round((gt.coalition_pressure || 0) * 100);
+    document.getElementById('gt-coalition-bar').style.width = coalPct + '%';
+    document.getElementById('gt-coalition-label').textContent = coalPct + '%';
+
+    const congressEl = document.getElementById('gt-congress-label');
+    const authd = gt.congressional_authorization !== false;
+    congressEl.textContent = authd ? 'Congress: Authorized' : 'Congress: Authorization LAPSED';
+    congressEl.style.color = authd ? 'var(--text-faint)' : 'var(--red)';
+  }
 
   // Action history (from simulation history up to current day)
   const histContainer = document.getElementById('gt-action-history');
