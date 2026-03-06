@@ -455,6 +455,7 @@ Base your estimates on the actual military situation. Be precise.`;
       hormuz_mining_probability: clampNum(calibration.hormuz_mining_probability, 0.01, 1.0, 0.2),
       oil_price_elasticity: clampNum(calibration.oil_price_elasticity, -0.20, -0.01, -0.05),
       patriot_intercept_rate: clampNum(calibration.patriot_intercept_rate, 0.5, 0.98, 0.88),
+      coalition_pressure: clampNum(calibration.coalition_pressure, 0, 1, undefined),
     }
   };
 
