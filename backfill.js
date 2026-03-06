@@ -303,7 +303,7 @@ function getExistingDayNumbers() {
   if (endIdx === -1) return [];
   const block = html.substring(startIdx, endIdx);
   // Match day number keys inside the days object: "N:" or N:
-  const daysMatch = block.match(/days\s*:\s*\{([\s\S]*)\}\s*$/);
+  const daysMatch = block.match(/"?days"?\s*:\s*\{([\s\S]*)\}\s*$/);
   if (!daysMatch) return [];
   const dayKeys = [...daysMatch[1].matchAll(/^\s*"?(\d+)"?\s*:/gm)];
   return dayKeys.map(m => parseInt(m[1]));
