@@ -6,7 +6,7 @@
 - **URL**: https://eesb99.github.io/centcom-wargame-ghpages/
 - **Repo**: https://github.com/eesb99/centcom-wargame-ghpages
 - **Branch**: main
-- **Last Updated**: 2026-03-06
+- **Last Updated**: 2026-03-07
 - **Primary Instance**: Mac Mini (launchd daily calibration at 03:00 UTC)
 - **Fallback**: GitHub Actions (07:00 UTC)
 - **Key Features**: Shooter-target SEAD model, asymmetric dominance, naval capacity gating, 26 unit tests, sensitivity analysis, historical validation, nonlinear war weariness, amplified economic pressure, coalition pressure index, congressional authorization clock
@@ -40,6 +40,41 @@ tests/        7 files - combat, game-tree, escalation, monte-carlo, integration,
 1. **OSINT Corridor (Days 1-6)**: Real events drive actions + params calibrated to reality
 2. **Active Extrapolation (Days 7-14)**: Trends continue with 8%/day decay
 3. **Stabilization (Days 15+)**: Parameters converge, model runs procedurally
+
+---
+
+## Session 6 Summary (2026-03-07)
+
+### Goals
+- Fix live site outage caused by duplicate Day 7 in DIPLOMATIC_EVENTS
+- Prevent future duplicate insertions in backfill.js fallback path
+- Fix JSON parse failure caused by inner single quotes in already double-quoted strings
+
+### Decisions Made
+- **Remove duplicate, keep richer entry**: Two Day 7 blocks existed; kept the first (richer event data from JSON.stringify path), removed the second (fallback inserter, unquoted keys, no comma separator).
+- **Guard fallback inserter with getExistingDayNumbers()**: Reused existing function to check for duplicates before blind text insertion. Returns false instead of appending.
+- **Value-position-only single-quote regex**: Changed `'...'` to `"..."` conversion to only match single-quoted strings in JSON value positions (after `:`, `,`, or `[`), not inner quotes like `'without mercy'` inside already double-quoted strings. This fixes the JSON.parse path so future days use the clean JSON.stringify roundtrip instead of the fragile fallback.
+
+### Implementation
+**`index.html`** -- Removed duplicate Day 7 block (34 lines deleted), fixed Day 8 unquoted key and missing comma from fallback inserter
+
+**`backfill.js`** -- Two fixes:
+1. `patchDiplomaticEventsFallback()`: Added duplicate guard using `getExistingDayNumbers().includes(dayNumber)`
+2. Single-quote regex (line 514): Changed from `/'([^'\\]*(\\.[^'\\]*)*)'/g` to `/(:\s*|[,\[]\s*)'([^'\\]*(\\.[^'\\]*)*)'/g` -- only matches value positions
+
+### Commits
+- `af6f31f` - fix: remove duplicate Day 7 in DIPLOMATIC_EVENTS and guard against re-insertion
+- `cedb7ff` - fix: single-quote regex only matches value positions, not inner quotes
+
+### Challenges & Solutions
+1. **Rebase conflict with Day 8**: Remote had a new commit (3AM calibration for Day 8) that also included the duplicate Day 7. Resolved by keeping Day 8 data, removing duplicate Day 7, and fixing Day 8's unquoted key.
+2. **Root cause of fallback path**: The `'without mercy'` text in Day 7 events caused JSON.parse to fail every time, forcing all subsequent days through the fallback inserter. Fixed by anchoring the single-quote regex to value positions only.
+
+### Next Steps
+- [ ] Harden fallback inserter template to quote numeric keys (`"${dayNumber}"` not `${dayNumber}`)
+- [ ] Tune coalition pressure ramp rate (saturates at 1.0 by day 20)
+- [ ] Further reduce US ship losses (median 4, target 0-1)
+- [ ] Proxy war calibration (Hezbollah rocket counts, Houthi attacks)
 
 ---
 

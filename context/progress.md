@@ -12,8 +12,31 @@
 | Phase 4b: Template Script Fix | Complete | 2026-03-06 | 100% |
 | Phase 5: Mac Mini Migration | Complete | 2026-03-06 | 100% |
 | Phase 6: Political Pressure Model | Complete | 2026-03-06 | 100% |
+| Phase 7: Duplicate Day Fix + Pipeline Hardening | Complete | 2026-03-07 | 100% |
 
 
+
+## Phase 7: Duplicate Day Fix + Pipeline Hardening (2026-03-07) - COMPLETE
+
+**Duration:** ~30 minutes
+**Status:** 100% - Live site restored, pipeline hardened
+**Commits:** `af6f31f` (fix duplicate + guard), `cedb7ff` (fix regex)
+
+### Problem
+3AM calibration on 2026-03-06 ran twice for Day 7, inserting a duplicate entry via the fallback inserter. The duplicate had unquoted keys and no comma separator, causing a JS syntax error that killed the live site. Additionally, the JSON.parse path was permanently broken by `'without mercy'` inner quotes, forcing all future days through the fragile fallback.
+
+### Fixes
+1. **Removed duplicate Day 7** from index.html (34 lines), fixed Day 8 unquoted key + missing comma
+2. **Duplicate guard** in `patchDiplomaticEventsFallback()` using `getExistingDayNumbers()`
+3. **Value-position single-quote regex** -- only converts `'...'` to `"..."` after `:`, `,`, or `[`, preventing inner quotes like `'without mercy'` from breaking JSON.parse
+
+### Validation
+- DIPLOMATIC_EVENTS evaluates as valid JS with days 1-8
+- JSON.parse succeeds on converted text (was failing before regex fix)
+- `backfill.js --calibrate --dry-run` runs correctly, targets Day 9
+- Pushed to GitHub Pages, site restored
+
+---
 
 ## Phase 6: Political Pressure Model (2026-03-06) - COMPLETE
 
