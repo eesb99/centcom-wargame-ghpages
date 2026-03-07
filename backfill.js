@@ -541,6 +541,13 @@ function patchDiplomaticEvents(dayNumber, dayEntry) {
 
 // Fallback: insert a new day entry before the closing of the days object
 function patchDiplomaticEventsFallback(html, startIdx, endIdx, dayNumber, dayEntry) {
+  // Guard: check if this day already exists to prevent duplicate insertion
+  const existingDays = getExistingDayNumbers();
+  if (existingDays.includes(dayNumber)) {
+    console.log(`  FALLBACK SKIP: Day ${dayNumber} already exists in DIPLOMATIC_EVENTS — skipping insertion`);
+    return false;
+  }
+
   // Find the last "}" before endIdx that closes the "days" object
   // Strategy: insert new day entry as text before the closing "}  }"
   const entryJson = JSON.stringify(dayEntry, null, 6).replace(/\n/g, '\n    ');
