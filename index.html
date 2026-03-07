@@ -1231,7 +1231,7 @@ const CONFLICT_TIMELINE = {"_metadata":{"title":"Operation Epic Fury — Day-by-
 // Sources: CENTCOM, ICT SITREPs, FDD, CSIS, Reuters, Military Times, Wikipedia 2026 Iran war
 const DIPLOMATIC_EVENTS = {
   "conflict_start": "2026-02-28",
-  "last_updated": "2026-03-06",
+  "last_updated": "2026-03-07",
   "days": {
     "1": {
       "date": "2026-02-28",
@@ -1463,31 +1463,39 @@ const DIPLOMATIC_EVENTS = {
       }
     },
     "8": {
-          "date": "2026-03-07",
-          "diplomatic_momentum": 0.1,
-          "mediation_active": false,
-          "ceasefire_signals": 0.05,
-          "escalation_override": 5,
-          "events": [],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "fragmented_resistance",
-          "param_calibration": {
-                "escalation_propensity": 0.85,
-                "iran_force_multiplier": 0.15,
-                "us_tech_advantage": 2.3,
-                "iran_asymmetric_factor": 0.6,
-                "proxy_effectiveness": 0.4,
-                "cyber_intensity": 0.3,
-                "hormuz_mining_probability": 0.25,
-                "oil_price_elasticity": -0.12,
-                "patriot_intercept_rate": 0.95
-          }
-    },
+      "date": "2026-03-07",
+      "diplomatic_momentum": 0,
+      "mediation_active": false,
+      "ceasefire_signals": 0,
+      "escalation_override": 5,
+      "events": [
+        "**US/Coalition Strikes:** Admiral Cooper reports intensified strikes on Iranian Navy, sinking over 30 ships including a drone carrier ship the size of a WWII aircraft carrier, now on fire; nearly 200 targets struck inside Iran including ballistic missile launchers and Iran's Space Command equivalent.[3][4]",
+        "**Naval Operations:** Major destruction of Iran's naval assets confirmed, rendering navy combat-ineffective; includes sinking of ships and a key submarine.[3][4][5]",
+        "**Iranian Retaliation Decline:** Ballistic missile attacks decreased by 90% and drone attacks by 83% since Day 1, due to US air dominance and strikes on air defenses and centers of gravity.[3]",
+        "**Casualties:** Six US service members killed in action as of March 5 (latest update); no new Day 8 specifics; Iranian casualties not quantified.[1][4]",
+        "**Diplomatic/Political:** Congress reaffirms President's authority for Operation Epic Fury; White House emphasizes unstoppable momentum with thousands of high-value targets obliterated.[5]",
+        "**No Ceasefire/UN Activity:** No mentions of ceasefire proposals, UN involvement, proxy attacks (Hezbollah/Houthi/militias), Strait of Hormuz status, or oil prices on Day 8.[1-8]",
+        "**Operational Momentum:** US combat power building as Iranian power declines; strikes continue on missile production to prevent nuclear weapon acquisition.[3][5][7]"
+      ],
+      "proxy": {
+        "hezbollah_active": false,
+        "houthi_active": false,
+        "iraqi_militia_active": false
+      },
+      "us_posture": "sustained_operations",
+      "iran_posture": "fragmented_resistance",
+      "param_calibration": {
+        "escalation_propensity": 0.85,
+        "iran_force_multiplier": 0.05,
+        "us_tech_advantage": 2.4,
+        "iran_asymmetric_factor": 0.25,
+        "proxy_effectiveness": 0.1,
+        "cyber_intensity": 0.6,
+        "hormuz_mining_probability": 0.15,
+        "oil_price_elasticity": -0.12,
+        "patriot_intercept_rate": 0.96
+      }
+    }
   }
 };
 
