@@ -511,7 +511,7 @@ function patchDiplomaticEvents(dayNumber, dayEntry) {
     .replace(/,(\s*[}\]])/g, '$1')                        // remove trailing commas
     .replace(/([{,]\s*)([a-zA-Z_]\w*)(\s*:)/g, '$1"$2"$3') // quote unquoted alpha keys
     .replace(/^(\s+)(\d+)(\s*:)/gm, '$1"$2"$3')             // quote unquoted numeric keys (line-anchored)
-    .replace(/'([^'\\]*(\\.[^'\\]*)*)'/g, (m, inner) => '"' + inner.replace(/"/g, '\\"') + '"'); // single->double quotes, escape inner "s
+    .replace(/(:\s*|[,\[]\s*)'([^'\\]*(\\.[^'\\]*)*)'/g, (m, prefix, inner) => prefix + '"' + inner.replace(/"/g, '\\"') + '"'); // single->double quotes (only value positions), escape inner "s
 
   let diplo;
   try {
