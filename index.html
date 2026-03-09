@@ -2786,9 +2786,9 @@ class WarGameSimulation {
     if (st.civilian_casualties > 200) gt.coalition_pressure = Math.min(1.0, gt.coalition_pressure + COALITION_CIVILIAN_SPIKE);
     if (st.oil_price > 120) gt.coalition_pressure = Math.min(1.0, gt.coalition_pressure + 0.03);
     // LNG disruption: Asia/Europe energy crisis amplifies political pressure
-    if (st.economy.lng_disruption_pct > 50) gt.coalition_pressure = Math.min(1.0, gt.coalition_pressure + 0.02);
+    if (this.state.economy.lng_disruption_pct > 50) gt.coalition_pressure = Math.min(1.0, gt.coalition_pressure + 0.02);
     // Iraq collapse: regional instability widens conflict perception
-    if (st.economy.iraq_production_loss_pct > 30) gt.coalition_pressure = Math.min(1.0, gt.coalition_pressure + 0.01);
+    if (this.state.economy.iraq_production_loss_pct > 30) gt.coalition_pressure = Math.min(1.0, gt.coalition_pressure + 0.01);
 
     // Congressional authorization expires after 60 days (War Powers Resolution)
     if (st.day >= CONGRESSIONAL_AUTH_DAY && st.escalation < 6) {
@@ -4765,7 +4765,6 @@ function getParams() {
 
 
 function runSim() {
-  document.title = 'CENTCOM: runSim called';
   const btn = document.getElementById('btn-run');
   btn.disabled = true;
   btn.textContent = 'Running...';
@@ -4777,15 +4776,11 @@ function runSim() {
       const data = apiQuickRun(params, params.max_days);
       if (data.history && data.history.length > 0) {
         simHistory = data.history;
-        document.title = 'CENTCOM: ' + data.history.length + ' days simulated';
         updateAll(simHistory);
         setupTimeline();
-      } else {
-        document.title = 'CENTCOM: empty history';
       }
     } catch(e) {
       console.error('Simulation error:', e, e.stack);
-      document.title = 'ERROR: ' + e.message;
     }
 
     btn.disabled = false;
