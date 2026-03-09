@@ -13,8 +13,32 @@
 | Phase 5: Mac Mini Migration | Complete | 2026-03-06 | 100% |
 | Phase 6: Political Pressure Model | Complete | 2026-03-06 | 100% |
 | Phase 7: Duplicate Day Fix + Pipeline Hardening | Complete | 2026-03-07 | 100% |
+| Phase 8: Iraq/LNG/OPEC Economic Dynamics | Complete | 2026-03-09 | 100% |
 
 
+
+## Phase 8: Iraq/LNG/OPEC Economic Dynamics (2026-03-09) - COMPLETE
+
+**Duration:** ~2 hours
+**Status:** 100% - All 3 dynamics implemented, KPIs on dashboard, pipeline updated
+**Commits:** `4849435` (feat), `081c491` (fix KPI placement)
+
+### Features Implemented
+1. **Iraq production collapse** -- 4.3 mbd Basra exports correlated 55% with Hormuz closure + escalation spillover. OSINT-guarded.
+2. **Qatar LNG disruption** -- Probabilistic Iranian drone strike at escalation 4+. 70-100% disruption on hit, 3-5%/day recovery.
+3. **OPEC inadequate response** -- Capped at real-world 0.206 mbd with 15%/day ramp. Historically inadequate.
+4. **Oil price recalibration** -- Baseline $108.75 (real Brent), range $85-200, SPR thresholds relative to baseline.
+5. **3 floating KPI cards** -- Iraq Output, Gulf LNG, OPEC Response visible on map.
+6. **Pipeline expansion** -- backfill.js emits 5 new calibration fields.
+
+### Quality Fixes (unified-review --fix)
+- OIL_BASELINE scoping crash, missing backfill fields, OSINT override ordering, SPR threshold bugs, magic numbers, dead logic
+
+### Known Issue
+- "Run Full Simulation" button unresponsive (pre-existing, not caused by Phase 8 changes)
+- See `memory/troubleshooting-run-button.md` for debugging history
+
+---
 
 ## Phase 7: Duplicate Day Fix + Pipeline Hardening (2026-03-07) - COMPLETE
 

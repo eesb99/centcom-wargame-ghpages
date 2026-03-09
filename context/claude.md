@@ -6,10 +6,11 @@
 - **URL**: https://eesb99.github.io/centcom-wargame-ghpages/
 - **Repo**: https://github.com/eesb99/centcom-wargame-ghpages
 - **Branch**: main
-- **Last Updated**: 2026-03-07
+- **Last Updated**: 2026-03-09
 - **Primary Instance**: Mac Mini (launchd daily calibration at 03:00 UTC)
 - **Fallback**: GitHub Actions (07:00 UTC)
-- **Key Features**: Shooter-target SEAD model, asymmetric dominance, naval capacity gating, 26 unit tests, sensitivity analysis, historical validation, nonlinear war weariness, amplified economic pressure, coalition pressure index, congressional authorization clock
+- **Key Features**: Shooter-target SEAD model, asymmetric dominance, naval capacity gating, 26 unit tests, sensitivity analysis, historical validation, nonlinear war weariness, amplified economic pressure, coalition pressure index, congressional authorization clock, Iraq/LNG/OPEC economic dynamics, $108.75 Brent baseline, $85-200 oil range
+- **Known Issue**: "Run Full Simulation" button unresponsive (pre-existing, see memory/troubleshooting-run-button.md)
 
 ## Architecture (Post-Session 3)
 
@@ -40,6 +41,83 @@ tests/        7 files - combat, game-tree, escalation, monte-carlo, integration,
 1. **OSINT Corridor (Days 1-6)**: Real events drive actions + params calibrated to reality
 2. **Active Extrapolation (Days 7-14)**: Trends continue with 8%/day decay
 3. **Stabilization (Days 15+)**: Parameters converge, model runs procedurally
+
+---
+
+## Session 7 Summary (2026-03-09)
+
+### Goals
+- Update CLAUDE.md with current codebase state (stale metrics, removed constants, wrong line refs)
+- Fix Day 9 DIPLOMATIC_EVENTS bad data (Perplexity failure text)
+- Update oil price baseline from $81 to real-world $108.75 Brent crude
+- Widen oil price bounds from $80-125 to $85-200
+- Calibrate mine warfare parameters for Day 8-9
+- Implement 3 missing economic dynamics: Iraq production collapse, Qatar LNG disruption, OPEC inadequate response
+- Add dashboard KPIs for new dynamics
+- Update backfill.js calibration pipeline to emit new parameters
+- Run /unified-review --fix for quality issues
+- Fix "Run Full Simulation" button (unresolved)
+
+### Decisions Made
+- **Oil baseline $108.75**: Real-world Brent crude as of 2026-03-09. Single constant `OIL_BASELINE` used everywhere.
+- **Oil range $85-200**: Realistic scenario range for Gulf war (1990 precedent: 2x spike; worst case: $200).
+- **OPEC capped at 0.206 mbd**: Real OPEC+ spare capacity is negligible. Historical response always inadequate.
+- **Iraq 4.3 mbd baseline**: Iraq exports via Basra are Hormuz-dependent. 55% correlation with Hormuz closure + escalation spillover.
+- **OSINT guards procedural model**: When DIPLOMATIC_EVENTS has `param_calibration` for a day, skip procedural computation to prevent overwrite.
+
+### Implementation
+
+**index.html:**
+- Oil constants: `OIL_BASELINE=108.75`, `OIL_PRICE_MIN=85`, `OIL_PRICE_MAX=200`
+- 3 new EconomicState fields: `iraq_production_loss_pct`, `lng_disruption_pct`, `opec_actual_response_mbd`
+- Iraq collapse model: Hormuz correlation + escalation spillover
+- Qatar LNG: probabilistic Iranian strike at escalation 4+, gradual recovery
+- OPEC: capped at 0.206 mbd with 15%/day ramp
+- SPR thresholds: relative to baseline (1.10x, 1.20x), highest-first ordering
+- Coalition pressure: additions for LNG >50%, Iraq >30%
+- 3 new floating KPI cards: Iraq Output, Gulf LNG, OPEC Response
+- `resetKPI()` helper for DRY dashboard resets
+- Day 9 rewritten with carry-forward data
+- `window.onerror` diagnostic handler (kept for debugging)
+- `document.title` diagnostics in `runSim()` (kept for debugging)
+
+**backfill.js:**
+- Perplexity prompt expanded with 5 new calibration fields
+- param_calibration builder: mine warfare, Iraq, LNG, OPEC with clampNum bounds
+
+**CLAUDE.md:**
+- File size 395KB->493KB, line count 3713->~5500
+- Updated data constants section (removed IRAN_MISSILES/IRAN_NUCLEAR, added PROXY_DATA/CONFLICT_TIMELINE/DIPLOMATIC_EVENTS)
+- Updated all simulation engine line refs
+- Search-based modification tips instead of hardcoded line numbers
+- Added daily calibration pipeline section
+
+### Commits
+- `4849435` - feat: add Iraq/LNG/OPEC economic dynamics, update oil baseline to $108.75
+- `081c491` - fix: move Iraq/LNG/OPEC KPIs to floating cards for visibility
+
+### Quality Fixes (from /unified-review --fix)
+- OIL_BASELINE scoping crash: moved from UI function to sim constants
+- Missing backfill.js fields: added Iraq/LNG/OPEC to param_calibration builder
+- OSINT override order: added guard clauses to prevent procedural overwrite
+- Redundant Math.min in OPEC ramp: simplified
+- Magic number 108.75: replaced 4 instances with OIL_BASELINE
+- Redundant ternary: simplified dead logic
+- SPR threshold bugs: relative thresholds, correct else-if ordering
+
+### Known Issue: Run Button Unresponsive
+- Pre-existing (old commits also affected)
+- No JS errors in window.onerror handler
+- document.title diagnostic doesn't fire (runSim never called?)
+- All 26 Node.js tests pass
+- Syntax check passes
+- CDNs reachable
+- See `memory/troubleshooting-run-button.md` for full details
+
+### Next Steps
+- [ ] Debug "Run Full Simulation" button (check browser console, try incognito, try different browser)
+- [ ] Harden fallback inserter template to quote numeric keys
+- [ ] Proxy war calibration (Hezbollah rocket counts, Houthi attacks)
 
 ---
 

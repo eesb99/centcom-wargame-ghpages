@@ -26,6 +26,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>window.onerror=function(m,s,l,c,e){var d=document.createElement('div');d.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:red;color:white;padding:12px;font:14px monospace;white-space:pre-wrap';d.textContent='JS ERROR: '+m+'\nAt: '+s+':'+l+':'+c;document.body?document.body.prepend(d):document.addEventListener('DOMContentLoaded',function(){document.body.prepend(d)});}</script>
 <style>
 /* ═══════════════════════════════════════════════════
    DESIGN TOKENS
@@ -4764,29 +4765,32 @@ function getParams() {
 
 
 function runSim() {
+  document.title = 'CENTCOM: runSim called';
   const btn = document.getElementById('btn-run');
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Running...';
+  btn.textContent = 'Running...';
 
   const params = getParams();
-  
-  // Use setTimeout to keep UI responsive
+
   setTimeout(() => {
     try {
       const data = apiQuickRun(params, params.max_days);
-      if (data.history) {
+      if (data.history && data.history.length > 0) {
         simHistory = data.history;
+        document.title = 'CENTCOM: ' + data.history.length + ' days simulated';
         updateAll(simHistory);
         setupTimeline();
+      } else {
+        document.title = 'CENTCOM: empty history';
       }
     } catch(e) {
-      console.error('Simulation error:', e);
+      console.error('Simulation error:', e, e.stack);
+      document.title = 'ERROR: ' + e.message;
     }
 
     btn.disabled = false;
     btn.textContent = 'Run Full Simulation';
-    
-    // Close settings after run
+
     if (document.getElementById('settings-panel').classList.contains('active')) {
       toggleSettings();
     }
