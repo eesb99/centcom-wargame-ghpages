@@ -394,6 +394,11 @@ Return ONLY a JSON object with these fields (all numbers between the given range
   "hormuz_mining_probability": <0.01-1.0, probability of new mines being laid in Hormuz>,
   "oil_price_elasticity": <-0.20 to -0.01, market sensitivity to disruption. More negative=more reactive>,
   "patriot_intercept_rate": <0.5-0.98, US air defense intercept success rate>,
+  "iran_mine_warfare_effectiveness": <0.05-1.0, Iran's ability to lay new mines. 1.0=full capability, 0.05=minelayers destroyed>,
+  "us_mcm_effectiveness": <0.1-0.9, US mine countermeasure clearing rate. Higher=faster clearing>,
+  "iraq_production_loss_pct": <0-80, Iraq oil production loss percentage from conflict spillover and Hormuz closure>,
+  "lng_disruption_pct": <0-100, Gulf LNG export disruption (Qatar facilities). 0=normal, 100=fully halted>,
+  "opec_actual_response_mbd": <0.1-3.5, actual OPEC+ supply increase in million barrels/day>,
   "us_posture": <one of: "maximum_force", "sustained_operations", "partial_withdrawal", "ceasefire">,
   "iran_posture": <one of: "full_retaliation", "proxy_escalation", "fragmented_command", "fragmented_resistance", "negotiate">,
   "diplomatic_momentum": <0-1, are there any ceasefire/diplomatic signals? 0=none, 1=ceasefire imminent>,
@@ -455,6 +460,11 @@ Base your estimates on the actual military situation. Be precise.`;
       hormuz_mining_probability: clampNum(calibration.hormuz_mining_probability, 0.01, 1.0, 0.2),
       oil_price_elasticity: clampNum(calibration.oil_price_elasticity, -0.20, -0.01, -0.05),
       patriot_intercept_rate: clampNum(calibration.patriot_intercept_rate, 0.5, 0.98, 0.88),
+      iran_mine_warfare_effectiveness: clampNum(calibration.iran_mine_warfare_effectiveness, 0.05, 1.0, 0.3),
+      us_mcm_effectiveness: clampNum(calibration.us_mcm_effectiveness, 0.1, 0.9, 0.5),
+      iraq_production_loss_pct: clampNum(calibration.iraq_production_loss_pct, 0, 80, 40),
+      lng_disruption_pct: clampNum(calibration.lng_disruption_pct, 0, 100, 50),
+      opec_actual_response_mbd: clampNum(calibration.opec_actual_response_mbd, 0.1, 3.5, 0.206),
       coalition_pressure: clampNum(calibration.coalition_pressure, 0, 1, undefined),
     }
   };
