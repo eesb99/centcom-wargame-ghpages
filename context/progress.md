@@ -14,8 +14,31 @@
 | Phase 6: Political Pressure Model | Complete | 2026-03-06 | 100% |
 | Phase 7: Duplicate Day Fix + Pipeline Hardening | Complete | 2026-03-07 | 100% |
 | Phase 8: Iraq/LNG/OPEC Economic Dynamics | Complete | 2026-03-09 | 100% |
+| Phase 9: OSINT Extension Days 7-11 + Strike Data | Complete | 2026-03-10 | 100% |
 
 
+
+## Phase 9: OSINT Extension Days 7-11 + Strike Data (2026-03-10) - COMPLETE
+
+**Duration:** ~1.5 hours
+**Status:** 100% - All 5 data files updated, reference JSON created, build + 26 tests pass
+**Commits:** pending
+
+### Features Implemented
+1. **strike-data-osint.json** -- Bidirectional strike reference (11 days, Iran outgoing + US/Israel on Iran, by-country breakdown, intercept rates, casualties)
+2. **conflict-timeline.js** -- Backfilled BM/CM/drone breakdown Days 1-6, added Days 7-11
+3. **diplomatic-events.js** -- Days 7-11 with events + param_calibration (9 params, continuing degradation trend)
+4. **mil-data.js** -- war_status Day 11 (7 KIA, 43 ships, 3800 targets), missile/drone inventory updated
+5. **iran-orbat.js** -- retaliation_campaign totals (806 BMs, 2233 drones), Mojtaba Khamenei leadership
+6. **proxy-data.js** -- epic_fury_proxy_activity Mar 10 with cumulative Gulf state data
+7. **strike-chart.png** -- 2-panel bar chart visualization
+
+### Validation Results
+- build.sh: 5440 lines, 523KB
+- 26/26 tests pass
+- JSON validates
+
+---
 
 ## Phase 8: Iraq/LNG/OPEC Economic Dynamics (2026-03-09) - COMPLETE
 

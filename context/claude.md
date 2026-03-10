@@ -2,13 +2,14 @@
 
 ## Current State
 
-- **Status**: Combat model calibrated, live on GitHub Pages
+- **Status**: OSINT data extended to Day 11, combat model calibrated, live on GitHub Pages
 - **URL**: https://eesb99.github.io/centcom-wargame-ghpages/
 - **Repo**: https://github.com/eesb99/centcom-wargame-ghpages
 - **Branch**: main
-- **Last Updated**: 2026-03-09
+- **Last Updated**: 2026-03-10
 - **Primary Instance**: Mac Mini (launchd daily calibration at 03:00 UTC)
 - **Fallback**: GitHub Actions (07:00 UTC)
+- **OSINT Coverage**: Days 1-11 (Feb 28 - Mar 10) with full strike data + param_calibration
 - **Key Features**: Shooter-target SEAD model, asymmetric dominance, naval capacity gating, 26 unit tests, sensitivity analysis, historical validation, nonlinear war weariness, amplified economic pressure, coalition pressure index, congressional authorization clock, Iraq/LNG/OPEC economic dynamics, $108.75 Brent baseline, $85-200 oil range
 - **Known Issue**: "Run Full Simulation" button unresponsive (pre-existing, see memory/troubleshooting-run-button.md)
 
@@ -38,9 +39,80 @@ tests/        7 files - combat, game-tree, escalation, monte-carlo, integration,
 - Works via concatenation; test-helper uses `vm.runInThisContext` to load all files
 
 ### Three-Phase Simulation
-1. **OSINT Corridor (Days 1-6)**: Real events drive actions + params calibrated to reality
-2. **Active Extrapolation (Days 7-14)**: Trends continue with 8%/day decay
-3. **Stabilization (Days 15+)**: Parameters converge, model runs procedurally
+1. **OSINT Corridor (Days 1-11)**: Real events drive actions + params calibrated to reality
+2. **Active Extrapolation (Days 12-18)**: Trends continue with 8%/day decay
+3. **Stabilization (Days 19+)**: Parameters converge, model runs procedurally
+
+---
+
+## Session 8 Summary (2026-03-10)
+
+### Goals
+- Extend OSINT data from Days 1-6 to Days 1-11 (Feb 28 - Mar 10)
+- Backfill missing iran_missiles_fired breakdown (BM/CM/drone) for Days 1-6
+- Add Day 7-11 data to all 5 data files + param_calibration
+- Create reference JSON with bidirectional strike data
+- Reconcile diverged git repos (MBA, Mac Mini, origin)
+
+### Decisions Made
+- **JSON reference file over JS**: Created `data/strike-data-osint.json` as raw OSINT ledger. Pure JSON for validation/tooling; JS `const` files in `src/data/` are the "cooked" format.
+- **Perplexity deep research for triangulation**: Used 2 parallel Perplexity research queries (Iran outgoing + US strikes on Iran) cross-referenced against Gulf MOD data, FDD, Critical Threats, CENTCOM.
+- **escalation_override drops to 3 by Day 11**: Iran can't sustain escalation. Keeps nuclear threshold calculations realistic.
+- **oil_price_elasticity V-shape**: -0.12 (panic) -> -0.05 (calm) -> -0.08 (refinery strikes). Non-monotonic matches commodity shock history.
+
+### Implementation
+
+**New file: `data/strike-data-osint.json`**
+- 11 days bidirectional strike data (Iran outgoing + US/Israel on Iran)
+- Daily BM/CM/drone counts + cumulative totals
+- Target country breakdown (UAE, Kuwait, Qatar, Bahrain, Saudi, Israel, Jordan)
+- Intercept rates (94% overall Gulf, Patriot 0.82->0.94 trend)
+- Casualty tracker (US 7 KIA, Israel 11, Iran 2100+ mil, Gulf civilian)
+- Trend arrays for charting
+
+**Modified: `src/data/conflict-timeline.js`**
+- Backfilled iran_bm/iran_cm/iran_drones for Days 1-6
+- Added Days 7-11 with full data structure
+
+**Modified: `src/data/diplomatic-events.js`**
+- Added Days 7-11 with events + param_calibration (9 params each)
+- Key events: oil refinery strikes (Day 8), Mojtaba Khamenei (Day 9), NATO intercepts (Day 9), France deployment (Day 11)
+
+**Modified: `src/data/mil-data.js`**
+- war_status -> Day 11: 7 KIA, 43 ships, 3800 targets
+- ballistic_missile_inventory_total: 800-1000 remaining, 340 TELs destroyed
+- drone_fleet_status: 2233 OWA launched, 83% decline
+
+**Modified: `src/data/iran-orbat.js`**
+- retaliation_campaign: 806 BMs, 25 CMs, 2233 drones, daily rate arrays
+- leadership_status: Mojtaba Khamenei named Supreme Leader
+
+**Modified: `src/data/proxy-data.js`**
+- epic_fury_proxy_activity -> Mar 10 with cumulative by-country data
+- Gulf intercept rates added
+
+**Chart: `data/strike-chart.png`**
+- 2-panel bar chart: Iran outgoing by type + US/Israel daily strikes
+
+### Key OSINT Data (Days 7-11)
+- **BMs**: 350/day -> 8/day (97.7% decline in 11 days)
+- **Drones**: 550/day -> 60/day (drone bump Days 7-9 from redeployed launchers)
+- **CMs**: Exhausted by Day 5
+- **Ships destroyed**: 43 (CENTCOM Mar 7)
+- **TELs destroyed**: ~340 of ~450
+- **US KIA**: 7 (7th died Mar 7)
+- **Gulf intercept rate**: 94% overall
+- **Oil**: Surging to $120/bbl (Day 11)
+- **Leadership**: Mojtaba Khamenei named Supreme Leader (Day 9)
+
+### Validation
+- `bash build.sh` -> 5440 lines
+- `node --test tests/*.test.js` -> 26/26 pass
+
+### Next Steps
+- [ ] Debug "Run Full Simulation" button
+- [ ] Harden fallback inserter template to quote numeric keys
+- [ ] Wire CONFLICT_TIMELINE into simulation (still separate from DIPLOMATIC_EVENTS)
 
 ---
 

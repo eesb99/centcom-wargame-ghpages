@@ -1,0 +1,505 @@
+{
+  "_metadata": {
+    "title": "Operation Epic Fury — Day-by-Day Strike Data (OSINT Compilation)",
+    "compiled": "2026-03-10",
+    "conflict_start": "2026-02-28",
+    "days_covered": 11,
+    "purpose": "Bidirectional kinetic strike tracking: Iran outgoing + US/Israel strikes on Iran",
+    "sources": [
+      "CENTCOM Adm. Brad Cooper briefings",
+      "FDD Long War Journal (fdd.org)",
+      "Critical Threats / ISW (criticalthreats.org)",
+      "Hudson Institute analysis (hudson.org)",
+      "UAE Ministry of Defense (WAM)",
+      "Kuwait MOD",
+      "Qatar Defense Ministry (QNA)",
+      "Bahrain MOD",
+      "Saudi Defense Ministry",
+      "Jordan Armed Forces",
+      "IDF / Israel MOD",
+      "Times of Israel liveblog",
+      "Straits Times / Reuters",
+      "Iran International (iranintl.com)",
+      "Defense News / Breaking Defense",
+      "Wikipedia 2026 Iran war / 2026 Iranian strikes articles",
+      "Fars News Agency (Iran claims)",
+      "Gulf News daily breakdowns"
+    ],
+    "notes": "Daily estimates triangulated from multiple sources. Where exact figures unavailable, ranges given. Cruise missiles exhausted by Day 5-6. Drone counts include OWA (one-way attack) types only."
+  },
+  "iran_outgoing": {
+    "description": "Missiles and drones launched BY Iran at all targets",
+    "daily": [
+      {
+        "day": 1,
+        "date": "2026-02-28",
+        "ballistic_missiles": 350,
+        "cruise_missiles": 10,
+        "drones_owa": 550,
+        "total": 910,
+        "confidence": 0.8,
+        "notes": "Opening salvo. Gulf News breakdown. ~170 BMs in first hours per ISW. Fars claims 500+ BMs total by Day 4.",
+        "target_split_pct": { "israel": 40, "us_gulf_bases": 60 },
+        "key_events": [
+          "First BM barrages within hours of Epic Fury launch",
+          "Iran retaliates at UAE, Qatar, Bahrain, Kuwait, Saudi, Jordan, Oman",
+          "Jordan intercepts 49 drones/missiles including 13 BMs"
+        ]
+      },
+      {
+        "day": 2,
+        "date": "2026-03-01",
+        "ballistic_missiles": 175,
+        "cruise_missiles": 8,
+        "drones_owa": 500,
+        "total": 683,
+        "confidence": 0.75,
+        "notes": "Sustained high tempo. IAF downed 50 Iranian drones on this day alone. Tanker Skylight hit off Oman coast.",
+        "target_split_pct": { "israel": 40, "us_gulf_bases": 60 },
+        "key_events": [
+          "6 US KIA from projectile penetrating Kuwait air defense",
+          "First commercial tanker attacked near Hormuz",
+          "Loitering munition strikes RAF Akrotiri, Cyprus",
+          "Oman: 2 drones hit Duqm Port"
+        ]
+      },
+      {
+        "day": 3,
+        "date": "2026-03-02",
+        "ballistic_missiles": 120,
+        "cruise_missiles": 5,
+        "drones_owa": 350,
+        "total": 475,
+        "confidence": 0.7,
+        "notes": "Gulf News breakdown. Cumulative by end of day: ~645 BMs, ~23 CMs, ~1400 drones.",
+        "target_split_pct": { "israel": 35, "us_gulf_bases": 65 },
+        "key_events": [
+          "Hezbollah enters war — rockets at northern Israel",
+          "Oil tanker MKD VYOM attacked off Oman (1 killed)",
+          "Oman: fuel tank at Duqm Port hit by drone"
+        ]
+      },
+      {
+        "day": 4,
+        "date": "2026-03-03",
+        "ballistic_missiles": 50,
+        "cruise_missiles": 2,
+        "drones_owa": 300,
+        "total": 352,
+        "confidence": 0.7,
+        "notes": "Gulf News breakdown. BM rate declining ~70% from Day 1. Shift toward drone-dominant ops.",
+        "target_split_pct": { "israel": 30, "us_gulf_bases": 70 },
+        "key_events": [
+          "All three proxy fronts now active (Hezbollah, Houthis, PMF)",
+          "Full regional proxy war declared by ICT SITREP",
+          "Cumulative ~585 BMs, ~1522 drones per FDD by Mar 5"
+        ]
+      },
+      {
+        "day": 5,
+        "date": "2026-03-04",
+        "ballistic_missiles": 40,
+        "cruise_missiles": 0,
+        "drones_owa": 45,
+        "total": 85,
+        "confidence": 0.65,
+        "notes": "Gulf News breakdown. Cruise missiles effectively exhausted. Sharp drop in drones too — launcher destruction taking effect.",
+        "target_split_pct": { "israel": 25, "us_gulf_bases": 75 },
+        "key_events": [
+          "First Israeli casualties: 2 soldiers wounded in Lebanon",
+          "20+ Iranian naval vessels destroyed",
+          "BM attacks down 70-85% from Day 1 per CENTCOM"
+        ]
+      },
+      {
+        "day": 6,
+        "date": "2026-03-05",
+        "ballistic_missiles": 5,
+        "cruise_missiles": 0,
+        "drones_owa": 30,
+        "total": 35,
+        "confidence": 0.6,
+        "notes": "Gulf News estimate (~5 BMs, ~30 drones). Cooper: BM attacks down 90%, drone attacks down 83%.",
+        "target_split_pct": { "israel": 20, "us_gulf_bases": 80 },
+        "key_events": [
+          "Cooper announces 90% BM decline, 83% drone decline",
+          "Iran navy effectively destroyed",
+          "CENTCOM: 3000+ targets struck in Iran"
+        ]
+      },
+      {
+        "day": 7,
+        "date": "2026-03-06",
+        "ballistic_missiles": 15,
+        "cruise_missiles": 0,
+        "drones_owa": 80,
+        "total": 95,
+        "confidence": 0.6,
+        "notes": "Slight uptick from Day 6 as Iran redeploys surviving launchers. IDF estimates 100-200 launchers remaining. 30+ ships destroyed.",
+        "target_split_pct": { "israel": 20, "us_gulf_bases": 80 },
+        "key_events": [
+          "Iran drone carrier (WWII-size) struck and on fire",
+          "6 BM barrages/day still aimed at Israel, most intercepted",
+          "IDF estimates 100-200 launchers remaining"
+        ]
+      },
+      {
+        "day": 8,
+        "date": "2026-03-07",
+        "ballistic_missiles": 16,
+        "cruise_missiles": 0,
+        "drones_owa": 121,
+        "total": 137,
+        "confidence": 0.75,
+        "notes": "UAE reports 16 BMs + 121 drones on this day. Dubai airport hit by drone. IDF strikes oil refineries for first time (Tondgouyan, Shahran).",
+        "target_split_pct": { "israel": 20, "us_gulf_bases": 80 },
+        "target_breakdown_known": {
+          "uae": { "bm": 16, "drones": 121, "source": "UAE MOD via FDD Mar 7-8" },
+          "saudi": { "bm": 3, "drones": 18, "notes": "Shaybah targeted, Prince Sultan AB, Al-Kharj" },
+          "israel": { "bm_waves": 10, "notes": "10 BM waves between Mar 6 3pm - Mar 7 3pm per Critical Threats" }
+        },
+        "key_events": [
+          "CENTCOM: 3000+ targets struck, 43 ships damaged/destroyed",
+          "IDF strikes oil refineries for first time",
+          "Israel estimates ~120 launchers remaining",
+          "Pezeshkian orders stop strikes on neighbors — IRGC ignores",
+          "Dubai airport hit by drone despite intercept",
+          "Saudi: 8 drones + 1 BM intercepted",
+          "7th US service member dies (wounded Mar 1)",
+          "Azerbaijan accuses Iran of drone attack on Nakhchivan"
+        ]
+      },
+      {
+        "day": 9,
+        "date": "2026-03-08",
+        "ballistic_missiles": 17,
+        "cruise_missiles": 0,
+        "drones_owa": 117,
+        "total": 134,
+        "confidence": 0.75,
+        "notes": "UAE daily: 17 BMs (16 intercepted, 1 sea), 117 drones (113 intercepted, 4 landed). Mojtaba Khamenei named Supreme Leader.",
+        "target_split_pct": { "israel": 20, "us_gulf_bases": 80 },
+        "target_breakdown_known": {
+          "uae_cumulative": { "bm": 246, "drones": 1422, "cm": 8, "source": "FDD Mar 8" },
+          "kuwait_cumulative": { "bm": 219, "drones": 406, "source": "FDD Mar 8" },
+          "qatar_cumulative": { "bm": 129, "drones": 63, "aircraft": 2, "source": "QNA Mar 8" },
+          "bahrain_cumulative": { "missiles": 95, "drones": 164, "source": "Bahrain MOD" }
+        },
+        "key_events": [
+          "Mojtaba Khamenei named new Supreme Leader",
+          "Kuwait airport fuel tanks hit by drones",
+          "Bahrain desalination plant hit",
+          "Al-Kharj (Saudi) residential area hit: 2 killed, 12 injured",
+          "NATO intercepted BM over Turkish airspace (first time)",
+          "Qatar intercepts 6 BMs + 2 CMs"
+        ]
+      },
+      {
+        "day": 10,
+        "date": "2026-03-09",
+        "ballistic_missiles": 10,
+        "cruise_missiles": 0,
+        "drones_owa": 80,
+        "total": 90,
+        "confidence": 0.55,
+        "notes": "Estimated from trend + reported events. 9 BM waves at Israel (Mar 8 3pm - Mar 9 3pm). Cluster munition warheads confirmed on BMs hitting Israel.",
+        "target_split_pct": { "israel": 25, "us_gulf_bases": 75 },
+        "key_events": [
+          "Iran FM: no room for ceasefire while attacks continue",
+          "NATO intercepted 2nd BM over Turkish airspace (Gaziantep area)",
+          "Turkey deploys 6 F-16s + air defense to Northern Cyprus",
+          "Trump: 'war is very complete' then backtracks",
+          "Israel: wide-scale strikes on Tehran, Isfahan, southern Iran",
+          "11+ killed in Israel total from Iranian missiles since war start",
+          "Bahrain: Iranian drone struck Sitra, 32 injured",
+          "Saudi intercepts 2 drones at Shaybah",
+          "BMs with cluster munition warheads hit 7 locations in Israel"
+        ]
+      },
+      {
+        "day": 11,
+        "date": "2026-03-10",
+        "ballistic_missiles": 8,
+        "cruise_missiles": 0,
+        "drones_owa": 60,
+        "total": 68,
+        "confidence": 0.45,
+        "notes": "Estimated — today. Near exhaustion of mobile launchers. IDF striking rocket engine production + long-range BM launch sites.",
+        "target_split_pct": { "israel": 20, "us_gulf_bases": 80 },
+        "key_events": [
+          "Oil surges toward $120/bbl",
+          "France deploying 8 frigates + 2 amphibious carriers",
+          "IDF struck rocket engine production + long-range BM launch sites",
+          "Heavy explosions across Tehran",
+          "Iran FM Araghchi threatens to destroy HIMARS",
+          "Oman sultan congratulates Mojtaba Khamenei",
+          "IAEA: enriched uranium stockpile intact despite strikes",
+          "Bahrain: Iranian drone struck residential area, 32 civilians injured"
+        ]
+      }
+    ],
+    "cumulative_totals": {
+      "as_of": "2026-03-10",
+      "ballistic_missiles": 806,
+      "cruise_missiles": 25,
+      "drones_owa": 2233,
+      "grand_total": 3064,
+      "notes": "Sum of daily estimates. Fars/Pentagon claimed 500+ BMs and 2000+ drones by Day 4. FDD tracked 585 BMs + 1522 drones by Day 6. Our total reflects continued launches Days 7-11."
+    },
+    "cumulative_by_target": {
+      "as_of": "2026-03-08",
+      "source": "Gulf state defense ministries via FDD/Reuters Mar 8",
+      "uae": { "bm": 246, "drones": 1422, "cm": 8, "intercepted_bm": 229, "intercepted_drones": 1342, "intercept_rate_bm": 0.90, "intercept_rate_drones": 0.94 },
+      "kuwait": { "bm": 219, "drones": 406 },
+      "qatar": { "bm": 129, "drones": 63, "aircraft": 2, "intercepted_bm": 121, "intercepted_drones": 47 },
+      "bahrain": { "missiles": 95, "drones": 164 },
+      "jordan": { "missiles": 60, "drones": 59, "total": 119, "intercepted": 108, "source": "Jordan Armed Forces" },
+      "saudi": { "notes": "Less comprehensive reporting. Documented: Shaybah, Prince Sultan AB, Al-Kharj, Berri, Riyadh targeted. Intercepted 23 drones + 3 missiles in one reported batch." },
+      "israel": { "drones_intercepted": 110, "bm_waves_per_day": "6-10", "notes": "~40% of BMs initially, declining to ~20% by Day 5+. 11+ killed total." },
+      "oman": { "notes": "Duqm Port hit twice, 2 tankers attacked, generally neutral" },
+      "cyprus": { "notes": "RAF Akrotiri hit by loitering munition Mar 1" },
+      "overall_gulf_intercept_rate": 0.94
+    }
+  },
+  "us_israel_strikes_on_iran": {
+    "description": "US (Epic Fury) + Israel (Roaring Lion) strikes ON Iranian territory and assets",
+    "daily": [
+      {
+        "day": 1,
+        "date": "2026-02-28",
+        "targets_struck": 1500,
+        "targets_struck_note": "1500+ strikes in first 24h. Double scale of 2003 Shock & Awe.",
+        "sorties": null,
+        "key_targets": [
+          "Khamenei killed in initial strikes",
+          "IRGC HQ, air defense sites, command nodes",
+          "9 naval vessels destroyed including drone carrier Shahid Bagheri",
+          "Nuclear facilities (initial)",
+          "Ballistic missile storage sites"
+        ],
+        "iran_ships_destroyed_cumulative": 9,
+        "iran_launchers_destroyed_cumulative": null,
+        "us_kia_cumulative": 0,
+        "confidence": 0.8
+      },
+      {
+        "day": 2,
+        "date": "2026-03-01",
+        "targets_struck_cumulative": 1700,
+        "targets_struck_note": "Approaching 1700 in 72h window",
+        "sorties": null,
+        "key_targets": [
+          "Continued SEAD operations",
+          "IADS degradation accelerating",
+          "1 additional naval vessel destroyed"
+        ],
+        "iran_ships_destroyed_cumulative": 10,
+        "iran_launchers_destroyed_cumulative": null,
+        "us_kia_cumulative": 6,
+        "us_wia_cumulative": 18,
+        "confidence": 0.75
+      },
+      {
+        "day": 3,
+        "date": "2026-03-02",
+        "targets_struck_cumulative": 1700,
+        "targets_struck_note": "1700 targets in first 72h confirmed by Fox/CENTCOM",
+        "iaf_sorties_cumulative": null,
+        "key_targets": [
+          "17 naval vessels + 1 submarine destroyed (CENTCOM)",
+          "B-2 → B-1 → B-52 bomber escalation confirms air superiority",
+          "PrSM first combat use"
+        ],
+        "iran_ships_destroyed_cumulative": 18,
+        "iran_launchers_destroyed_cumulative": null,
+        "us_kia_cumulative": 6,
+        "confidence": 0.7
+      },
+      {
+        "day": 4,
+        "date": "2026-03-03",
+        "targets_struck_cumulative": 2000,
+        "iaf_sorties_cumulative": 1600,
+        "iaf_munitions_cumulative": 4000,
+        "key_targets": [
+          "IAF: 1600 strike sorties, 4000+ munitions (equals entire June 2025 war)",
+          "B-1B Lancers conducting deep strikes",
+          "IADS neutralized — B-52s operating freely"
+        ],
+        "iran_ships_destroyed_cumulative": 18,
+        "iran_launchers_destroyed_cumulative": null,
+        "us_kia_cumulative": 6,
+        "confidence": 0.7
+      },
+      {
+        "day": 5,
+        "date": "2026-03-04",
+        "targets_struck_cumulative": 2500,
+        "key_targets": [
+          "20+ naval vessels destroyed total",
+          "Satellite imagery: strikes on Imam Ali Missile Base",
+          "Parchin, Shahroud missile facilities hit",
+          "Basij HQ hit"
+        ],
+        "iran_ships_destroyed_cumulative": 20,
+        "iran_military_killed_est": 2100,
+        "iran_launchers_destroyed_cumulative": null,
+        "us_kia_cumulative": 6,
+        "confidence": 0.65
+      },
+      {
+        "day": 6,
+        "date": "2026-03-05",
+        "targets_struck_cumulative": 3000,
+        "targets_struck_note": "CENTCOM confirms 3000+ targets",
+        "key_targets": [
+          "Iran navy effectively destroyed — no surface combatants operational",
+          "Mojtaba Khamenei survived airstrike",
+          "SNSC HQ and Expediency Council building destroyed",
+          "F-35I scored first air-to-air kill (Yak-130)",
+          "3 US F-15s lost to friendly fire (Kuwaiti F/A-18)"
+        ],
+        "iran_ships_destroyed_cumulative": 24,
+        "iran_launchers_destroyed_cumulative": 250,
+        "us_kia_cumulative": 6,
+        "confidence": 0.7
+      },
+      {
+        "day": 7,
+        "date": "2026-03-06",
+        "targets_struck_cumulative": 3200,
+        "key_targets": [
+          "30+ Iranian ships destroyed (up from 24)",
+          "Drone carrier struck and on fire",
+          "Esfahan Missile Complex underground facilities struck",
+          "Focus shifting to production/rebuild capability"
+        ],
+        "iran_ships_destroyed_cumulative": 30,
+        "iran_launchers_destroyed_cumulative": 280,
+        "iran_launchers_remaining_est": "100-200",
+        "us_kia_cumulative": 6,
+        "confidence": 0.65
+      },
+      {
+        "day": 8,
+        "date": "2026-03-07",
+        "targets_struck_cumulative": 3500,
+        "idf_targets_2day": 300,
+        "idf_targets_note": "IDF struck 300+ targets in Iran in past 2 days",
+        "key_targets": [
+          "43 ships damaged/destroyed total (CENTCOM)",
+          "IDF struck oil refineries for first time (Tondgouyan, Shahran)",
+          "Missile production complexes targeted",
+          "Defense industrial sites",
+          "IRGC infrastructure"
+        ],
+        "iran_ships_destroyed_cumulative": 43,
+        "iran_launchers_destroyed_cumulative": 300,
+        "iran_launchers_remaining_est": 120,
+        "iran_bm_stockpile_remaining_est": 1000,
+        "us_kia_cumulative": 7,
+        "us_kia_note": "7th died Mar 7 from Mar 1 wounds",
+        "confidence": 0.7
+      },
+      {
+        "day": 9,
+        "date": "2026-03-08",
+        "targets_struck_cumulative": 3600,
+        "key_targets": [
+          "Continued strikes on missile storage and launchers",
+          "Kuwait airport fuel tanks hit (by Iran, not US strike)",
+          "Bahrain desalination plant hit (by Iran)",
+          "Targeting coordination degrading for Iran"
+        ],
+        "iran_ships_destroyed_cumulative": 43,
+        "iran_launchers_destroyed_cumulative": 310,
+        "iran_launchers_remaining_est": "80-120",
+        "us_kia_cumulative": 7,
+        "confidence": 0.6
+      },
+      {
+        "day": 10,
+        "date": "2026-03-09",
+        "targets_struck_cumulative": 3700,
+        "key_targets": [
+          "Israel: wide-scale strikes on Tehran, Isfahan, southern Iran",
+          "Striking deeper into Iran",
+          "Leadership targets in Tehran"
+        ],
+        "iran_ships_destroyed_cumulative": 43,
+        "iran_launchers_destroyed_cumulative": 330,
+        "iran_launchers_remaining_est": "80-120",
+        "us_kia_cumulative": 7,
+        "israel_killed_cumulative": 11,
+        "confidence": 0.55
+      },
+      {
+        "day": 11,
+        "date": "2026-03-10",
+        "targets_struck_cumulative": 3800,
+        "targets_struck_note": "Estimated — today",
+        "key_targets": [
+          "IDF struck rocket engine production facilities",
+          "Long-range BM launch sites targeted",
+          "Heavy explosions across Tehran",
+          "France deploying 8 frigates + 2 amphibious carriers"
+        ],
+        "iran_ships_destroyed_cumulative": 43,
+        "iran_launchers_destroyed_cumulative": 340,
+        "iran_launchers_remaining_est": "80-110",
+        "us_kia_cumulative": 7,
+        "israel_killed_cumulative": 11,
+        "oil_price_brent": 120,
+        "confidence": 0.45
+      }
+    ]
+  },
+  "trend_summary": {
+    "iran_bm_daily_rate": [350, 175, 120, 50, 40, 5, 15, 16, 17, 10, 8],
+    "iran_drone_daily_rate": [550, 500, 350, 300, 45, 30, 80, 121, 117, 80, 60],
+    "iran_total_daily_rate": [910, 683, 475, 352, 85, 35, 95, 137, 134, 90, 68],
+    "us_targets_struck_cumulative": [1500, 1700, 1700, 2000, 2500, 3000, 3200, 3500, 3600, 3700, 3800],
+    "iran_ships_destroyed_cumulative": [9, 10, 18, 18, 20, 24, 30, 43, 43, 43, 43],
+    "iran_launchers_remaining": [null, null, null, null, null, 200, 150, 120, 110, 100, 90],
+    "dates": ["2026-02-28", "2026-03-01", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-07", "2026-03-08", "2026-03-09", "2026-03-10"]
+  },
+  "intercept_data": {
+    "overall_gulf_rate": 0.94,
+    "uae_bm_rate": 0.90,
+    "uae_drone_rate": 0.94,
+    "patriot_rate_trend": [0.82, 0.83, 0.85, 0.87, 0.88, 0.90, 0.91, 0.92, 0.93, 0.93, 0.94],
+    "cost_exchange_ratio": "20-28:1 defender:attacker for drones",
+    "patriot_interceptor_cost_usd": 4000000,
+    "shahed_136_cost_usd": "20000-50000"
+  },
+  "casualties": {
+    "us": {
+      "kia": 7,
+      "kia_timeline": "6 on Mar 1-2 (Kuwait, projectile penetrated air defense), 7th died Mar 7 from wounds",
+      "wia": 18
+    },
+    "israel": {
+      "killed": 11,
+      "notes": "Civilian + military, from Iranian BMs since war start. Cluster munition warheads confirmed."
+    },
+    "iran_military": {
+      "killed_est": 2100,
+      "killed_est_note": "As of Mar 4. Likely much higher by Mar 10 but no updated figures.",
+      "ships_destroyed": 43,
+      "aircraft_destroyed": "entire air force (SecDef confirmed)",
+      "iads_status": "neutralized"
+    },
+    "iran_civilian": {
+      "killed_est": 555,
+      "killed_est_note": "Iranian Red Crescent figure from Day 1 only. No updated cumulative figure available.",
+      "likely_much_higher": true
+    },
+    "gulf_civilian": {
+      "uae": { "killed": 4, "injured": 112, "note": "Foreign national workers" },
+      "kuwait": { "injured": 27, "note": "Soldiers at Camp Arifjan area" },
+      "saudi": { "killed": 2, "injured": 12, "note": "Al-Kharj residential area Mar 8" },
+      "bahrain": { "injured": 32, "note": "Sitra drone strike Mar 9" },
+      "jordan": { "injured": "minor", "note": "Debris from intercepts" }
+    }
+  }
+}
