@@ -4,86 +4,84 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CENTCOM War Game is a self-contained, single-file browser application (~493KB `index.html`) that simulates a US/Iran military conflict using real OSINT data. Created with Perplexity Computer. No build system, no dependencies to install, no backend.
+CENTCOM War Game simulates a US/Iran military conflict using real OSINT data (IISS, CSIS, EIA, IMF). Modular vanilla JS source files are concatenated by `build.sh` into a single `index.html` (~5500 lines) for zero-config GitHub Pages hosting. No npm, no bundler -- just bash concatenation. External deps (Leaflet.js, Chart.js) loaded via CDN.
 
-## Running
+## Commands
 
 ```bash
-open index.html  # macOS — opens in default browser
-```
+# Build
+bash build.sh              # Concatenates src/ -> index.html, prints line/byte count
 
-No build step, no server required. All logic runs client-side.
+# Run
+open index.html            # macOS — opens in default browser (no server needed)
+
+# Test
+node --test tests/*.test.js       # Run all tests (26 tests, Node.js test runner)
+node --test tests/combat.test.js  # Run a single test file
+
+# Calibration
+node backfill.js --calibrate      # Daily OSINT: query Perplexity, patch DIPLOMATIC_EVENTS in index.html
+node backfill.js --dry-run        # Query without patching
+node backfill.js --patch          # Apply conflict_timeline.json to index.html
+```
 
 ## Architecture
 
-Everything lives in `index.html` (~5500 lines), structured in this order:
+### Source Structure (`src/`)
 
-### 1. CSS (~lines 29-730)
-Dark theme with CSS custom properties in `:root`. Layout uses `position: fixed` overlays on a full-viewport Leaflet map: top nav, right sidebar (events/timeline/charts tabs), floating KPI cards, bottom timeline slider.
+Three layers, concatenated in dependency order by `build.sh`:
 
-### 2. HTML (~lines 731-1085)
-Semantic structure: `#map` div, `.topnav` with scenario tabs, `.right-sidebar` with three tab panels (events, timeline, charts), settings drawer, Monte Carlo modal, bottom timeline with play/pause and day slider.
+| Layer | Files | Purpose |
+|-------|-------|---------|
+| `src/data/` (8 files) | `mil-data.js`, `us-orbat.js`, `iran-orbat.js`, `proxy-data.js`, `economic.js`, `econ-backfill.js`, `conflict-timeline.js`, `diplomatic-events.js` | OSINT datasets as `const` JS objects |
+| `src/sim/` (17 files) | `constants.js`, `rng.js`, `simulation-state.js`, `sim-runner.js`, `force-init.js`, `combat.js`, `game-tree.js`, `escalation.js`, `cyber-model.js`, `proxy-model.js`, `naval-air-model.js`, `economic-model.js`, `sim-step.js`, `scenarios.js`, `sensitivity.js` | Simulation engine |
+| `src/ui/` (13 files) | `init.js`, `map.js`, `charts.js`, `settings.js`, `playback.js`, `kpi.js`, `chart-updates.js`, `game-tree-ui.js`, `events.js`, `monte-carlo-ui.js`, `sensitivity-ui.js`, `theme.js`, `app-init.js` | Leaflet map, Chart.js, playback controls |
 
-### 3. Embedded OSINT Data (~lines 1215-1660)
-Seven large JSON objects plus one growing object inlined as `const` declarations:
-- `MIL_DATA` (line 1215) — Military forces dataset (CSIS, IISS sources)
-- `PROXY_DATA` (line 1217) — Iranian proxy forces and alliance networks
-- `US_ORBAT` (line 1221) — US CENTCOM Order of Battle (unit-level)
-- `IRAN_ORBAT` (line 1223) — Iranian military ORBAT
-- `ECON_BACKFILL` (line 1225) — Economic baselines (EIA oil, IMF GDP)
-- `CONFLICT_TIMELINE` (line 1227) — Operation Epic Fury day-by-day timeline
-- `DIPLOMATIC_EVENTS` (line 1232) — Real-world diplomatic/escalation events (auto-updated daily by calibration pipeline)
+### Build System
 
-Note: `IRAN_MISSILES` and `IRAN_NUCLEAR` were removed; missile data is now embedded in `IRAN_ORBAT` and nuclear data in `MIL_DATA`.
+`build.sh` reads `src/template.html`, finds the `INSERT_JS` marker inside the `<script>` block, and replaces it with all JS files concatenated in the order listed in `JS_FILES` array. The output is `index.html`.
 
-### 4. Simulation Engine (~lines 1540-3855)
-Constants, helpers, and core classes:
-- **`MilitaryUnit`** (line 1661) — Individual unit with strength, attrition, missile fire
-- **`EconomicState`** (line 1714) — Oil price, GDP impact, Hormuz flow tracking
-- **`CyberState`** (line 1733) — Cyber warfare state
-- **`SimulationState`** (line 1744) — Aggregates all state per simulation tick
-- **`WarGameSimulation`** (line 1785) — Main simulation class:
-  - `defaultParams()` (line 1837) — baseline parameters (force multipliers, escalation propensity, tech advantage, intercept rates)
-  - `initForces()` — builds `MilitaryUnit` arrays from ORBAT data
-  - Day-step simulation with Lanchester combat model, game-theoretic escalation (7 levels: Diplomatic Tensions through Nuclear), economic shock propagation, proxy/cyber warfare
-  - Seeded PRNG (`mulberry32`) for reproducible runs
+### Split-Class Pattern
 
-### 5. Scenario Presets (~line 3857)
-`WarGameSimulation.SCENARIO_PRESETS` — five presets as static property:
-- `pre_war` — Full Iranian military, diplomatic tensions
-- `epic_fury_day1` — Opening strikes, high escalation propensity
-- `epic_fury_day5` — Iran navy/AF destroyed, low escalation
-- `epic_fury_day7` — Full air superiority, mop-up
-- `ground_invasion` — Hypothetical US ground escalation
+`WarGameSimulation` is split across two files due to the concatenation build:
+- `src/sim/sim-runner.js` — Opens the class: constructor, `defaultParams()`, `_validateParams()`, `run()`
+- `src/sim/sim-step.js` — Adds `step()` and all sub-methods as prototype assignments to the open class
 
-### 6. UI Layer (~lines 4242-5497)
-- **Map** — Leaflet.js with military unit markers, strike animations, range circles
-- **Charts** — Chart.js (oil price, casualties, force strength, escalation over time)
-- **Monte Carlo** — `runMonteCarlo()` runs 100 simulations, renders statistical summary (median, P5/P95 for casualties, oil, costs, nuclear probability)
-- **Playback** — Day-by-day timeline with play/pause, slider scrubbing
-- Auto-selects "Epic Fury Day 7" preset on page load
+Other sim files (`combat.js`, `escalation.js`, `game-tree.js`, etc.) add methods the same way. The class is only complete after all sim files are concatenated.
+
+### Test Infrastructure
+
+Tests use Node.js built-in test runner (`node:test`) with zero external deps. `tests/test-helper.js` loads the sim engine by:
+1. Reading all data + sim source files
+2. Wrapping them in an IIFE
+3. Running via `vm.runInThisContext` to populate `globalThis`
+
+This avoids ES modules -- the source uses `var`/`const` at file scope (not `export`), so `vm.runInThisContext` with the globalThis wrapper is the only way to make classes available to tests.
 
 ## Key Design Decisions
 
-- **Single-file deployment**: All CSS, HTML, JS, and data inlined for zero-config GitHub Pages hosting. External dependencies (Leaflet, Chart.js, Google Fonts) loaded via CDN.
-- **Seeded PRNG**: `mulberry32` ensures Monte Carlo runs are reproducible given the same seed.
-- **Escalation model**: 7 discrete levels (0-7) with cumulative probability thresholds. Nuclear threshold uses daily rate, not cumulative, to prevent unrealistic escalation.
-- **Casualty ratios**: Calibrated to 12-57:1 Iran:US based on historical asymmetric conflict data.
-- **Oil price model**: Hard-bounded to $85-200 range (realistic per ECON_BACKFILL scenario projections) with Hormuz closure as primary driver. Baseline: $108.75 (Brent, Mar 9 2026). User-tunable via `oil_price_elasticity` parameter.
+- **Seeded PRNG**: `mulberry32` in `src/sim/rng.js` ensures reproducible Monte Carlo runs
+- **Escalation model**: 7 discrete levels (0-7). Nuclear threshold uses daily rate, not cumulative, to prevent unrealistic escalation
+- **Casualty ratios**: Calibrated to 12-57:1 Iran:US (historical asymmetric conflict data)
+- **Oil price model**: Bounded $85-200, baseline $108.75 (Brent, Mar 2026), Hormuz closure as primary driver
+- **OSINT injection**: `DIPLOMATIC_EVENTS` overrides game tree decisions for known conflict days; trend extrapolation for projected days
 
-## Modification Tips
+## Modification Guide
 
-- To adjust simulation parameters: search for `static defaultParams()` or `SCENARIO_PRESETS`
-- To add a new scenario: add entry to `WarGameSimulation.SCENARIO_PRESETS` and add a tab in `buildScenarioTabs()`
-- To update OSINT data: replace the relevant `const` JSON object (search for the constant name, e.g. `const MIL_DATA`)
-- To modify map markers/animations: look for Leaflet `L.marker` and `L.circle` calls in the UI layer
-- CSS design tokens are all in `:root` for theming
+- **Simulation parameters**: `src/sim/sim-runner.js` (`defaultParams()`) or `src/sim/scenarios.js` (presets)
+- **Add a scenario**: Add to `SCENARIO_PRESETS` in `src/sim/scenarios.js`, add tab in `src/ui/init.js` (`buildScenarioTabs()`)
+- **Update OSINT data**: Edit the relevant file in `src/data/`, then run `bash build.sh`
+- **CSS theming**: Custom properties in `:root` inside `src/template.html`
+- **Combat constants**: `src/sim/constants.js` (16 named constants including `ATTRITION_COEFF_BASE`)
 
 ## Daily Calibration Pipeline
 
-The `DIPLOMATIC_EVENTS` object is auto-updated by a daily pipeline:
+`DIPLOMATIC_EVENTS` is auto-updated daily:
 
-- **Script**: `backfill.js --calibrate`
-- **Schedule**: Launchd job `com.eesb99.centcom-calibrate` runs at 3AM daily
-- **What it does**: Queries Perplexity for latest OSINT, derives `param_calibration` overrides, patches `DIPLOMATIC_EVENTS` in `index.html`, commits and pushes to GitHub Pages
-- **Key detail**: `DIPLOMATIC_EVENTS` uses JS syntax (single-quoted strings, unquoted numeric keys); `backfill.js` converts JS-to-JSON before parsing. See project memory for known parsing edge cases.
+- **Primary**: Mac Mini launchd (`com.eesb99.centcom-calibrate`) at 03:00 UTC
+- **Fallback**: GitHub Actions (`.github/workflows/backfill.yml`) at 07:00 UTC
+- **Script**: `node backfill.js --calibrate` queries Perplexity API, derives `param_calibration` overrides, patches `DIPLOMATIC_EVENTS` directly in `index.html`
+
+**Critical**: `--calibrate` patches `index.html` in-place. Never run `build.sh` after `--calibrate` -- it regenerates `index.html` from `src/` and overwrites the patches. Correct CI order: `git pull -> calibrate -> git add -> commit -> push`.
+
+`DIPLOMATIC_EVENTS` uses JS syntax (single-quoted strings, unquoted numeric keys); `backfill.js` converts to JSON before parsing.
