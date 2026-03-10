@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **Status**: OSINT data extended to Day 11, combat model calibrated, live on GitHub Pages
+- **Status**: OSINT data extended to Day 11, combat model calibrated, reliability audited, live on GitHub Pages
 - **URL**: https://eesb99.github.io/centcom-wargame-ghpages/
 - **Repo**: https://github.com/eesb99/centcom-wargame-ghpages
 - **Branch**: main
@@ -42,6 +42,50 @@ tests/        7 files - combat, game-tree, escalation, monte-carlo, integration,
 1. **OSINT Corridor (Days 1-11)**: Real events drive actions + params calibrated to reality
 2. **Active Extrapolation (Days 12-18)**: Trends continue with 8%/day decay
 3. **Stabilization (Days 19+)**: Parameters converge, model runs procedurally
+
+---
+
+## Session 9 Summary (2026-03-10)
+
+### Goals
+- Analyze ceasefire probability mechanics (why does it reach 60%?)
+- Audit reliability of all simulation algorithms against historical data
+- Assess data availability for validation
+
+### Findings
+
+**Ceasefire probability does NOT reach 60% during OSINT corridor (Days 1-11).** All 11 days have `ceasefire_signals: 0`. The 60% figure appears around Day 22 in projected days via the procedural formula: `min(0.95, (1 - 0.78^subsiding_days) * 0.6 + diplomatic_momentum * 0.4)`.
+
+**Algorithm Reliability Audit:**
+
+| Algorithm | Reliability | Key Finding |
+|-----------|-------------|-------------|
+| Monte Carlo infra | High | Deterministic, reproducible, well-tested |
+| OSINT injection | High | Daily ground truth, dual redundancy |
+| Escalation (OSINT) | High | Direct data injection |
+| Escalation (projected) | Moderate | Untestable extrapolation |
+| Combat ratio | Moderate | 14.4:1 is plausible (between Iraq 68-177:1 and Hezbollah 2-5:1) |
+| Combat absolute casualties | Low | No US-Iran precedent exists |
+| Ceasefire formula | Low | All coefficients hand-tuned, no validation data |
+| Oil price model | Moderate | Simplified single-coefficient elasticity |
+
+**Historical Data Availability:**
+- Desert Storm: 147 US KIA, 20-26K Iraqi KIA (136-177:1) -- DoD DCAS, PDA
+- Iraq 2003: 114 US KIA, 7.7-11.8K Iraqi KIA (68-103:1) -- DoD DCAS, PDA
+- Op. Praying Mantis 1988: 2 US KIA, ~56 Iranian KIA (28:1) -- only direct US-Iran engagement
+- Lebanon 2006: 121 IDF KIA, 250-600 Hezbollah KIA (2-5:1) -- Iran's best proxy benchmark
+- **Ceasefire timelines: No standardized daily-resolution dataset exists** (UCDP, ACLED, Fortna all lack this)
+
+### Decisions Made
+- **14.4:1 ratio is defensible**: Iraq 1991/2003 is wrong benchmark (no BM/drone capability). Iran sits between Iraq collapse and Hezbollah fortified defense.
+- **Test acceptance bands are intentionally wide**: >= 5:1 accommodates genuine uncertainty range
+- **Ceasefire model may be too fast**: Historical 30-45 day benchmarks vs our ~22 day trajectory, but no data to prove it
+
+### Next Steps
+- [ ] Debug "Run Full Simulation" button
+- [ ] Tighten combat calibration (raise STRIKE_CASUALTY_BASE for Iran casualties)
+- [ ] Add ceasefire trajectory tests (structural, not empirical)
+- [ ] Consider Fortna/CoW datasets for ceasefire parameterization
 
 ---
 
