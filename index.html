@@ -1577,33 +1577,41 @@ const DIPLOMATIC_EVENTS = {
     },
     "12": {
       "date": "2026-03-11",
-      "diplomatic_momentum": 0.05,
+      "diplomatic_momentum": 0.1,
       "mediation_active": false,
-      "ceasefire_signals": 0.02,
-      "escalation_override": 3,
-      "events": [],
+      "ceasefire_signals": 0.05,
+      "escalation_override": 4,
+      "events": [
+        "US service member death: The seventh US service member killed in Operation Epic Fury passed away last night from injuries sustained in an Iranian attack on US troops in Saudi Arabia on March 1.[1]",
+        "CENTCOM Commander Adm. Brad Cooper update: US forces continue delivering devastating combat power against Iran every hour from different locations; strikes took out the last Soleimani-class warship, eliminating the entire class; bomber force hit a large ballistic missile manufacturing facility last night; air superiority exercised over vast swaths of Iran.[2][5]",
+        "Pentagon briefing: Over 5,000 targets struck to date; US Strategic bombers dropped dozens of 2,000-pound GPS penetrating weapons on deeply buried missile launchers; several one-way drone factories struck; more than 50 Iranian naval ships destroyed in first 10 days; ongoing hunts for mine-laying vessels and storage facilities.[3]",
+        "Iranian retaliation decline: Iranian ballistic missile and drone attacks have dropped drastically since the first 24 hours, though forces continue targeting civilians in Gulf countries from populated Iranian cities.[2]",
+        "Naval operations progress: Substantial progress destroying Iranian navy, including sinking a drone carrier ship (noted last Thursday); strikes on navy capabilities to sustain Strait of Hormuz movement.[2][3]",
+        "US strikes on Iranian capabilities: Methodical dismantling of Iranian missiles, drones, and defense industrial base; strikes deeper into military-industrial complex to prevent future power projection.[2][3]",
+        "Operation status: Entering Day 12 with major combat operations continuing; US combat power building while Iranian combat power declining; focused on eliminating Iran's ability to project power.[1][2]"
+      ],
       "proxy": {
-        "hezbollah_active": false,
-        "houthi_active": false,
-        "iraqi_militia_active": false
+        "hezbollah_active": true,
+        "houthi_active": true,
+        "iraqi_militia_active": true
       },
-      "us_posture": "maximum_force",
+      "us_posture": "sustained_operations",
       "iran_posture": "fragmented_resistance",
       "param_calibration": {
-        "escalation_propensity": 0.25,
-        "iran_force_multiplier": 0.15,
+        "escalation_propensity": 0.65,
+        "iran_force_multiplier": 0.22,
         "us_tech_advantage": 2.3,
-        "iran_asymmetric_factor": 0.3,
-        "proxy_effectiveness": 0.1,
-        "cyber_intensity": 0.4,
+        "iran_asymmetric_factor": 0.35,
+        "proxy_effectiveness": 0.4,
+        "cyber_intensity": 0.3,
         "hormuz_mining_probability": 0.15,
         "oil_price_elasticity": -0.12,
         "patriot_intercept_rate": 0.95,
-        "iran_mine_warfare_effectiveness": 0.1,
+        "iran_mine_warfare_effectiveness": 0.12,
         "us_mcm_effectiveness": 0.75,
-        "iraq_production_loss_pct": 45,
-        "lng_disruption_pct": 60,
-        "opec_actual_response_mbd": 2.1
+        "iraq_production_loss_pct": 25,
+        "lng_disruption_pct": 40,
+        "opec_actual_response_mbd": 1.8
       }
     }
   }
