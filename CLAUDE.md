@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CENTCOM War Game simulates a US/Iran military conflict using real OSINT data (IISS, CSIS, EIA, IMF). Modular vanilla JS source files are concatenated by `build.sh` into a single `index.html` (~5500 lines) for zero-config GitHub Pages hosting. No npm, no bundler -- just bash concatenation. External deps (Leaflet.js, Chart.js) loaded via CDN.
+CENTCOM War Game simulates a US/Iran military conflict using real OSINT data (IISS, CSIS, EIA, IMF). Modular vanilla JS source files are concatenated by `build.sh` into a single `index.html` (~5440 lines) for zero-config GitHub Pages hosting. No npm, no bundler -- just bash concatenation. External deps (Leaflet.js, Chart.js) loaded via CDN.
 
 ## Commands
 
@@ -34,12 +34,14 @@ Three layers, concatenated in dependency order by `build.sh`:
 | Layer | Files | Purpose |
 |-------|-------|---------|
 | `src/data/` (8 files) | `mil-data.js`, `us-orbat.js`, `iran-orbat.js`, `proxy-data.js`, `economic.js`, `econ-backfill.js`, `conflict-timeline.js`, `diplomatic-events.js` | OSINT datasets as `const` JS objects |
-| `src/sim/` (17 files) | `constants.js`, `rng.js`, `simulation-state.js`, `sim-runner.js`, `force-init.js`, `combat.js`, `game-tree.js`, `escalation.js`, `cyber-model.js`, `proxy-model.js`, `naval-air-model.js`, `economic-model.js`, `sim-step.js`, `scenarios.js`, `sensitivity.js` | Simulation engine |
+| `src/sim/` (15 files) | `constants.js`, `rng.js`, `simulation-state.js`, `sim-runner.js`, `force-init.js`, `combat.js`, `game-tree.js`, `escalation.js`, `cyber-model.js`, `proxy-model.js`, `naval-air-model.js`, `economic-model.js`, `sim-step.js`, `scenarios.js`, `sensitivity.js` | Simulation engine |
 | `src/ui/` (13 files) | `init.js`, `map.js`, `charts.js`, `settings.js`, `playback.js`, `kpi.js`, `chart-updates.js`, `game-tree-ui.js`, `events.js`, `monte-carlo-ui.js`, `sensitivity-ui.js`, `theme.js`, `app-init.js` | Leaflet map, Chart.js, playback controls |
 
 ### Build System
 
 `build.sh` reads `src/template.html`, finds the `INSERT_JS` marker inside the `<script>` block, and replaces it with all JS files concatenated in the order listed in `JS_FILES` array. The output is `index.html`.
+
+**Note:** `sensitivity.js` is listed twice in `build.sh` `JS_FILES` array (lines 32-33) -- this is harmless (content duplicated) but should be cleaned up.
 
 ### Split-Class Pattern
 
@@ -69,7 +71,7 @@ This avoids ES modules -- the source uses `var`/`const` at file scope (not `expo
 ## Modification Guide
 
 - **Simulation parameters**: `src/sim/sim-runner.js` (`defaultParams()`) or `src/sim/scenarios.js` (presets)
-- **Add a scenario**: Add to `SCENARIO_PRESETS` in `src/sim/scenarios.js`, add tab in `src/ui/init.js` (`buildScenarioTabs()`)
+- **Add a scenario**: Add to `SCENARIO_PRESETS` in `src/sim/scenarios.js`, add tab in `src/ui/init.js` (`buildScenarioTabs()`). Current presets: `pre_war`, `epic_fury_day1/day5/day7`, `what_if_ground_invasion`, `limited`, `escalatory`, `proxy`, `worst`, `desert_storm_1991`, `iraq_2003`. Each preset is a key with `description` (string) + param overrides (no `name` field)
 - **Update OSINT data**: Edit the relevant file in `src/data/`, then run `bash build.sh`
 - **CSS theming**: Custom properties in `:root` inside `src/template.html`
 - **Combat constants**: `src/sim/constants.js` (16 named constants including `ATTRITION_COEFF_BASE`)
