@@ -1196,7 +1196,7 @@ const CONFLICT_TIMELINE = {"_metadata": {"title": "Operation Epic Fury — Day-b
 // Sources: CENTCOM, ICT SITREPs, FDD, CSIS, Reuters, Military Times, Wikipedia 2026 Iran war
 const DIPLOMATIC_EVENTS = {
   "conflict_start": "2026-02-28",
-  "last_updated": "2026-03-12",
+  "last_updated": "2026-03-13",
   "days": {
     "1": {
       "date": "2026-02-28",
@@ -1643,6 +1643,45 @@ const DIPLOMATIC_EVENTS = {
         "iraq_production_loss_pct": 18,
         "lng_disruption_pct": 22,
         "opec_actual_response_mbd": 1.8
+      }
+    },
+    "14": {
+      "date": "2026-03-13",
+      "diplomatic_momentum": 0.1,
+      "mediation_active": false,
+      "ceasefire_signals": 0.05,
+      "escalation_override": 5,
+      "events": [
+        "US total killed in action reaches **13** during Operation Epic Fury, with all **6** crew members of a KC-135 Stratotanker confirmed dead after crash in western Iraq (not due to hostile fire); incident occurred March 12, rescue ongoing[1][2][4][5].",
+        "Pentagon deploys **USS Tripoli** (Marine Amphibious Ready Group) with **2,500 Marines** and **2,500 sailors** from Japan to Middle East, arriving in 1-2 weeks amid Iranian threats to Strait of Hormuz[1].",
+        "Fire aboard **USS Gerald R. Ford** results in injuries but is under control, as confirmed in Pentagon briefing[4].",
+        "**Pentagon confirms 140 US troops wounded** by Iranian attacks in Gulf region (many returned to duty, 8 severely injured requiring evacuations)[3].",
+        "US shifts to **overhead strikes** on Iran (99% of munitions, preserving standoff weapons); **heaviest day of kinetic fires** planned, targeting ballistic missiles, drones, and navy; over **6,000 targets** struck in 13 days[1][4][5][7].",
+        "**Strait of Hormuz** sees very little shipping due to Iranian hostility; US destroying Iranian navy (51 ships hit overall), planning to reopen commercial flow[1][3][4][5].",
+        "First combat use of **PRISM precision strike missiles** by US Army/Marine artillery from outside Iran, hitting power projection sites[4][5]."
+      ],
+      "proxy": {
+        "hezbollah_active": true,
+        "houthi_active": true,
+        "iraqi_militia_active": true
+      },
+      "us_posture": "sustained_operations",
+      "iran_posture": "proxy_escalation",
+      "param_calibration": {
+        "escalation_propensity": 0.85,
+        "iran_force_multiplier": 0.15,
+        "us_tech_advantage": 2.3,
+        "iran_asymmetric_factor": 0.65,
+        "proxy_effectiveness": 0.7,
+        "cyber_intensity": 0.4,
+        "hormuz_mining_probability": 0.35,
+        "oil_price_elasticity": -0.12,
+        "patriot_intercept_rate": 0.95,
+        "iran_mine_warfare_effectiveness": 0.25,
+        "us_mcm_effectiveness": 0.75,
+        "iraq_production_loss_pct": 45,
+        "lng_disruption_pct": 60,
+        "opec_actual_response_mbd": 2.1
       }
     }
   }
