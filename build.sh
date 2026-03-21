@@ -30,7 +30,6 @@ JS_FILES=(
   src/sim/sim-step.js
   src/sim/scenarios.js
   src/sim/sensitivity.js
-  src/sim/sensitivity.js
   # UI layer
   src/ui/init.js
   src/ui/map.js

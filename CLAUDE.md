@@ -41,7 +41,6 @@ Three layers, concatenated in dependency order by `build.sh`:
 
 `build.sh` reads `src/template.html`, finds the `INSERT_JS` marker inside the `<script>` block, and replaces it with all JS files concatenated in the order listed in `JS_FILES` array. The output is `index.html`.
 
-**Note:** `sensitivity.js` is listed twice in `build.sh` `JS_FILES` array (lines 32-33) -- this is harmless (content duplicated) but should be cleaned up.
 
 ### Split-Class Pattern
 
@@ -62,11 +61,16 @@ This avoids ES modules -- the source uses `var`/`const` at file scope (not `expo
 
 ## Key Design Decisions
 
-- **Seeded PRNG**: `mulberry32` in `src/sim/rng.js` ensures reproducible Monte Carlo runs
+- **Seeded PRNG**: `mulberry32` in `src/sim/rng.js`. The seed parameter is `random_seed` (not `seed`). Re-seeded per step: `setRngSeed(random_seed + day)`. Defaults to `42` if `random_seed` is null.
 - **Escalation model**: 7 discrete levels (0-7). Nuclear threshold uses daily rate, not cumulative, to prevent unrealistic escalation
 - **Casualty ratios**: Calibrated to 12-57:1 Iran:US (historical asymmetric conflict data)
 - **Oil price model**: Bounded $85-200, baseline $108.75 (Brent, Mar 2026), Hormuz closure as primary driver
 - **OSINT injection**: `DIPLOMATIC_EVENTS` overrides game tree decisions for known conflict days; trend extrapolation for projected days
+- **`sim.run()` returns** `this.history` (a plain array of snapshot objects). `monteCarlo(runs, days)` returns aggregated stats with P5/median/P95
+
+### OSINT Corridor
+
+`DIPLOMATIC_EVENTS` in `index.html` is the live, patched version maintained by the calibration pipeline. `src/data/diplomatic-events.js` is the stale source copy (only used by `build.sh`). During the OSINT corridor (days covered by `DIPLOMATIC_EVENTS.days`), `param_calibration` overrides force multipliers, escalation, and posture -- making those days deterministic regardless of PRNG seed. Stochastic variance only appears in days beyond the corridor.
 
 ## Modification Guide
 
@@ -84,6 +88,13 @@ This avoids ES modules -- the source uses `var`/`const` at file scope (not `expo
 - **Fallback**: GitHub Actions (`.github/workflows/backfill.yml`) at 07:00 UTC
 - **Script**: `node backfill.js --calibrate` queries Perplexity API, derives `param_calibration` overrides, patches `DIPLOMATIC_EVENTS` directly in `index.html`
 
-**Critical**: `--calibrate` patches `index.html` in-place. Never run `build.sh` after `--calibrate` -- it regenerates `index.html` from `src/` and overwrites the patches. Correct CI order: `git pull -> calibrate -> git add -> commit -> push`.
+**Critical**: Correct CI order is `git pull -> calibrate -> git add -> commit -> push`. See Gotchas for why `build.sh` must never follow `--calibrate`.
 
 `DIPLOMATIC_EVENTS` uses JS syntax (single-quoted strings, unquoted numeric keys); `backfill.js` converts to JSON before parsing.
+
+## Gotchas
+
+- **`build.sh` after `--calibrate` destroys OSINT patches.** `--calibrate` patches `index.html` in-place; `build.sh` regenerates from `src/` and overwrites. Never chain them.
+- **`src/data/diplomatic-events.js` is stale.** The live OSINT data lives only in `index.html`. If you run `build.sh`, it overwrites with the stale `src/` copy.
+- **Perplexity refusals.** `backfill.js --calibrate` can ingest Perplexity refusal text ("I cannot provide...") as event content. Check patched output for garbage before committing.
+- **Monte Carlo seed param is `random_seed`**, not `seed`. Passing `seed` is silently ignored (all runs collapse to identical output with default seed 42).
