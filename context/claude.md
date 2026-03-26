@@ -2,14 +2,14 @@
 
 ## Current State
 
-- **Status**: OSINT data extended to Day 11, combat model calibrated, reliability audited, live on GitHub Pages
+- **Status**: OSINT data extended to Day 27, combat model calibrated, reliability audited, live on GitHub Pages
 - **URL**: https://eesb99.github.io/centcom-wargame-ghpages/
 - **Repo**: https://github.com/eesb99/centcom-wargame-ghpages
 - **Branch**: main
-- **Last Updated**: 2026-03-10
+- **Last Updated**: 2026-03-26
 - **Primary Instance**: Mac Mini (launchd daily calibration at 03:00 UTC)
 - **Fallback**: GitHub Actions (07:00 UTC)
-- **OSINT Coverage**: Days 1-11 (Feb 28 - Mar 10) with full strike data + param_calibration
+- **OSINT Coverage**: Days 1-27 (Feb 28 - Mar 26) with full strike data + param_calibration
 - **Key Features**: Shooter-target SEAD model, asymmetric dominance, naval capacity gating, 26 unit tests, sensitivity analysis, historical validation, nonlinear war weariness, amplified economic pressure, coalition pressure index, congressional authorization clock, Iraq/LNG/OPEC economic dynamics, $108.75 Brent baseline, $85-200 oil range
 - **Known Issue**: "Run Full Simulation" button unresponsive (pre-existing, see memory/troubleshooting-run-button.md)
 
@@ -39,9 +39,58 @@ tests/        7 files - combat, game-tree, escalation, monte-carlo, integration,
 - Works via concatenation; test-helper uses `vm.runInThisContext` to load all files
 
 ### Three-Phase Simulation
-1. **OSINT Corridor (Days 1-11)**: Real events drive actions + params calibrated to reality
-2. **Active Extrapolation (Days 12-18)**: Trends continue with 8%/day decay
-3. **Stabilization (Days 19+)**: Parameters converge, model runs procedurally
+1. **OSINT Corridor (Days 1-27)**: Real events drive actions + params calibrated to reality
+2. **Active Extrapolation (Days 28-34)**: Trends continue with 8%/day decay
+3. **Stabilization (Days 35+)**: Parameters converge, model runs procedurally
+
+---
+
+## Session 11 Summary (2026-03-26)
+
+### Goals
+- Check page health and deployment status
+- Backfill missing OSINT calibration (5 days behind: Mar 22-26)
+- Run ceasefire probability analysis
+
+### Findings
+
+**Page Health:** Site live (HTTP 200), all 26 tests passing.
+
+**Calibration Gap:** Last calibration was 2026-03-21 (Day 22). Ran `backfill.js --calibrate` which patched Days 23-27 into `index.html`. OSINT corridor now covers Days 1-27 (Feb 28 - Mar 26).
+
+**Ceasefire Analysis (Monte Carlo, 500 runs):**
+
+| Horizon | Median CF% | Runs >50% | Runs >70% | Median Esc |
+|---------|-----------|-----------|-----------|------------|
+| Day 27 (now) | 5% | 0% | 0% | 5 |
+| Day 35 (+8d) | 0% | 2% | 0% | 6 |
+| Day 45 (+18d) | 15% | 15% | 4% | 5 |
+| Day 60 (+33d) | 59% | 56% | 41% | 0 |
+
+**Key OSINT State (Day 27):**
+- Iran force multiplier: 0.05 (effectively destroyed)
+- Ceasefire signals: 0.05 (near zero)
+- Diplomatic momentum: 0.10
+- Mediation active: No
+- Cumulative targets struck: 9,000+
+- Iranian vessels destroyed: 140+
+- US posture: sustained_operations
+- Iran posture: fragmented_resistance
+
+**Assessment:** Near-zero ceasefire chance in next 2 weeks. Model predicts ~56% of runs show >50% ceasefire probability by Day 60 (late April), driven by Iran's military collapse forcing eventual de-escalation. Real wildcard is diplomatic off-ramp -- OSINT shows zero sign of one.
+
+### Implementation
+- `backfill.js --calibrate` patched Days 23-27 in `index.html` (+180 lines)
+- `conflict_timeline.json` updated (by backfill script)
+- `last_updated` bumped to 2026-03-26
+
+### Challenges
+- Day 27 Perplexity query returned "insufficient data for March 26" -- search results only had data through March 25. Calibration used carry-forward from Day 26 params.
+
+### Next Steps
+- [ ] Commit and push calibration update
+- [ ] Debug "Run Full Simulation" button (still unresponsive)
+- [ ] Investigate why Mac Mini launchd missed 5 days of calibration
 
 ---
 

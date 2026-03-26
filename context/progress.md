@@ -16,8 +16,31 @@
 | Phase 8: Iraq/LNG/OPEC Economic Dynamics | Complete | 2026-03-09 | 100% |
 | Phase 9: OSINT Extension Days 7-11 + Strike Data | Complete | 2026-03-10 | 100% |
 | Phase 10: Algorithm Reliability Audit | Complete | 2026-03-10 | 100% |
+| Phase 11: OSINT Backfill + Ceasefire Analysis | Complete | 2026-03-26 | 100% |
 
 
+
+## Phase 11: OSINT Backfill + Ceasefire Analysis (2026-03-26) - COMPLETE
+
+**Duration:** ~15 minutes
+**Status:** 100% - OSINT corridor extended to Day 27, ceasefire Monte Carlo analysis completed
+
+### Work Done
+1. **Page health check** -- Site live (HTTP 200), 26/26 tests passing
+2. **OSINT backfill** -- Ran `backfill.js --calibrate` to patch Days 23-27 (Mar 22-26) into `index.html` (+180 lines)
+3. **Ceasefire Monte Carlo** -- 500-run analysis across 4 time horizons showing near-zero ceasefire probability now, ~56% of runs >50% by Day 60
+
+### Key Metrics
+- OSINT corridor: Days 1-27 (was 1-22)
+- Iran force multiplier: 0.05 (military effectively destroyed)
+- Ceasefire probability: 5% (Day 27), median 59% by Day 60
+- Targets struck: 9,000+, Iranian vessels: 140+
+
+### Validation
+- 26/26 tests passing
+- Site returning HTTP 200
+
+---
 
 ## Phase 10: Algorithm Reliability Audit (2026-03-10) - COMPLETE
 

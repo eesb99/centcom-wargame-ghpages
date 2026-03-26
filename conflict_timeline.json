@@ -1,9 +1,9 @@
 {
   "_metadata": {
     "title": "Operation Epic Fury — Day-by-Day OSINT Timeline",
-    "generated": "2026-03-05T09:01:24.598Z",
+    "generated": "2026-03-26T04:10:28.672Z",
     "conflict_start": "2026-02-28",
-    "days_covered": 6,
+    "days_covered": 9,
     "data_source": "Perplexity AI (OSINT aggregation)",
     "note": "Auto-generated backfill. Values marked null are unconfirmed. Verify against primary sources."
   },
@@ -624,6 +624,321 @@
           "un_action": null,
           "ceasefire_talks": null,
           "confidence": 0.9
+        }
+      }
+    },
+    {
+      "date": "2026-03-06",
+      "day_number": 7,
+      "date_label": "March 6, 2026",
+      "sources": [
+        "https://www.whitehouse.gov/articles/2026/03/operation-epic-fury-decisive-american-power-to-crush-irans-terror-regime/",
+        "https://jinsa.org/wp-content/uploads/2026/03/Operations-Epic-Fury-and-Roaring-Lion-03-01-26.pdf",
+        "https://armyrecognition.com/news/army-news/2026/us-surpasses-6-000-combat-sorties-in-operation-epic-fury-targeting-iran-strike-capabilities",
+        "https://www.counterpunch.org/2026/03/17/the-growing-problems-of-operation-epic-fury/",
+        "https://www.youtube.com/watch?v=WqbbZ5OfFiI",
+        "https://news.usni.org/2026/03/01/3-u-s-service-members-killed-5-seriously-wounded-in-operation-epic-fury",
+        "https://www.military.com/daily-news/2026/03/01/three-us-service-members-killed-several-injured-operation-epic-fury.html",
+        "https://responsiblestatecraft.org/servicemebers-killed-operation-epic-fury/",
+        "https://foxbaltimore.com/news/nation-world/7th-soldier-killed-in-operation-epic-fury-identified-as-space-brigade-sergeant-benjamin-pennington-prince-sultan-air-base-saudi-arabia-enemy-attack-army-missile-defense-command-batallion",
+        "https://www.jpost.com/middle-east/iran-news/article-888731",
+        "https://www.war.gov/News/Releases/Release/Article/4430996/dow-identifies-army-casualty/",
+        "https://media.defense.gov/2026/Mar/23/2003902061/-1/-1/1/OPERATION-EPIC-FURY-FACT-SHEET-THE-FIRST-24-DAYS.PDF",
+        "https://quwa.org/middle-east-military-news/operation-epic-fury-us-strikes-90-targets-on-kharg-island-as-iran-retaliates-across-the-middle-east-03-17-2026/",
+        "https://www.unitedagainstnucleariran.com/press-releases/what-theyre-saying-about-operation-epic-fury-march-22-2026",
+        "https://www.whitehouse.gov/articles/2026/03/operation-epic-fury-decisive-american-power-to-crush-irans-terror-regime/",
+        "https://www.csis.org/analysis/epic-fury-campaign-against-irans-missile-nuclear-infrastructure",
+        "https://media.defense.gov/2026/Mar/23/2003902061/-1/-1/1/OPERATION-EPIC-FURY-FACT-SHEET-THE-FIRST-24-DAYS.PDF",
+        "https://jinsa.org/wp-content/uploads/2026/03/Operations-Epic-Fury-and-Roaring-Lion-03-18-26.pdf",
+        "https://www.unitedagainstnucleariran.com/press-releases/what-theyre-saying-about-operation-epic-fury-march-6-2026",
+        "https://sof.news/middle-east/epic-fury-update-6mar2026/",
+        "https://www.whitehouse.gov/articles/2026/03/operation-epic-fury-decisive-american-power-to-crush-irans-terror-regime/",
+        "https://www.whitehouse.gov/articles/2026/03/americans-agree-that-operation-epic-fury-is-an-overwhelming-success/",
+        "https://www.unitedagainstnucleariran.com/press-releases/what-theyre-saying-about-operation-epic-fury-march-6-2026",
+        "https://jinsa.org/wp-content/uploads/2026/03/Operations-Epic-Fury-and-Roaring-Lion-03-11-26.pdf",
+        "https://republicanpolicy.house.gov/sites/evo-subsites/republicanpolicy.house.gov/files/evo-media-document/rpc-iran-operation-epic-fury-memo.pdf",
+        "https://www.vietnam.vn/en/gia-dau-the-gioi-ngay-6-3-2026-wti-va-brent-giam-nhe-xang-o-muc-2-59-usd-gallon",
+        "https://baolamdong.vn/gia-dau-the-gioi-ngay-632026-wti-va-brent-giam-nhe-xang-o-muc-259-usdgallon-428308.html",
+        "https://robinhood.com/us/en/prediction-markets/financial/events/wti-oil-price-on-mar-6-2026-mar-06-2026/",
+        "https://en.wikipedia.org/wiki/2026_Lebanon_war [2]",
+        "https://news.cgtn.com/news/2026-03-06/news-1LiEpd8QNEc/index.html [8]",
+        "https://www.nampa.org/text/22879410 [7]",
+        "defensescoop.com",
+        "aa.com.tr",
+        "foxnews.com",
+        "theaviationist.com",
+        "whitehouse.gov",
+        "unitedagainstnucleariran.com",
+        "hudson.org",
+        "arabcenterdc.org"
+      ],
+      "data": {
+        "military_ops": {
+          "strikes_count": null,
+          "targets_hit": null,
+          "sorties": null,
+          "key_operations": null,
+          "confidence": 0
+        },
+        "casualties": {
+          "us_kia": null,
+          "us_wia": null,
+          "iran_military_killed_est": null,
+          "civilian_casualties_est": null,
+          "confidence": 1
+        },
+        "naval": {
+          "iran_ships_destroyed": null,
+          "us_ships_damaged": 0,
+          "hormuz_status": "secured",
+          "mines_detected": null,
+          "confidence": 0.6
+        },
+        "missiles": {
+          "iran_missiles_fired": null,
+          "intercepted": null,
+          "leakers": null,
+          "damage_from_missiles": null,
+          "confidence": 0
+        },
+        "air": {
+          "iran_aircraft_destroyed": null,
+          "iads_sites_neutralized": null,
+          "us_aircraft_lost": null,
+          "air_superiority_pct": null,
+          "confidence": 0
+        },
+        "economic": {
+          "brent_oil_usd": 84.17,
+          "wti_oil_usd": 79.52,
+          "hormuz_flow_pct": null,
+          "shipping_disruption": null,
+          "confidence": 0.9
+        },
+        "proxy": {
+          "hezbollah_rockets_fired": 70,
+          "houthi_attacks": null,
+          "iraqi_militia_attacks": null,
+          "proxy_casualties": null,
+          "confidence": 0.8
+        },
+        "cyber_diplomatic": {
+          "date": "2026-03-06",
+          "operation_day": 7,
+          "cyber_incidents": null,
+          "diplomatic_developments": null,
+          "un_action": null,
+          "ceasefire_talks": null,
+          "confidence": 0,
+          "note": "The provided search results contain no specific information about cyber incidents, diplomatic developments, UN actions, or ceasefire talks on March 6, 2026. Search results focus on casualty figures, military operations, and strategic objectives as of late March 2026, but do not include granular daily reporting for March 6."
+        }
+      }
+    },
+    {
+      "date": "2026-03-07",
+      "day_number": 8,
+      "date_label": "March 7, 2026",
+      "sources": [
+        "armyrecognition.com - US Surpasses 6,000 Combat Sorties in Operation Epic Fury",
+        "https://www.centcom.mil/MEDIA/STATEMENTS/Statements-View/Article/4419315/operation-epic-fury-update/",
+        "https://www.military.com/deployment/honor-fallen-of-operation-epic-fury.html",
+        "https://foxbaltimore.com/news/nation-world/7th-soldier-killed-in-operation-epic-fury-identified-as-space-brigade-sergeant-benjamin-pennington-prince-sultan-air-base-saudi-arabia-enemy-attack-army-missile-defense-command-batallion",
+        "https://media.defense.gov/2026/Mar/23/2003902061/-1/-1/1/OPERATION-EPIC-FURY-FACT-SHEET-THE-FIRST-24-DAYS.PDF",
+        "https://www.unitedagainstnucleariran.com/press-releases/what-theyre-saying-about-operation-epic-fury-march-22-2026",
+        "https://quwa.org/middle-east-military-news/operation-epic-fury-us-strikes-90-targets-on-kharg-island-as-iran-retaliates-across-the-middle-east-03-17-2026/",
+        "https://republicanpolicy.house.gov/sites/evo-subsites/republicanpolicy.house.gov/files/evo-media-document/rpc-iran-operation-epic-fury-memo.pdf",
+        "https://www.unitedagainstnucleariran.com/press-releases/what-theyre-saying-about-operation-epic-fury-march-7-2026",
+        "https://jinsa.org/wp-content/uploads/2026/03/Operations-Epic-Fury-and-Roaring-Lion-03.24.26.pdf",
+        "https://media.defense.gov/2026/Mar/23/2003902061/-1/-1/1/OPERATION-EPIC-FURY-FACT-SHEET-THE-FIRST-24-DAYS.PDF",
+        "https://www.whitehouse.gov/articles/2026/03/operation-epic-fury-decisive-american-power-to-crush-irans-terror-regime/",
+        "https://www.youtube.com/watch?v=k8PS-g60vDM",
+        "https://defensescoop.com/2026/03/05/operation-epic-fury-targeting-iran-space-capabilities/",
+        "https://jinsa.org/wp-content/uploads/2026/03/Operations-Epic-Fury-and-Roaring-Lion-03-02-26-1.pdf",
+        "https://www.barchart.com/futures/quotes/CBH26",
+        "https://www.energyintel.com/0000019c-9bf1-df3a-a59c-9ffdc0920004",
+        "https://www.statista.com/statistics/326017/weekly-crude-oil-prices/",
+        "https://fred.stlouisfed.org/series/WTISPLC",
+        "https://themiddleeastinsider.com/2026/03/25/oil-price-today-march-25-2026-brent-wti-rebound-104-peace-hopes-fade/",
+        "https://www.cmegroup.com/markets/energy/crude-oil/light-sweet-crude.quotes.html",
+        "https://capital.com/en-int/market-updates/crude-oil-price-forecast-09-03-2026",
+        "https://en.wikipedia.org/wiki/2026_Lebanon_war",
+        "https://www.timesofisrael.com/liveblog-march-07-2026/",
+        "https://www.nampa.org/text/22880756",
+        "https://www.youtube.com/watch?v=gMq0VHGeiC8",
+        "https://defensescoop.com/2026/03/24/iran-war-us-troops-wounded-operation-epic-fury/",
+        "https://www.aa.com.tr/en/americas/us-house-speaker-says-operation-epic-fury-against-iran-almost-done-/3879060",
+        "https://www.foxnews.com/politics/290-us-service-members-injured-during-operation-epic-fury-against-iran-centcom-says"
+      ],
+      "data": {
+        "military_ops": {
+          "date": "2026-03-07",
+          "operation_day": 8,
+          "strikes_count": null,
+          "targets_hit": null,
+          "sorties": 6000,
+          "key_operations": [
+            "US surpassed 6,000 combat sorties by March 7",
+            "Intensified strikes on Iran's missile, drone, and naval forces"
+          ],
+          "confidence": 0.4,
+          "notes": "Search results lack specific Day 8 (March 7) metrics. Only sorties figure is available from a source referencing March 7 operations. Specific strike counts and target numbers for this date are not reported in provided search results. Later updates show 8,000+ targets struck by Day 22 (March 21) and 10,000+ by Week 4, but granular Day 8 data is unavailable."
+        },
+        "casualties": {
+          "us_kia": null,
+          "us_wia": null,
+          "iran_military_killed_est": null,
+          "civilian_casualties_est": null,
+          "confidence": 0.9
+        },
+        "naval": {
+          "iran_ships_destroyed": null,
+          "us_ships_damaged": 0,
+          "hormuz_status": "closed",
+          "mines_detected": null,
+          "confidence": 0.6
+        },
+        "missiles": {
+          "iran_missiles_fired": null,
+          "intercepted": null,
+          "leakers": null,
+          "damage_from_missiles": null,
+          "confidence": 0
+        },
+        "air": {
+          "operation": "Operation Epic Fury",
+          "date": "2026-03-07",
+          "day_of_operation": 8,
+          "iran_aircraft_destroyed": null,
+          "iads_sites_neutralized": null,
+          "us_aircraft_lost": null,
+          "air_superiority_pct": null,
+          "notes": "Specific metrics for March 7, 2026 are not available in search results. Available data points to earlier dates: By March 5, over 1,000 targets struck in first 72 hours; by March 25, over 10,000 targets struck total with two-thirds of Iran's missile/drone/naval production facilities destroyed. Admiral Cooper reported on March 5 that ballistic missile attacks decreased 90% and drone attacks decreased 83% since day one.",
+          "confidence": 0,
+          "reason_for_null_values": "Search results do not contain granular daily breakdowns for March 7, 2026 specifically. Data is aggregated across multi-day periods or provided for other dates within the operation."
+        },
+        "economic": {
+          "brent_oil_usd": null,
+          "wti_oil_usd": null,
+          "hormuz_flow_pct": null,
+          "shipping_disruption": null,
+          "confidence": 0
+        },
+        "proxy": {
+          "date": "2026-03-07",
+          "operation": "Operation Epic Fury",
+          "day": 8,
+          "hezbollah_rockets_fired": 40,
+          "houthi_attacks": null,
+          "iraqi_militia_attacks": null,
+          "proxy_casualties": {
+            "israeli_soldiers_injured": 8,
+            "israeli_soldiers_severely_injured": 5,
+            "hezbollah_commanders_killed": null
+          },
+          "notes": "On March 7, 2026, Hezbollah conducted extensive rocket and missile attacks on northern Israel. The IDF reported that a Hezbollah projectile near the Lebanese border caused injuries to 8 Israeli soldiers, with 5 sustaining severe injuries, including the son of Finance Minister Bezalel Smotrich. Israel responded with airstrikes on Hezbollah headquarters in Beirut's southern suburbs and military sites in southern and eastern Lebanon. Houthi and Iraqi militia activity for this specific date is not reported in available sources.",
+          "confidence": 0.75
+        },
+        "cyber_diplomatic": {
+          "cyber_incidents": null,
+          "diplomatic_developments": null,
+          "un_action": null,
+          "ceasefire_talks": null,
+          "confidence": 0.9
+        }
+      }
+    },
+    {
+      "date": "2026-03-08",
+      "day_number": 9,
+      "date_label": "March 8, 2026",
+      "sources": [
+        "https://www.centcom.mil/MEDIA/STATEMENTS/Statements-View/Article/4428143/operation-epic-fury-update/",
+        "https://media.defense.gov/2026/Mar/09/2003896756/-1/-1/1/OPERATION-EPIC-FURY-FACT-SHEET-THE-FIRST-10-DAYS.PDF",
+        "https://www.centcom.mil/OPERATIONS-AND-EXERCISES/EPIC-FURY/",
+        "https://www.militarytimes.com/news/your-military/2026/03/08/seventh-us-service-member-killed-in-action-during-operation-epic-fury/",
+        "https://foxbaltimore.com/news/nation-world/7th-soldier-killed-in-operation-epic-fury-identified-as-space-brigade-sergeant-benjamin-pennington-prince-sultan-air-base-saudi-arabia-enemy-attack-army-missile-defense-command-batallion",
+        "https://www.military.com/deployment/honor-fallen-of-operation-epic-fury.html",
+        "https://media.defense.gov/2026/Mar/23/2003902061/-1/-1/1/OPERATION-EPIC-FURY-FACT-SHEET-THE-FIRST-24-DAYS.PDF",
+        "https://quwa.org/middle-east-military-news/operation-epic-fury-us-strikes-90-targets-on-kharg-island-as-iran-retaliates-across-the-middle-east-03-17-2026/",
+        "https://sof.news/middle-east/epic-fury-update/",
+        "https://news3lv.com/news/nation-world/operation-epic-fury-escalates-us-forces-destroy-iranian-warships-hit-thousands-of-targets-strait-of-hormuz-james-fitzpatrick-trump-administration-nuclear-target-submarine-israel-middle-east-pentagon-hegseth-centcom-general-caine",
+        "https://www.unitedagainstnucleariran.com/press-releases/what-theyre-saying-about-operation-epic-fury-march-8-2026",
+        "https://jinsa.org/wp-content/uploads/2026/03/Operations-Epic-Fury-and-Roaring-Lion-03.24.26.pdf",
+        "https://media.defense.gov/2026/Mar/23/2003902061/-1/-1/1/OPERATION-EPIC-FURY-FACT-SHEET-THE-FIRST-24-DAYS.PDF",
+        "https://media.defense.gov/2026/Mar/23/2003902061/-1/-1/1/OPERATION-EPIC-FURY-FACT-SHEET-THE-FIRST-24-DAYS.PDF",
+        "https://www.youtube.com/watch?v=k8PS-g60vDM",
+        "https://jinsa.org/wp-content/uploads/2026/03/Operations-Epic-Fury-and-Roaring-Lion-03-02-26-1.pdf",
+        "https://www.barchart.com/futures/quotes/CBH26",
+        "https://www.statista.com/statistics/326017/weekly-crude-oil-prices/",
+        "https://www.barchart.com/futures/quotes/CLH26",
+        "https://www.investing.com/commodities/crude-oil-historical-data",
+        "https://www.centcom.mil/OPERATIONS-AND-EXERCISES/EPIC-FURY/",
+        "https://www.war.gov/Spotlights/Operation-Epic-Fury/",
+        "https://media.defense.gov/2026/Mar/16/2003899496/-1/-1/1/OPERATION-EPIC-FURY-FACT-SHEET.PDF",
+        "defensescoop.com",
+        "foxnews.com",
+        "whitehouse.gov",
+        "arabcenterdc.org"
+      ],
+      "data": {
+        "military_ops": {
+          "strikes_count": null,
+          "targets_hit": null,
+          "sorties": null,
+          "key_operations": null,
+          "confidence": 0.1
+        },
+        "casualties": {
+          "us_kia": 7,
+          "us_wia": null,
+          "iran_military_killed_est": null,
+          "civilian_casualties_est": null,
+          "confidence": 0.95
+        },
+        "naval": {
+          "iran_ships_destroyed": null,
+          "us_ships_damaged": 0,
+          "hormuz_status": "partially closed",
+          "mines_detected": null,
+          "confidence": 0.4
+        },
+        "missiles": {
+          "iran_missiles_fired": null,
+          "intercepted": null,
+          "leakers": null,
+          "damage_from_missiles": null,
+          "confidence": 0
+        },
+        "air": {
+          "iran_aircraft_destroyed": null,
+          "iads_sites_neutralized": null,
+          "us_aircraft_lost": 0,
+          "air_superiority_pct": 100,
+          "confidence": 0.4
+        },
+        "economic": {
+          "brent_oil_usd": null,
+          "wti_oil_usd": null,
+          "hormuz_flow_pct": null,
+          "shipping_disruption": null,
+          "confidence": 0
+        },
+        "proxy": {
+          "hezbollah_rockets_fired": null,
+          "houthi_attacks": null,
+          "iraqi_militia_attacks": null,
+          "proxy_casualties": null,
+          "confidence": 0
+        },
+        "cyber_diplomatic": {
+          "date": "2026-03-08",
+          "operation_day": 9,
+          "cyber_incidents": null,
+          "diplomatic_developments": null,
+          "un_action": null,
+          "ceasefire_talks": null,
+          "confidence": 0,
+          "note": "The provided search results contain no specific information about cyber incidents, diplomatic developments, UN actions, or ceasefire talks on March 8, 2026. The search results focus on military casualty figures (as of March 24-25), operation objectives, and general campaign updates from early March, but do not include detailed daily reporting for March 8 specifically."
         }
       }
     }
