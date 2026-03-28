@@ -1196,7 +1196,7 @@ const CONFLICT_TIMELINE = {"_metadata": {"title": "Operation Epic Fury — Day-b
 // Sources: CENTCOM, ICT SITREPs, FDD, CSIS, Reuters, Military Times, Wikipedia 2026 Iran war
 const DIPLOMATIC_EVENTS = {
   "conflict_start": "2026-02-28",
-  "last_updated": "2026-03-26",
+  "last_updated": "2026-03-28",
   "days": {
     "1": {
       "date": "2026-02-28",
@@ -1888,9 +1888,9 @@ const DIPLOMATIC_EVENTS = {
     },
     "20": {
       "date": "2026-03-19",
-      "diplomatic_momentum": 0.1,
+      "diplomatic_momentum": 0.2,
       "mediation_active": false,
-      "ceasefire_signals": 0.05,
+      "ceasefire_signals": 0.1,
       "escalation_override": 5,
       "events": [],
       "proxy": {
@@ -1899,22 +1899,22 @@ const DIPLOMATIC_EVENTS = {
         "iraqi_militia_active": true
       },
       "us_posture": "sustained_operations",
-      "iran_posture": "fragmented_resistance",
+      "iran_posture": "proxy_escalation",
       "param_calibration": {
-        "escalation_propensity": 0.85,
+        "escalation_propensity": 0.75,
         "iran_force_multiplier": 0.15,
-        "us_tech_advantage": 2.3,
-        "iran_asymmetric_factor": 0.6,
-        "proxy_effectiveness": 0.4,
-        "cyber_intensity": 0.7,
-        "hormuz_mining_probability": 0.45,
-        "oil_price_elasticity": -0.12,
-        "patriot_intercept_rate": 0.95,
-        "iran_mine_warfare_effectiveness": 0.25,
+        "us_tech_advantage": 2.2,
+        "iran_asymmetric_factor": 1.4,
+        "proxy_effectiveness": 0.65,
+        "cyber_intensity": 0.4,
+        "hormuz_mining_probability": 0.55,
+        "oil_price_elasticity": -0.08,
+        "patriot_intercept_rate": 0.92,
+        "iran_mine_warfare_effectiveness": 0.45,
         "us_mcm_effectiveness": 0.75,
-        "iraq_production_loss_pct": 45,
+        "iraq_production_loss_pct": 35,
         "lng_disruption_pct": 60,
-        "opec_actual_response_mbd": 2.1
+        "opec_actual_response_mbd": 1.8
       }
     },
     "21": {
@@ -2171,6 +2171,68 @@ const DIPLOMATIC_EVENTS = {
         "lng_disruption_pct": 60,
         "opec_actual_response_mbd": 2.1
       }
+    },
+    "28": {
+        "date": "2026-03-27",
+        "diplomatic_momentum": 0.1,
+        "mediation_active": false,
+        "ceasefire_signals": 0.05,
+        "escalation_override": 5,
+        "events": [],
+        "proxy": {
+              "hezbollah_active": true,
+              "houthi_active": true,
+              "iraqi_militia_active": true
+        },
+        "us_posture": "sustained_operations",
+        "iran_posture": "proxy_escalation",
+        "param_calibration": {
+              "escalation_propensity": 0.75,
+              "iran_force_multiplier": 0.15,
+              "us_tech_advantage": 2.3,
+              "iran_asymmetric_factor": 0.6,
+              "proxy_effectiveness": 0.7,
+              "cyber_intensity": 0.4,
+              "hormuz_mining_probability": 0.45,
+              "oil_price_elasticity": -0.12,
+              "patriot_intercept_rate": 0.92,
+              "iran_mine_warfare_effectiveness": 0.3,
+              "us_mcm_effectiveness": 0.65,
+              "iraq_production_loss_pct": 35,
+              "lng_disruption_pct": 40,
+              "opec_actual_response_mbd": 1.8
+        }
+    },
+    "29": {
+        "date": "2026-03-28",
+        "diplomatic_momentum": 0.1,
+        "mediation_active": false,
+        "ceasefire_signals": 0.05,
+        "escalation_override": 5,
+        "events": [],
+        "proxy": {
+              "hezbollah_active": true,
+              "houthi_active": true,
+              "iraqi_militia_active": true
+        },
+        "us_posture": "sustained_operations",
+        "iran_posture": "fragmented_resistance",
+        "param_calibration": {
+              "escalation_propensity": 0.75,
+              "iran_force_multiplier": 0.15,
+              "us_tech_advantage": 2.3,
+              "iran_asymmetric_factor": 0.6,
+              "proxy_effectiveness": 0.4,
+              "cyber_intensity": 0.3,
+              "hormuz_mining_probability": 0.45,
+              "oil_price_elasticity": -0.12,
+              "patriot_intercept_rate": 0.95,
+              "iran_mine_warfare_effectiveness": 0.25,
+              "us_mcm_effectiveness": 0.7,
+              "iraq_production_loss_pct": 45,
+              "lng_disruption_pct": 60,
+              "opec_actual_response_mbd": 1.8
+        }
     }
   }
 };
