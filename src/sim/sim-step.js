@@ -125,6 +125,8 @@
         war_subsiding: this.state.game_tree.war_subsiding,
         subsiding_days: this.state.game_tree.subsiding_days,
         ceasefire_probability: Math.round(this.state.game_tree.ceasefire_probability * 1000) / 1000,
+        markov_state: this.state.game_tree.markov_state,
+        markov_label: MARKOV_STATES[this.state.game_tree.markov_state] || 'UNKNOWN',
         diplomatic_momentum: Math.round(this.state.game_tree.diplomatic_momentum * 1000) / 1000,
         mediation_active: this.state.game_tree.mediation_active,
         us_posture_reduced: this.state.game_tree.us_posture_reduced,

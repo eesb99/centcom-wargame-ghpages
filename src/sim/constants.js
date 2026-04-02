@@ -35,6 +35,29 @@ const ECONOMIC_COST_CAP = 0.4;
 // ── Escalation / Calibration ──
 const TREND_DECAY_RATE = 0.92;
 
+// ── Markov Ceasefire Model ──
+// 5-state Observed Markov Model (OMM) for ceasefire probability.
+// Inspired by Randahl & Vegelius 2024 (ViEWS prediction challenge winner).
+// States 0-2 trained from 34-day OSINT corridor; states 3-4 use expert priors
+// (0 OSINT observations for CEASEFIRE_EMERGING; only 2 for CEASEFIRE with
+// immediate reversion, so empirical matrix would be misleading).
+var MARKOV_STATES = ['ACTIVE_WAR', 'CONTESTED', 'DE_ESCALATING', 'CEASEFIRE_EMERGING', 'CEASEFIRE'];
+
+// Base transition matrix (row = from, col = to), Laplace-smoothed
+// Rows 0-2: empirical from OSINT corridor (alpha=0.5)
+// Rows 3-4: expert prior (ceasefire is sticky but can collapse)
+var MARKOV_BASE_TRANSITIONS = [
+  //  WAR    CONT   DEESC  CF_EM  CF
+  [0.07, 0.33, 0.33, 0.07, 0.20],  // From ACTIVE_WAR (5 obs)
+  [0.16, 0.60, 0.16, 0.02, 0.06],  // From CONTESTED (20 obs)
+  [0.05, 0.55, 0.26, 0.08, 0.06],  // From DE_ESCALATING (7 obs, CF_EM adjusted up)
+  [0.02, 0.08, 0.15, 0.45, 0.30],  // From CEASEFIRE_EMERGING (expert prior)
+  [0.03, 0.05, 0.07, 0.15, 0.70],  // From CEASEFIRE (expert prior: sticky)
+];
+
+// Map Markov state -> ceasefire probability
+var MARKOV_CF_PROBABILITY = [0.02, 0.08, 0.20, 0.55, 0.90];
+
 // ── Economic Model ──
 const OIL_PRICE_MIN = 80;
 const OIL_PRICE_MAX = 125;

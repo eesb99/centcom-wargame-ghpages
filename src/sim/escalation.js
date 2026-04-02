@@ -23,9 +23,16 @@
     gt.diplomatic_momentum = day_data.diplomatic_momentum;
     gt.mediation_active = day_data.mediation_active;
 
-    // Override ceasefire probability — zero when no signals exist
+    // Override Markov state from OSINT ceasefire signals
     if (day_data.ceasefire_signals !== undefined) {
-      gt.ceasefire_probability = day_data.ceasefire_signals;
+      const cf = day_data.ceasefire_signals;
+      // Map OSINT signal to Markov state
+      if (cf > 0.5) gt.markov_state = 4;      // CEASEFIRE
+      else if (cf > 0.3) gt.markov_state = 3;  // CEASEFIRE_EMERGING
+      else if (cf > 0.1) gt.markov_state = 2;  // DE_ESCALATING
+      else if (cf > 0.02) gt.markov_state = 1; // CONTESTED
+      else gt.markov_state = 0;                 // ACTIVE_WAR
+      gt.ceasefire_probability = MARKOV_CF_PROBABILITY[gt.markov_state];
       gt.subsiding_days = 0; // Active combat, no subsiding
       gt.war_subsiding = false;
     }

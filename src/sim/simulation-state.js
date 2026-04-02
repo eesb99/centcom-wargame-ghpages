@@ -134,6 +134,7 @@ class SimulationState {
       war_subsiding: false,
       subsiding_days: 0,        // consecutive days both prefer non-aggression
       ceasefire_probability: 0, // grows as subsiding_days accumulates
+      markov_state: 0,          // OMM state index (0=ACTIVE_WAR .. 4=CEASEFIRE)
       diplomatic_momentum: 0,   // 0-1, built by sustained mutual non-aggression
       mediation_active: false,  // third-party mediation kicks in after sustained conflict
       mediation_day: 0,         // day mediation began

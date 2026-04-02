@@ -217,10 +217,10 @@
       }
     }
 
-    // Ceasefire probability: combines subsiding days + diplomatic momentum
-    const subsiding_factor = 1 - Math.pow(0.78, gt.subsiding_days);
-    const diplo_factor = gt.diplomatic_momentum * 0.4; // momentum contributes up to 40%
-    gt.ceasefire_probability = Math.min(0.95, subsiding_factor * 0.6 + diplo_factor);
+    // Observed Markov Model ceasefire probability
+    // Classify current state, apply feature-conditioned transition, read off CF probability
+    gt.markov_state = this._markov_transition(gt, st);
+    gt.ceasefire_probability = MARKOV_CF_PROBABILITY[gt.markov_state];
 
     // Map game tree outcome to escalation level change
     return this._map_actions_to_escalation(st, us_pick.action, iran_final.action);
@@ -322,6 +322,73 @@
 
     // Default: hold current level
     return current;
+  }
+
+  // ── Observed Markov Model for ceasefire ──
+
+  // Classify current features into a Markov state (0-4)
+  _classify_markov_state(gt, st) {
+    const cf = gt.ceasefire_probability; // prior step's CF prob (or OSINT override)
+    const dm = gt.diplomatic_momentum;
+    const esc = st.escalation;
+    const subsiding = gt.subsiding_days;
+
+    if (cf > 0.5 || (subsiding >= 10 && dm > 0.6)) return 4; // CEASEFIRE
+    if (cf > 0.3 || (dm > 0.4 && esc <= 3) || subsiding >= 5) return 3; // CEASEFIRE_EMERGING
+    if (cf > 0.1 || esc <= 3 || dm > 0.3) return 2; // DE_ESCALATING
+    if (esc <= 4 || dm > 0.05) return 1; // CONTESTED
+    return 0; // ACTIVE_WAR
+  }
+
+  // Feature-conditioned Markov transition
+  _markov_transition(gt, st) {
+    const current = gt.markov_state;
+    const row = MARKOV_BASE_TRANSITIONS[current].slice(); // copy base probabilities
+
+    // Feature adjustments: shift probability mass toward de-escalation/ceasefire
+    // when features indicate military collapse or diplomatic progress
+    const ifm = this.params.iran_force_multiplier || 0.3;
+    const dm = gt.diplomatic_momentum;
+    const subsiding = gt.subsiding_days;
+
+    // Military collapse (iran_force_multiplier < 0.15): shift toward higher states
+    if (ifm < 0.15) {
+      const collapse_shift = (0.15 - ifm) * 2; // 0 to 0.3
+      row[0] *= (1 - collapse_shift);
+      row[1] *= (1 - collapse_shift * 0.5);
+      row[3] += collapse_shift * 0.15;
+      row[4] += collapse_shift * 0.10;
+    }
+
+    // Diplomatic momentum: shift toward ceasefire states
+    if (dm > 0.2) {
+      const diplo_shift = (dm - 0.2) * 0.5; // 0 to 0.4
+      row[0] *= (1 - diplo_shift);
+      row[3] += diplo_shift * 0.15;
+      row[4] += diplo_shift * 0.10;
+    }
+
+    // Subsiding days: sustained peace accelerates transition
+    if (subsiding >= 3) {
+      const peace_shift = Math.min(0.3, (subsiding - 3) * 0.03);
+      row[0] *= (1 - peace_shift);
+      row[1] *= (1 - peace_shift * 0.5);
+      row[3] += peace_shift * 0.4;
+      row[4] += peace_shift * 0.3;
+    }
+
+    // Normalize
+    const total = row.reduce((s, v) => s + v, 0);
+    const probs = row.map(v => v / total);
+
+    // Stochastic transition (uses sim PRNG for reproducibility)
+    const roll = rngRandom();
+    let cumulative = 0;
+    for (let i = 0; i < probs.length; i++) {
+      cumulative += probs[i];
+      if (roll < cumulative) return i;
+    }
+    return probs.length - 1;
   }
 
   // Entry point (called from step())
