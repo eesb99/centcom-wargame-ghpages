@@ -37,9 +37,9 @@ function updateCharts(history) {
   ceasefireChart.data.datasets[0].data = history.map(h => h.game_tree ? h.game_tree.ceasefire_probability * 100 : 0);
   ceasefireChart.data.datasets[1].data = history.map(h => h.escalation_level);
   ceasefireChart.data.datasets[2].data = history.map(h => h.game_tree ? (h.game_tree.diplomatic_momentum || 0) * 100 : 0);
-  // Markov state plotted on escalation axis (0-4 mapped to y1 scale 0-7)
+  // Markov state scaled to y1 axis range (0-4 -> 0-7)
   const markovColors = ['#f85149', '#f0883e', '#d29922', '#a371f7', '#3fb950'];
-  ceasefireChart.data.datasets[3].data = history.map(h => h.game_tree ? (h.game_tree.markov_state || 0) : 0);
+  ceasefireChart.data.datasets[3].data = history.map(h => h.game_tree ? (h.game_tree.markov_state || 0) * 7 / 4 : 0);
   ceasefireChart.data.datasets[3].pointBackgroundColor = history.map(h => markovColors[h.game_tree ? (h.game_tree.markov_state || 0) : 0]);
   ceasefireChart.update('none');
 }

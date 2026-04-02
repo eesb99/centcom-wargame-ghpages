@@ -33,8 +33,8 @@
       else if (cf > 0.02) gt.markov_state = 1; // CONTESTED
       else gt.markov_state = 0;                 // ACTIVE_WAR
       gt.ceasefire_probability = MARKOV_CF_PROBABILITY[gt.markov_state];
-      gt.subsiding_days = 0; // Active combat, no subsiding
-      gt.war_subsiding = false;
+      gt.subsiding_days = Math.round(cf * 15);
+      gt.war_subsiding = cf > 0.1;
     }
 
     // Map real posture to game tree actions for display

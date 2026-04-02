@@ -326,20 +326,6 @@
 
   // ── Observed Markov Model for ceasefire ──
 
-  // Classify current features into a Markov state (0-4)
-  _classify_markov_state(gt, st) {
-    const cf = gt.ceasefire_probability; // prior step's CF prob (or OSINT override)
-    const dm = gt.diplomatic_momentum;
-    const esc = st.escalation;
-    const subsiding = gt.subsiding_days;
-
-    if (cf > 0.5 || (subsiding >= 10 && dm > 0.6)) return 4; // CEASEFIRE
-    if (cf > 0.3 || (dm > 0.4 && esc <= 3) || subsiding >= 5) return 3; // CEASEFIRE_EMERGING
-    if (cf > 0.1 || esc <= 3 || dm > 0.3) return 2; // DE_ESCALATING
-    if (esc <= 4 || dm > 0.05) return 1; // CONTESTED
-    return 0; // ACTIVE_WAR
-  }
-
   // Feature-conditioned Markov transition
   _markov_transition(gt, st) {
     const current = gt.markov_state;
