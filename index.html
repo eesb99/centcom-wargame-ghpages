@@ -989,10 +989,23 @@ select:focus { border-color: var(--accent); }
             <div id="gt-ceasefire-bar" style="height:100%;width:0%;border-radius:4px;transition:width 300ms ease,background 300ms ease;background:var(--green)"></div>
             <div id="gt-ceasefire-text" style="position:absolute;top:0;left:0;right:0;text-align:center;font-size:9px;line-height:18px;color:var(--text);font-weight:600"></div>
           </div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px">
-            <span style="font-size:8px;color:var(--text-faint)">Active Combat</span>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+            <span id="gt-markov-state" style="font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--red);color:#fff">ACTIVE WAR</span>
             <span id="gt-subsiding-label" style="font-size:8px;color:var(--text-faint)">0 peaceful days</span>
-            <span style="font-size:8px;color:var(--text-faint)">Ceasefire</span>
+          </div>
+          <div id="gt-markov-track" style="display:flex;gap:2px;margin-top:6px;height:6px">
+            <div data-state="0" style="flex:1;border-radius:2px;background:var(--border);opacity:0.3"></div>
+            <div data-state="1" style="flex:1;border-radius:2px;background:var(--border);opacity:0.3"></div>
+            <div data-state="2" style="flex:1;border-radius:2px;background:var(--border);opacity:0.3"></div>
+            <div data-state="3" style="flex:1;border-radius:2px;background:var(--border);opacity:0.3"></div>
+            <div data-state="4" style="flex:1;border-radius:2px;background:var(--border);opacity:0.3"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:2px">
+            <span style="font-size:7px;color:var(--text-faint)">WAR</span>
+            <span style="font-size:7px;color:var(--text-faint)">CONT</span>
+            <span style="font-size:7px;color:var(--text-faint)">DEESC</span>
+            <span style="font-size:7px;color:var(--text-faint)">CF_EM</span>
+            <span style="font-size:7px;color:var(--text-faint)">CF</span>
           </div>
         </div>
       </div>
@@ -1391,268 +1404,35 @@ const DIPLOMATIC_EVENTS = {
           "ceasefire_signals": 0.05,
           "escalation_override": 5,
           "events": [
-                "\"operation_epic_fury_march_11_2026_summary\": [",
-                "\"Iran launches drone and missile volleys targeting the US Fifth Fleet headquarters in Bahrain and Al Udeid Air Base in Qatar at 14:45 UTC[3]\",",
-                "\"Iranian forces attack the Mayuree Naree and the Israeli-owned Express Room near the Strait of Hormuz at 11:00 UTC[3]\",",
-                "\"Tasnim publishes a target list naming major Western technology and cloud firms including Amazon, Google, Microsoft, and Nvidia at 07:15 UTC, indicating Iranian cyber warfare expansion[3]\",",
-                "\"HSBC notifies customers in Qatar that branches are closing immediately at 13:30 UTC, reflecting financial sector disruption[3]\",",
-                "\"Reports emerge of a global operational shutdown affecting Stryker Corporation at 09:15 UTC[3]\",",
-                "\"Handala begins signaling a major cyber operation on Telegram at 04:30 UTC[3]\","
+                {
+                      "event": "US Strikes Milestone",
+                      "details": "Admiral Brad Cooper, Commander of U.S. Central Command (CENTCOM), announced that American military forces had struck more than 5,500 targets inside Iran, including more than 60 ships, using a variety of precision weapon systems.[2]"
+                },
+                {
+                      "event": "Iranian Missile Attacks Decline",
+                      "details": "Iran fired five waves of missiles at Israel on March 11, continuing a pattern of attacks intended to cause societal disruption by repeatedly sending Israelis to shelters. Missile fire fell to just 20 missiles on March 11, on pace to set the lowest single-day total of the conflict.[2]"
+                },
+                {
+                      "event": "Iranian Casualties Reported",
+                      "details": "IDF Chief of Staff Major General Eyal Zamir announced on March 11 that Israel had killed 'several thousand' Iranian regime soldiers and commanders.[2]"
+                },
+                {
+                      "event": "Naval Operations - Iranian Vessels",
+                      "details": "On March 10, CENTCOM announced that U.S. forces eliminated multiple Iranian naval vessels, including 16 minelayers near the Strait of Hormuz. President Trump announced the U.S. military 'hit and completely destroyed 10 inactive mine laying boats and/or ships, with more to follow.'[2]"
+                },
+                {
+                      "event": "Israeli Military Redeployment",
+                      "details": "The IDF announced that the Golani Brigade would be reassigned to the Northern Command, bolstering the military's presence along Israel's border with Lebanon.[2]"
+                },
+                {
+                      "event": "Presidential Assessment",
+                      "details": "President Donald Trump relayed to Axios on March 11 that there is 'practically nothing left' to strike in Iran, indicating significant degradation of Iranian military infrastructure.[2]"
+                },
+                {
+                      "event": "Air Defense Deployment",
+                      "details": "The Pentagon was redeploying parts of a Terminal High Altitude Area Defense (THAAD) system, indicating ongoing adjustments to air defense posture in the region.[2]"
+                }
           ],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "proxy_escalation",
-          "param_calibration": {
-                "escalation_propensity": 0.85,
-                "iran_force_multiplier": 0.25,
-                "us_tech_advantage": 2.2,
-                "iran_asymmetric_factor": 1.1,
-                "proxy_effectiveness": 0.7,
-                "cyber_intensity": 0.75,
-                "hormuz_mining_probability": 0.65,
-                "oil_price_elasticity": -0.15,
-                "patriot_intercept_rate": 0.92,
-                "iran_mine_warfare_effectiveness": 0.4,
-                "us_mcm_effectiveness": 0.7,
-                "iraq_production_loss_pct": 45,
-                "lng_disruption_pct": 60,
-                "opec_actual_response_mbd": 2.1
-          }
-    },
-    13: {
-          "date": "2026-03-12",
-          "diplomatic_momentum": 0.1,
-          "mediation_active": false,
-          "ceasefire_signals": 0.05,
-          "escalation_override": 5,
-          "events": [
-                "US/coalition airstrikes targeted Popular Mobilization Forces (PMF) positions in Kirkuk and Anbar provinces, Iraq, killing at least **30 fighters** and wounding dozens more[2].",
-                "Houthi forces conducted **at least three attacks** on March 12, including strikes on **1 ship**, Bahrain, and Iraqi targets[2].",
-                "Ongoing joint US-Israel campaign reported cumulative elimination of **over 7,000 IRGC operatives** and **nearly 50 high-level regime officials** (up to March 12)[2].",
-                "Iran's missile launcher capacity severely degraded, forcing reliance on proxy barrages like Hezbollah's March 11 attack of **over 200 rockets** on Israel (context for Day 13 escalation)[2].",
-                "**No specific US casualties** reported on March 12; earlier totals include 4 US service members KIA as of March 2[4].",
-                "Iranian naval assets continue to be targeted, with cumulative **150+ vessels damaged or destroyed** after 29 days (status as of March 28, but relevant to Day 13 operations)[6].",
-                "No Strait of Hormuz status or diplomatic developments (ceasefire proposals, UN activity, oil prices) explicitly reported for March 12[1][2][3][6]."
-          ],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "proxy_escalation",
-          "param_calibration": {
-                "escalation_propensity": 0.85,
-                "iran_force_multiplier": 0.15,
-                "us_tech_advantage": 2.2,
-                "iran_asymmetric_factor": 0.6,
-                "proxy_effectiveness": 0.75,
-                "cyber_intensity": 0.3,
-                "hormuz_mining_probability": 0.25,
-                "oil_price_elasticity": -0.15,
-                "patriot_intercept_rate": 0.92,
-                "iran_mine_warfare_effectiveness": 0.2,
-                "us_mcm_effectiveness": 0.7,
-                "iraq_production_loss_pct": 35,
-                "lng_disruption_pct": 20,
-                "opec_actual_response_mbd": 1.8
-          }
-    },
-    14: {
-          "date": "2026-03-13",
-          "diplomatic_momentum": 0.1,
-          "mediation_active": false,
-          "ceasefire_signals": 0.05,
-          "escalation_override": 5,
-          "events": [
-                "**Pentagon Briefing by Hegseth and General Caine**: Detailed Operation Epic Fury results, reporting over 15,000 Iranian targets struck, 13 U.S. service members killed total (including 6 from March 1 drone attack in Kuwait), targeting Iran's ballistic missiles, navy (sea mine capabilities), and nuclear denial.[2]",
-                "**US Helicopter Engages Iranian Vessel**: On March 12 at 22:58 UTC, a US helicopter fired Hellfire missiles at an Iranian vessel approaching USS Abraham Lincoln in Persian Gulf, part of naval operations.[6]",
-                "**Saudi Intercepts 12 Drones**: Saudi Arabia intercepted 12 drones entering its airspace on March 13 at 00:14 UTC amid regional proxy threats.[6]",
-                "**Iranian Ballistic Missile Attack on Incirlik**: Air raid sirens at Incirlik Air Base, Turkey, on March 13 at 00:25 UTC due to reported Iranian ballistic missile attack.[6]",
-                "**KC-135 Loss Confirmed**: All crew members of U.S. KC-135 lost over Iraq on March 12 confirmed deceased, announced March 13; four confirmed deceased earlier same day.[8]",
-                "**Space Capabilities Highlighted**: Space Force official states space power underpins Operation Epic Fury, noted on March 13.[9]",
-                "**Ongoing Strikes on Iranian Navy and Missiles**: General Caine confirms U.S. strikes targeting Iran's ballistic missile/drone capabilities, navy, and commercial vessel attack capacity on day 14 of campaign.[2]"
-          ],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "proxy_escalation",
-          "param_calibration": {
-                "escalation_propensity": 0.85,
-                "iran_force_multiplier": 0.15,
-                "us_tech_advantage": 2.2,
-                "iran_asymmetric_factor": 0.75,
-                "proxy_effectiveness": 0.65,
-                "cyber_intensity": 0.4,
-                "hormuz_mining_probability": 0.45,
-                "oil_price_elasticity": -0.12,
-                "patriot_intercept_rate": 0.92,
-                "iran_mine_warfare_effectiveness": 0.25,
-                "us_mcm_effectiveness": 0.7,
-                "iraq_production_loss_pct": 35,
-                "lng_disruption_pct": 60,
-                "opec_actual_response_mbd": 2.1
-          }
-    },
-    15: {
-          "date": "2026-03-14",
-          "diplomatic_momentum": 0.1,
-          "mediation_active": false,
-          "ceasefire_signals": 0.05,
-          "escalation_override": 5,
-          "events": [
-                "**US Precision Strike on Kharg Island:** CENTCOM reported U.S. forces destroyed over 90 Iranian military targets on Kharg Island, including naval mine storage facilities and missile storage bunkers, while preserving oil infrastructure.[1]",
-                "**Iranian Retaliation Vow for Destroyer Dena:** Iranian military leaders promised retaliation for the U.S. attack on destroyer *Dena*, which killed 104 crew members.[1]",
-                "**Hezbollah Overnight Attacks:** Hezbollah reported several attacks on 15 March targeting IDF near Lebanon border (Jibia, Shebaa Farms, Al-Adaisah, Avivim barracks) with rockets and artillery; prior day claimed 47 operations (21 in Israel, 26 in Lebanon).[1]",
-                "**Iraqi Militia Activity:** Iraqi militias claimed 27 attacks in 24 hours and offered rewards for targeting U.S. personnel.[1]",
-                "**Iranian Spy Arrests:** Authorities arrested 23 alleged spies linked to 'American-Zionist networks' across provinces.[1]",
-                "**Ongoing US/Israel Campaign:** Continued strikes on IRGC bases and Basij as part of Operations 'Epic Fury' and 'Roaring Lion' to degrade Iran's military, nuclear, and internal security capabilities.[1]"
-          ],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": false,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "proxy_escalation",
-          "param_calibration": {
-                "escalation_propensity": 0.85,
-                "iran_force_multiplier": 0.25,
-                "us_tech_advantage": 2.2,
-                "iran_asymmetric_factor": 0.7,
-                "proxy_effectiveness": 0.75,
-                "cyber_intensity": 0.4,
-                "hormuz_mining_probability": 0.65,
-                "oil_price_elasticity": -0.12,
-                "patriot_intercept_rate": 0.92,
-                "iran_mine_warfare_effectiveness": 0.3,
-                "us_mcm_effectiveness": 0.75,
-                "iraq_production_loss_pct": 35,
-                "lng_disruption_pct": 45,
-                "opec_actual_response_mbd": 2.1
-          }
-    },
-    16: {
-          "date": "2026-03-15",
-          "diplomatic_momentum": 0.1,
-          "mediation_active": false,
-          "ceasefire_signals": 0.05,
-          "escalation_override": 5,
-          "events": [],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "fragmented_resistance",
-          "param_calibration": {
-                "escalation_propensity": 0.75,
-                "iran_force_multiplier": 0.25,
-                "us_tech_advantage": 2.2,
-                "iran_asymmetric_factor": 0.6,
-                "proxy_effectiveness": 0.7,
-                "cyber_intensity": 0.4,
-                "hormuz_mining_probability": 0.45,
-                "oil_price_elasticity": -0.12,
-                "patriot_intercept_rate": 0.92,
-                "iran_mine_warfare_effectiveness": 0.3,
-                "us_mcm_effectiveness": 0.65,
-                "iraq_production_loss_pct": 45,
-                "lng_disruption_pct": 60,
-                "opec_actual_response_mbd": 2.1
-          }
-    },
-    17: {
-          "date": "2026-03-16",
-          "diplomatic_momentum": 0.1,
-          "mediation_active": false,
-          "ceasefire_signals": 0.05,
-          "escalation_override": 5,
-          "events": [
-                "Iran escalated drone attacks against Saudi Arabia by 158%, launching 62 drones on March 16, up from 24 the previous day, marking the highest single-day total since the war began.[1]",
-                "Victory Base Complex in Iraq targeted in two separate attacks with nine drones and rockets; at least three drones intercepted, followed by four additional rockets hours later.[1]",
-                "IRGC missile attack struck a camp of the Iranian Kurdish opposition Komala Party in Iraq.[1]",
-                "Iranian missile strikes hit UAE targets: Dubai International Airport (flights suspended), Fujairah port (fire and oil-loading suspended), a building in Umm Al Quwain, and Abu Dhabi (1 Palestinian civilian killed).[1]",
-                "Iran intensified attacks on Gulf infrastructure as part of efforts to raise oil costs, targeting ports and airports critical to energy exports.[1]"
-          ],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "proxy_escalation",
-          "param_calibration": {
-                "escalation_propensity": 0.92,
-                "iran_force_multiplier": 0.25,
-                "us_tech_advantage": 2.3,
-                "iran_asymmetric_factor": 1.6,
-                "proxy_effectiveness": 0.85,
-                "cyber_intensity": 0.4,
-                "hormuz_mining_probability": 0.75,
-                "oil_price_elasticity": -0.15,
-                "patriot_intercept_rate": 0.85,
-                "iran_mine_warfare_effectiveness": 0.65,
-                "us_mcm_effectiveness": 0.7,
-                "iraq_production_loss_pct": 45,
-                "lng_disruption_pct": 60,
-                "opec_actual_response_mbd": 2.1
-          }
-    },
-    18: {
-          "date": "2026-03-17",
-          "diplomatic_momentum": 0.1,
-          "mediation_active": false,
-          "ceasefire_signals": 0.05,
-          "escalation_override": 5,
-          "events": [
-                "I cannot provide the specific day-by-day summary you've requested for March 17, 2026 (Day 18 of Operation Epic Fury). While the search results contain general information about Operation Epic Fury's objectives, overall campaign statistics, and some timeline details from late February and early March 2026, they do not include specific events, strikes, casualties, or diplomatic developments for March 17, 2026.",
-                "The search results provide:",
-                "Overall campaign statistics through March 28-31, 2026[6][5]",
-                "General timeline information for February 28 and March 1, 2026[8]",
-                "Campaign objectives and force deployments[2][3]",
-                "Specific military operations on March 17, 2026",
-                "Iranian retaliation details for that date"
-          ],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "proxy_escalation",
-          "param_calibration": {
-                "escalation_propensity": 0.75,
-                "iran_force_multiplier": 0.25,
-                "us_tech_advantage": 2.2,
-                "iran_asymmetric_factor": 0.8,
-                "proxy_effectiveness": 0.6,
-                "cyber_intensity": 0.4,
-                "hormuz_mining_probability": 0.65,
-                "oil_price_elasticity": -0.15,
-                "patriot_intercept_rate": 0.92,
-                "iran_mine_warfare_effectiveness": 0.35,
-                "us_mcm_effectiveness": 0.7,
-                "iraq_production_loss_pct": 45,
-                "lng_disruption_pct": 60,
-                "opec_actual_response_mbd": 2.1
-          }
-    },
-    19: {
-          "date": "2026-03-18",
-          "diplomatic_momentum": 0.1,
-          "mediation_active": false,
-          "ceasefire_signals": 0.05,
-          "escalation_override": 5,
-          "events": [],
           "proxy": {
                 "hezbollah_active": true,
                 "houthi_active": true,
@@ -1668,17 +1448,311 @@ const DIPLOMATIC_EVENTS = {
                 "proxy_effectiveness": 0.4,
                 "cyber_intensity": 0.3,
                 "hormuz_mining_probability": 0.45,
+                "oil_price_elasticity": -0.15,
+                "patriot_intercept_rate": 0.95,
+                "iran_mine_warfare_effectiveness": 0.2,
+                "us_mcm_effectiveness": 0.7,
+                "iraq_production_loss_pct": 45,
+                "lng_disruption_pct": 60,
+                "opec_actual_response_mbd": 1.8
+          }
+    },
+    13: {
+          "date": "2026-03-12",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [
+                "US/coalition airstrikes targeted Popular Mobilization Forces (PMF) positions in Kirkuk and Anbar provinces, Iraq, killing at least 30 Iranian-backed militia fighters and wounding dozens more.[2]",
+                "Israeli Air Force (IAF) conducted airstrikes in Tehran against Iranian regime targets on Day 13.[2]",
+                "Houthi forces conducted at least three attacks on March 12, including hits on one ship, Bahrain, and Iraqi targets.[2]",
+                "Ongoing US military escorts for tankers through the Strait of Hormuz were described as 'quite likely' to begin by end of March, per Secretary Wright.[2]",
+                "Strait of Hormuz status: Continued Houthi attacks on shipping, with multiple hits reported including on ships and regional ports.[2]"
+          ],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "proxy_escalation",
+          "param_calibration": {
+                "escalation_propensity": 0.85,
+                "iran_force_multiplier": 0.25,
+                "us_tech_advantage": 2.2,
+                "iran_asymmetric_factor": 1.4,
+                "proxy_effectiveness": 0.75,
+                "cyber_intensity": 0.4,
+                "hormuz_mining_probability": 0.65,
                 "oil_price_elasticity": -0.12,
                 "patriot_intercept_rate": 0.92,
-                "iran_mine_warfare_effectiveness": 0.2,
+                "iran_mine_warfare_effectiveness": 0.55,
+                "us_mcm_effectiveness": 0.7,
+                "iraq_production_loss_pct": 35,
+                "lng_disruption_pct": 45,
+                "opec_actual_response_mbd": 1.8
+          }
+    },
+    15: {
+          "date": "2026-03-14",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [
+                "\"error\": \"Insufficient data for requested date\",",
+                "\"explanation\": \"The search results provided contain limited information specifically for March 14, 2026. Only one event is directly documented for that date:\",",
+                "\"march_14_2026_events\": [",
+                "\"Statement on the KC-135 Incident released by CENTCOM on March 14, 2026, following the loss of a U.S. KC-135 aircraft over Iraq with all crew members confirmed deceased on March 13, 2026[6]\"",
+                "\"No specific US/coalition strikes documented for March 14, 2026\",",
+                "\"No Iranian retaliation events documented for March 14, 2026\",",
+                "\"No proxy attack activity (Hezbollah/Houthi/Iraqi militia) documented for March 14, 2026\","
+          ],
+          "proxy": {
+                "hezbollah_active": false,
+                "houthi_active": false,
+                "iraqi_militia_active": false
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "fragmented_resistance",
+          "param_calibration": {
+                "escalation_propensity": 0.75,
+                "iran_force_multiplier": 0.35,
+                "us_tech_advantage": 2.2,
+                "iran_asymmetric_factor": 0.8,
+                "proxy_effectiveness": 0.4,
+                "cyber_intensity": 0.6,
+                "hormuz_mining_probability": 0.45,
+                "oil_price_elasticity": -0.12,
+                "patriot_intercept_rate": 0.92,
+                "iran_mine_warfare_effectiveness": 0.55,
                 "us_mcm_effectiveness": 0.65,
                 "iraq_production_loss_pct": 35,
+                "lng_disruption_pct": 40,
+                "opec_actual_response_mbd": 1.8
+          }
+    },
+    16: {
+          "date": "2026-03-15",
+          "diplomatic_momentum": 0.4,
+          "mediation_active": false,
+          "ceasefire_signals": 0.3,
+          "escalation_override": 3,
+          "events": [
+                "I cannot provide a specific JSON summary of events from March 15, 2026, as the search results do not contain detailed day-by-day information for that specific date.",
+                "The search results provide:",
+                "A **general update** from March 15, 2026[1] that summarizes the operation's status through mid-March but does not break down specific events occurring on that particular day",
+                "Cumulative statistics** as of March 13, 2026[1] (over 15,000 Iranian targets struck, 5 USAF refuelers damaged, drone attacks down 95%, missile attacks down 90%)",
+                "Timeline events** from February 28 and March 1, 2026[5], but no granular March 15 data",
+                "Fact sheet data** through March 28, 2026[4] showing cumulative totals (11,000+ combat flights, 150+ Iranian vessels damaged/destroyed) rather than daily breakdowns",
+                "To accurately provide the 5-7 most important events specifically from March 15, 2026, with precise numbers for strikes, casualties, diplomatic developments, and other metrics you've requested, I would need search results containing:"
+          ],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "fragmented_resistance",
+          "param_calibration": {
+                "escalation_propensity": 0.35,
+                "iran_force_multiplier": 0.15,
+                "us_tech_advantage": 2.2,
+                "iran_asymmetric_factor": 0.4,
+                "proxy_effectiveness": 0.25,
+                "cyber_intensity": 0.3,
+                "hormuz_mining_probability": 0.2,
+                "oil_price_elasticity": -0.15,
+                "patriot_intercept_rate": 0.95,
+                "iran_mine_warfare_effectiveness": 0.1,
+                "us_mcm_effectiveness": 0.75,
+                "iraq_production_loss_pct": 45,
                 "lng_disruption_pct": 60,
+                "opec_actual_response_mbd": 2.1
+          }
+    },
+    17: {
+          "date": "2026-03-16",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "fragmented_resistance",
+          "param_calibration": {
+                "escalation_propensity": 0.85,
+                "iran_force_multiplier": 0.15,
+                "us_tech_advantage": 2.3,
+                "iran_asymmetric_factor": 0.6,
+                "proxy_effectiveness": 0.7,
+                "cyber_intensity": 0.4,
+                "hormuz_mining_probability": 0.45,
+                "oil_price_elasticity": -0.12,
+                "patriot_intercept_rate": 0.95,
+                "iran_mine_warfare_effectiveness": 0.25,
+                "us_mcm_effectiveness": 0.75,
+                "iraq_production_loss_pct": 45,
+                "lng_disruption_pct": 60,
+                "opec_actual_response_mbd": 2.1
+          }
+    },
+    18: {
+          "date": "2026-03-17",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [
+                "I cannot provide the specific day-by-day summary you've requested for March 17, 2026 (Day 18 of Operation Epic Fury).",
+                "The search results provided contain only **aggregate information** about Operation Epic Fury's first 29 days (through March 28, 2026), not granular daily breakdowns. The available data includes:",
+                "Overall statistics** through March 28: 11,000+ targets struck, 150+ Iranian vessels damaged or destroyed, 11,000+ combat flights[6]",
+                "General operational objectives** and force posture[1][3][5]",
+                "One specific date reference**: March 17 is mentioned only as \"Day 17\" in a general statement about ongoing operations[8]",
+                "The search results do not contain:",
+                "Specific strikes, casualties, or events for March 17, 2026"
+          ],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "proxy_escalation",
+          "param_calibration": {
+                "escalation_propensity": 0.75,
+                "iran_force_multiplier": 0.25,
+                "us_tech_advantage": 2.2,
+                "iran_asymmetric_factor": 0.65,
+                "proxy_effectiveness": 0.7,
+                "cyber_intensity": 0.4,
+                "hormuz_mining_probability": 0.35,
+                "oil_price_elasticity": -0.12,
+                "patriot_intercept_rate": 0.92,
+                "iran_mine_warfare_effectiveness": 0.3,
+                "us_mcm_effectiveness": 0.75,
+                "iraq_production_loss_pct": 45,
+                "lng_disruption_pct": 60,
+                "opec_actual_response_mbd": 2.1
+          }
+    },
+    19: {
+          "date": "2026-03-18",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [
+                "**Israeli Air Force strikes hit gas facilities at South Pars Special Economic Energy Zone**, causing a fire; largest yet on Iranian energy asset, coordinated with US.[3]",
+                "**Overnight, Israeli military eliminated Iran’s intelligence minister Esmaeil Khatib**.[3]",
+                "**Iran fired 20 missiles so far on March 18** (after 37 on March 17, up 19%).[3]",
+                "**USS Gerald R. Ford aircraft carrier to temporarily dock in Crete** following onboard fire.[3]",
+                "**Over a dozen U.S. MQ-9 Reaper drones destroyed by Iran** throughout operation.[3]",
+                "**U.A.E. casualties from Iranian attacks: 8 killed, 157 injured**; intercepted 13 ballistic missiles, 27 drones (contextual for Day 19).[3]",
+                "**Iranian authorities arrested 111 alleged monarchist cells** across 26 provinces, plus spies cooperating with Iran International.[3]"
+          ],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "proxy_escalation",
+          "param_calibration": {
+                "escalation_propensity": 0.85,
+                "iran_force_multiplier": 0.25,
+                "us_tech_advantage": 2.2,
+                "iran_asymmetric_factor": 0.7,
+                "proxy_effectiveness": 0.6,
+                "cyber_intensity": 0.4,
+                "hormuz_mining_probability": 0.45,
+                "oil_price_elasticity": -0.12,
+                "patriot_intercept_rate": 0.92,
+                "iran_mine_warfare_effectiveness": 0.35,
+                "us_mcm_effectiveness": 0.75,
+                "iraq_production_loss_pct": 35,
+                "lng_disruption_pct": 45,
                 "opec_actual_response_mbd": 1.8
           }
     },
     20: {
           "date": "2026-03-19",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [
+                "I cannot provide the specific day-by-day summary you've requested for March 19, 2026. While the search results contain a White House release dated March 19, 2026[7], they do not include detailed information about specific military strikes, Iranian retaliation, proxy attacks, casualties, naval operations, Strait of Hormuz status, diplomatic developments, or other events that occurred on that particular date.",
+                "The search results provide:",
+                "Operational overview as of March 18, 2026**: 7,800+ targets struck, 120+ Iranian vessels damaged or destroyed, and 8,000+ combat flights[5]",
+                "General casualty figures**: More than 2,000 people dead in Iran, Lebanon, and Israel as of March 19[6]",
+                "Strategic objectives**: Destroy Iranian missiles and production capacity, annihilate the Iranian navy, prevent nuclear weapons acquisition, and degrade proxy networks[2][3]",
+                "However, these are cumulative figures and strategic statements rather than day-specific events for March 19, 2026.",
+                "To accurately compile a JSON array of the 5-7 most important events for that specific date with precise numbers and sources, I would need search results containing:"
+          ],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "fragmented_resistance",
+          "param_calibration": {
+                "escalation_propensity": 0.75,
+                "iran_force_multiplier": 0.15,
+                "us_tech_advantage": 2.2,
+                "iran_asymmetric_factor": 0.6,
+                "proxy_effectiveness": 0.4,
+                "cyber_intensity": 0.3,
+                "hormuz_mining_probability": 0.4,
+                "oil_price_elasticity": -0.15,
+                "patriot_intercept_rate": 0.92,
+                "iran_mine_warfare_effectiveness": 0.2,
+                "us_mcm_effectiveness": 0.7,
+                "iraq_production_loss_pct": 45,
+                "lng_disruption_pct": 60,
+                "opec_actual_response_mbd": 2.1
+          }
+    },
+    21: {
+          "date": "2026-03-20",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 4,
+          "events": [],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "fragmented_resistance",
+          "param_calibration": {
+                "escalation_propensity": 0.65,
+                "iran_force_multiplier": 0.25,
+                "us_tech_advantage": 2.2,
+                "iran_asymmetric_factor": 0.7,
+                "proxy_effectiveness": 0.6,
+                "cyber_intensity": 0.4,
+                "hormuz_mining_probability": 0.45,
+                "oil_price_elasticity": -0.12,
+                "patriot_intercept_rate": 0.92,
+                "iran_mine_warfare_effectiveness": 0.3,
+                "us_mcm_effectiveness": 0.65,
+                "iraq_production_loss_pct": 45,
+                "lng_disruption_pct": 60,
+                "opec_actual_response_mbd": 1.8
+          }
+    },
+    22: {
+          "date": "2026-03-21",
           "diplomatic_momentum": 0.1,
           "mediation_active": false,
           "ceasefire_signals": 0.05,
@@ -1708,108 +1782,8 @@ const DIPLOMATIC_EVENTS = {
                 "opec_actual_response_mbd": 2.1
           }
     },
-    22: {
-          "date": "2026-03-21",
-          "diplomatic_momentum": 0.35,
-          "mediation_active": false,
-          "ceasefire_signals": 0.3,
-          "escalation_override": 4,
-          "events": [],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "fragmented_resistance",
-          "param_calibration": {
-                "escalation_propensity": 0.65,
-                "iran_force_multiplier": 0.15,
-                "us_tech_advantage": 2.2,
-                "iran_asymmetric_factor": 0.75,
-                "proxy_effectiveness": 0.6,
-                "cyber_intensity": 0.4,
-                "hormuz_mining_probability": 0.45,
-                "oil_price_elasticity": -0.12,
-                "patriot_intercept_rate": 0.92,
-                "iran_mine_warfare_effectiveness": 0.3,
-                "us_mcm_effectiveness": 0.65,
-                "iraq_production_loss_pct": 45,
-                "lng_disruption_pct": 60,
-                "opec_actual_response_mbd": 1.8
-          }
-    },
     23: {
           "date": "2026-03-22",
-          "diplomatic_momentum": 0.3,
-          "mediation_active": false,
-          "ceasefire_signals": 0.25,
-          "escalation_override": 5,
-          "events": [],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "fragmented_resistance",
-          "param_calibration": {
-                "escalation_propensity": 0.75,
-                "iran_force_multiplier": 0.15,
-                "us_tech_advantage": 2.2,
-                "iran_asymmetric_factor": 0.8,
-                "proxy_effectiveness": 0.65,
-                "cyber_intensity": 0.4,
-                "hormuz_mining_probability": 0.45,
-                "oil_price_elasticity": -0.12,
-                "patriot_intercept_rate": 0.92,
-                "iran_mine_warfare_effectiveness": 0.25,
-                "us_mcm_effectiveness": 0.65,
-                "iraq_production_loss_pct": 45,
-                "lng_disruption_pct": 60,
-                "opec_actual_response_mbd": 1.8
-          }
-    },
-    24: {
-          "date": "2026-03-23",
-          "diplomatic_momentum": 0,
-          "mediation_active": false,
-          "ceasefire_signals": 0,
-          "escalation_override": 5,
-          "events": [
-                "US/Coalition strikes reached cumulative total of over 9,000 targets struck by March 23, 2026, including IRGC headquarters, ballistic missile sites, and air defense systems.[2]",
-                "Iranian vessels damaged or destroyed reached 140+, with ongoing annihilation of Iranian navy ships and submarines as part of core objectives.[1][2]",
-                "US conducted over 9,000 combat flights by end of Day 24, employing assets like KC-135 refuelers, MQ-9 drones, and nuclear-powered carriers.[2]",
-                "CENTCOM fact sheet confirms sustained operations dismantling Iran's security apparatus, prioritizing imminent threats like command centers and weapons bunkers.[2][6]",
-                "Middle East Institute analysis on March 23 discusses ripple effects of Operation Epic Fury on North Africa, indicating ongoing strategic assessments.[8]",
-                "No specific reports of Iranian retaliation, proxy attacks, US/Iranian casualties, naval operations details, Strait of Hormuz status, diplomatic developments, ceasefire proposals, UN activity, or oil price movements on this exact day in available sources."
-          ],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "fragmented_resistance",
-          "param_calibration": {
-                "escalation_propensity": 0.85,
-                "iran_force_multiplier": 0.05,
-                "us_tech_advantage": 2.3,
-                "iran_asymmetric_factor": 0.3,
-                "proxy_effectiveness": 0.4,
-                "cyber_intensity": 0.6,
-                "hormuz_mining_probability": 0.15,
-                "oil_price_elasticity": -0.15,
-                "patriot_intercept_rate": 0.95,
-                "iran_mine_warfare_effectiveness": 0.1,
-                "us_mcm_effectiveness": 0.75,
-                "iraq_production_loss_pct": 35,
-                "lng_disruption_pct": 60,
-                "opec_actual_response_mbd": 2.1
-          }
-    },
-    26: {
-          "date": "2026-03-25",
           "diplomatic_momentum": 0.1,
           "mediation_active": false,
           "ceasefire_signals": 0.05,
@@ -1823,13 +1797,160 @@ const DIPLOMATIC_EVENTS = {
           "us_posture": "sustained_operations",
           "iran_posture": "proxy_escalation",
           "param_calibration": {
+                "escalation_propensity": 0.85,
+                "iran_force_multiplier": 0.15,
+                "us_tech_advantage": 2.3,
+                "iran_asymmetric_factor": 0.75,
+                "proxy_effectiveness": 0.65,
+                "cyber_intensity": 0.4,
+                "hormuz_mining_probability": 0.7,
+                "oil_price_elasticity": -0.15,
+                "patriot_intercept_rate": 0.92,
+                "iran_mine_warfare_effectiveness": 0.3,
+                "us_mcm_effectiveness": 0.65,
+                "iraq_production_loss_pct": 45,
+                "lng_disruption_pct": 60,
+                "opec_actual_response_mbd": 2.1
+          }
+    },
+    24: {
+          "date": "2026-03-23",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [
+                "**US/Coalition Strikes Milestone**: CENTCOM reported over 9,000 targets struck, 140+ Iranian vessels damaged or destroyed, and 9,000+ combat flights in the first 24 days of Operation Epic Fury as of March 23, 2026.[3]",
+                "**Iranian Navy Annihilation Progress**: Ongoing strikes targeted Iranian navy ships and submarines, aligning with Operation Epic Fury objectives to dismantle Iran's naval forces, per White House and CENTCOM statements.[2][3]",
+                "**Islamic Resistance in Iraq Retaliation**: Iraqi militias launched 27 operations with over 80 missiles and Murad-5 drones targeting US facilities in Erbil and region-wide, claimed as retaliation for leadership strikes (contextual to Day 24 escalation).[1]",
+                "**Cumulative IDF Achievements**: Israel neutralized ~300 Iranian missile launchers and deployed ~4,000 munitions since campaign start, focusing on missile infrastructure and regime assets (updated through early March, relevant to sustained Day 24 ops).[1]",
+                "**Proxy Activity in Iraq**: Islamic Resistance in Iraq conducted coordinated rocket and drone strikes on coalition positions, part of broader retaliation following Ayatollah Khamenei's killing.[1][4]",
+                "**CENTCOM Fact Sheet Release**: DoD issued Operation Epic Fury Fact Sheet on March 23 detailing first 24 days' impacts, emphasizing ballistic missile sites, air defenses, and anti-ship missiles destroyed.[3]",
+                "**Diplomatic Echoes**: United Against Nuclear Iran highlighted statements on Operation Epic Fury resilience as of March 23, amid no specific ceasefire or UN actions reported for the day.[7]"
+          ],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "proxy_escalation",
+          "param_calibration": {
+                "escalation_propensity": 0.75,
+                "iran_force_multiplier": 0.15,
+                "us_tech_advantage": 2.2,
+                "iran_asymmetric_factor": 0.6,
+                "proxy_effectiveness": 0.4,
+                "cyber_intensity": 0.3,
+                "hormuz_mining_probability": 0.4,
+                "oil_price_elasticity": -0.15,
+                "patriot_intercept_rate": 0.92,
+                "iran_mine_warfare_effectiveness": 0.2,
+                "us_mcm_effectiveness": 0.7,
+                "iraq_production_loss_pct": 35,
+                "lng_disruption_pct": 45,
+                "opec_actual_response_mbd": 1.8
+          }
+    },
+    25: {
+          "date": "2026-03-24",
+          "diplomatic_momentum": 0,
+          "mediation_active": false,
+          "ceasefire_signals": 0,
+          "escalation_override": 5,
+          "events": [
+                "US/coalition forces struck over 9,000 total targets in Iran by March 23, with cumulative combat flights exceeding 9,000 and 140+ Iranian vessels damaged or destroyed, as per CENTCOM fact sheet[4].",
+                "On March 24, U.S. Senate statements confirmed 'U.S. forces have destroyed more than 9,000 military targets inside Iran, significantly removing the Iranian regime's combat capability,' highlighting ongoing degradation of IRGC capabilities[9].",
+                "No specific Iranian retaliation, proxy attacks (Hezbollah, Houthi, Iraqi militias), or US casualties reported for March 24; earlier patterns include missile/drone strikes on US assets in Bahrain, Kuwait, Qatar, and UAE[1].",
+                "Pentagon leaders noted Iran's weapons launches and arms caches continuing to diminish as Operation Epic Fury entered its second month, with focus shifting to precision strikes on manufacturing nodes and naval/mine-laying assets[5].",
+                "No naval operations, Strait of Hormuz status updates, or oil price movements specified for March 24; cumulative Iranian navy losses at 140+ vessels by March 23[4].",
+                "No diplomatic developments, ceasefire proposals, or UN activity reported for March 24 across sources."
+          ],
+          "proxy": {
+                "hezbollah_active": false,
+                "houthi_active": false,
+                "iraqi_militia_active": false
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "fragmented_resistance",
+          "param_calibration": {
+                "escalation_propensity": 0.75,
+                "iran_force_multiplier": 0.15,
+                "us_tech_advantage": 2.3,
+                "iran_asymmetric_factor": 0.4,
+                "proxy_effectiveness": 0.3,
+                "cyber_intensity": 0.6,
+                "hormuz_mining_probability": 0.25,
+                "oil_price_elasticity": -0.12,
+                "patriot_intercept_rate": 0.95,
+                "iran_mine_warfare_effectiveness": 0.2,
+                "us_mcm_effectiveness": 0.75,
+                "iraq_production_loss_pct": 25,
+                "lng_disruption_pct": 40,
+                "opec_actual_response_mbd": 1.8
+          }
+    },
+    26: {
+          "date": "2026-03-25",
+          "diplomatic_momentum": 0.25,
+          "mediation_active": false,
+          "ceasefire_signals": 0.2,
+          "escalation_override": 5,
+          "events": [
+                "US Forces executed a large-scale precision strike on Kharg Island, Iran, targeting key oil export facilities and naval assets, as reported in CENTCOM updates[2].",
+                "CENTCOM Commander provided an operational update on Operation Epic Fury, confirming ongoing strikes against Iranian missile production and navy infrastructure with no US casualties reported[2].",
+                "USS Gerald R. Ford carrier strike group conducted extensive flight operations in the Persian Gulf, supporting precision strikes and defensive patrols[2].",
+                "US Navy ships performed critical replenishment-at-sea operations to sustain naval presence amid intensified combat activities[2].",
+                "Iranian proxies, including Houthi forces, launched 12 drone attacks on Saudi oil facilities, causing minor disruptions but no casualties; Iraqi militias fired 8 rockets at US bases in Syria, intercepted with zero US losses[2][4].",
+                "Strait of Hormuz remained open to commercial traffic with 85% normal volume; US naval forces enforced a defensive exclusion zone after repelling 3 Iranian fast boat incursions[2].",
+                "Diplomatic developments: UN Security Council held emergency session on ceasefire proposal from Russia and China, vetoed by US; oil prices surged to $145/barrel WTI amid Kharg Island strike fears[7]."
+          ],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "proxy_escalation",
+          "param_calibration": {
+                "escalation_propensity": 0.75,
+                "iran_force_multiplier": 0.35,
+                "us_tech_advantage": 2.2,
+                "iran_asymmetric_factor": 0.65,
+                "proxy_effectiveness": 0.45,
+                "cyber_intensity": 0.3,
+                "hormuz_mining_probability": 0.25,
+                "oil_price_elasticity": -0.12,
+                "patriot_intercept_rate": 0.95,
+                "iran_mine_warfare_effectiveness": 0.2,
+                "us_mcm_effectiveness": 0.75,
+                "iraq_production_loss_pct": 15,
+                "lng_disruption_pct": 10,
+                "opec_actual_response_mbd": 1.8
+          }
+    },
+    27: {
+          "date": "2026-03-26",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "fragmented_resistance",
+          "param_calibration": {
                 "escalation_propensity": 0.75,
                 "iran_force_multiplier": 0.25,
                 "us_tech_advantage": 2.2,
                 "iran_asymmetric_factor": 0.6,
-                "proxy_effectiveness": 0.7,
-                "cyber_intensity": 0.4,
-                "hormuz_mining_probability": 0.3,
+                "proxy_effectiveness": 0.4,
+                "cyber_intensity": 0.3,
+                "hormuz_mining_probability": 0.45,
                 "oil_price_elasticity": -0.15,
                 "patriot_intercept_rate": 0.92,
                 "iran_mine_warfare_effectiveness": 0.2,
@@ -1854,17 +1975,17 @@ const DIPLOMATIC_EVENTS = {
           "us_posture": "sustained_operations",
           "iran_posture": "fragmented_resistance",
           "param_calibration": {
-                "escalation_propensity": 0.85,
-                "iran_force_multiplier": 0.15,
-                "us_tech_advantage": 2.3,
+                "escalation_propensity": 0.75,
+                "iran_force_multiplier": 0.25,
+                "us_tech_advantage": 2.2,
                 "iran_asymmetric_factor": 0.6,
                 "proxy_effectiveness": 0.7,
                 "cyber_intensity": 0.4,
                 "hormuz_mining_probability": 0.65,
-                "oil_price_elasticity": -0.15,
-                "patriot_intercept_rate": 0.95,
-                "iran_mine_warfare_effectiveness": 0.25,
-                "us_mcm_effectiveness": 0.75,
+                "oil_price_elasticity": -0.12,
+                "patriot_intercept_rate": 0.92,
+                "iran_mine_warfare_effectiveness": 0.3,
+                "us_mcm_effectiveness": 0.7,
                 "iraq_production_loss_pct": 45,
                 "lng_disruption_pct": 60,
                 "opec_actual_response_mbd": 2.1
@@ -1877,13 +1998,11 @@ const DIPLOMATIC_EVENTS = {
           "ceasefire_signals": 0.05,
           "escalation_override": 5,
           "events": [
-                "CENTCOM reported cumulative totals as of March 28, 2026 (Day 29): over 11,000 targets struck, 150+ Iranian vessels damaged or destroyed, and 11,000+ combat flights conducted.[3]",
-                "Ongoing US/coalition precision strikes targeted Iranian ballistic missile sites, air defense systems, anti-ship missile sites, navy ships, and submarines, continuing the campaign to dismantle Iran's security apparatus.[3][1][2]",
-                "No specific new US strikes or Iranian retaliation events detailed for March 28; operations focused on sustained degradation of Iranian naval and missile capabilities.[3]",
-                "No reports of additional US casualties on this date; earlier totals noted 4 US service members killed in action as of March 2.[5]",
-                "Iranian losses include 150+ vessels damaged/destroyed and thousands of targets hit cumulatively, with no specific Day 29 increments provided.[3]",
-                "US naval operations included replenishments and large-scale precision strikes, such as on Kharg Island, supporting the navy annihilation objective.[2]",
-                "No updates on Strait of Hormuz status, proxy attacks (Hezbollah, Houthi, Iraqi militias), diplomatic developments, ceasefire proposals, UN activity, or oil price movements specific to March 28.[1-9]"
+                "US/Coalition forces struck over 11,000 total targets in Operation Epic Fury by March 28, 2026 (Day 29), including Iranian vessels, navy ships, submarines, air defense systems, and ballistic missile sites.[2]",
+                "More than 150 Iranian vessels damaged or destroyed cumulatively by Day 29, advancing the objective to annihilate Iran's navy.[2]",
+                "US Central Command conducted over 11,000 combat flights by March 28, supporting precision strikes on IRGC command centers, weapons production bunkers, and anti-ship missile sites.[2]",
+                "CENTCOM employed key US assets including nuclear-powered aircraft carriers, submarines, guided-missile destroyers, Patriot and THAAD systems, HIMARS, and counter-drone systems in ongoing operations.[2]",
+                "No specific Day 29 Iranian retaliation, proxy attacks (Hezbollah, Houthi, Iraqi militias), US or Iranian casualties, naval operations details, Strait of Hormuz status, diplomatic developments, ceasefire proposals, UN activity, or oil price movements reported in available sources.[1][2][3][4][5]"
           ],
           "proxy": {
                 "hezbollah_active": true,
@@ -1897,29 +2016,32 @@ const DIPLOMATIC_EVENTS = {
                 "iran_force_multiplier": 0.15,
                 "us_tech_advantage": 2.3,
                 "iran_asymmetric_factor": 0.4,
-                "proxy_effectiveness": 0.6,
-                "cyber_intensity": 0.7,
-                "hormuz_mining_probability": 0.3,
+                "proxy_effectiveness": 0.3,
+                "cyber_intensity": 0.4,
+                "hormuz_mining_probability": 0.25,
                 "oil_price_elasticity": -0.15,
                 "patriot_intercept_rate": 0.95,
                 "iran_mine_warfare_effectiveness": 0.2,
-                "us_mcm_effectiveness": 0.75,
-                "iraq_production_loss_pct": 35,
-                "lng_disruption_pct": 45,
-                "opec_actual_response_mbd": 2.1
+                "us_mcm_effectiveness": 0.7,
+                "iraq_production_loss_pct": 25,
+                "lng_disruption_pct": 40,
+                "opec_actual_response_mbd": 1.8
           }
     },
     30: {
           "date": "2026-03-29",
-          "diplomatic_momentum": 0.1,
-          "mediation_active": false,
-          "ceasefire_signals": 0.05,
+          "diplomatic_momentum": 0.3,
+          "mediation_active": true,
+          "ceasefire_signals": 0.25,
           "escalation_override": 5,
           "events": [
-                "No specific events for **March 29, 2026 (Day 30)** of Operation Epic Fury are detailed in available CENTCOM fact sheets or reports, which cover up to the first 29 days ending March 28[3].",
-                "CENTCOM's March 28 summary reports cumulative totals: **11,000+ targets struck**, **150+ Iranian vessels damaged or destroyed**, and **11,000+ combat flights**, but lacks day-specific breakdowns for March 29[3].",
-                "No mentions of US/coalition strikes, Iranian retaliation, proxy attacks, casualties, naval operations, Strait of Hormuz status, diplomatic developments, ceasefire proposals, UN activity, or oil price movements on this exact date across sources[1][2][3][4][5][6][7][8].",
-                "Operation began February 28, 2026; Day 30 aligns with March 29, but data gap exists beyond March 28 fact sheet[1][3]."
+                "UAE air defenses intercepted 16 Iranian ballistic missiles and 42 UAVs launched from Iran on March 29, 2026, amid ongoing Operation Epic Fury.[8]",
+                "CENTCOM forces struck more than 11,000 targets over the first 30 days of Operation Epic Fury (ending March 29), including Iranian vessels with 150+ damaged or destroyed.[3][5]",
+                "Iranian retaliation included missile and drone barrages targeting U.S. facilities and regional allies, with UAE engaging the latest wave on March 29.[5][8]",
+                "No U.S. casualties reported in initial phases, with defenses maxed using Patriots, THAAD, fighters, and electronic warfare; Iranian casualties not specified for Day 30.[1][5]",
+                "U.S. Navy conducted replenishments and flight operations, focusing on eliminating Iranian mine-laying capabilities and naval assets in the Strait of Hormuz area.[2][5]",
+                "Iran holding up maritime traffic near Strait of Hormuz in response to U.S. strikes, impacting global oil shipping routes.[5]",
+                "No specific ceasefire proposals, UN activity, or oil price movements reported for March 29; focus remained on dismantling Iranian missile production and proxies.[4]"
           ],
           "proxy": {
                 "hezbollah_active": true,
@@ -1927,22 +2049,22 @@ const DIPLOMATIC_EVENTS = {
                 "iraqi_militia_active": true
           },
           "us_posture": "sustained_operations",
-          "iran_posture": "fragmented_resistance",
+          "iran_posture": "proxy_escalation",
           "param_calibration": {
                 "escalation_propensity": 0.85,
                 "iran_force_multiplier": 0.15,
-                "us_tech_advantage": 2.3,
-                "iran_asymmetric_factor": 0.4,
-                "proxy_effectiveness": 0.6,
-                "cyber_intensity": 0.7,
-                "hormuz_mining_probability": 0.3,
-                "oil_price_elasticity": -0.15,
-                "patriot_intercept_rate": 0.95,
-                "iran_mine_warfare_effectiveness": 0.2,
+                "us_tech_advantage": 2.2,
+                "iran_asymmetric_factor": 0.65,
+                "proxy_effectiveness": 0.75,
+                "cyber_intensity": 0.4,
+                "hormuz_mining_probability": 0.35,
+                "oil_price_elasticity": -0.12,
+                "patriot_intercept_rate": 0.92,
+                "iran_mine_warfare_effectiveness": 0.25,
                 "us_mcm_effectiveness": 0.75,
-                "iraq_production_loss_pct": 45,
-                "lng_disruption_pct": 60,
-                "opec_actual_response_mbd": 2.1
+                "iraq_production_loss_pct": 35,
+                "lng_disruption_pct": 45,
+                "opec_actual_response_mbd": 1.8
           }
     },
     31: {
@@ -1950,7 +2072,7 @@ const DIPLOMATIC_EVENTS = {
           "diplomatic_momentum": 0.1,
           "mediation_active": false,
           "ceasefire_signals": 0.05,
-          "escalation_override": 5,
+          "escalation_override": 4,
           "events": [],
           "proxy": {
                 "hezbollah_active": true,
@@ -1960,74 +2082,36 @@ const DIPLOMATIC_EVENTS = {
           "us_posture": "sustained_operations",
           "iran_posture": "fragmented_resistance",
           "param_calibration": {
-                "escalation_propensity": 0.75,
+                "escalation_propensity": 0.65,
                 "iran_force_multiplier": 0.15,
                 "us_tech_advantage": 2.3,
-                "iran_asymmetric_factor": 0.6,
-                "proxy_effectiveness": 0.4,
-                "cyber_intensity": 0.7,
-                "hormuz_mining_probability": 0.45,
-                "oil_price_elasticity": -0.12,
+                "iran_asymmetric_factor": 0.75,
+                "proxy_effectiveness": 0.45,
+                "cyber_intensity": 0.4,
+                "hormuz_mining_probability": 0.85,
+                "oil_price_elasticity": -0.15,
                 "patriot_intercept_rate": 0.95,
-                "iran_mine_warfare_effectiveness": 0.25,
-                "us_mcm_effectiveness": 0.75,
+                "iran_mine_warfare_effectiveness": 0.6,
+                "us_mcm_effectiveness": 0.7,
                 "iraq_production_loss_pct": 45,
                 "lng_disruption_pct": 60,
-                "opec_actual_response_mbd": 2.1
+                "opec_actual_response_mbd": 1.8
           }
     },
     32: {
           "date": "2026-03-31",
-          "diplomatic_momentum": 0.1,
+          "diplomatic_momentum": 0.2,
           "mediation_active": false,
-          "ceasefire_signals": 0.05,
-          "escalation_override": 4,
-          "events": [
-                "US forces struck more than 11,000 targets over the first 30 days of Operation Epic Fury, with focus shifting to precision strikes on Iran's key manufacturing nodes, component storage sites, research facilities, mine-laying capabilities, and naval assets on Day 32[1].",
-                "Pentagon leaders reported Iran's weapons launches and arms caches continuing to diminish as the operation enters its second month, involving at least 50,000 US troops in a US-led, Israel-coordinated campaign[1].",
-                "Secretary of Defense Pete Hegseth and Joint Chiefs Chairman Gen. Dan Caine emphasized fortification of US installations with air-and-missile defense and electronic warfare amid ongoing operations[1].",
-                "CENTCOM commander Adm. Brad Cooper provided an update on Operation Epic Fury on March 31, 2026, as part of ongoing strikes to dismantle Iran's security apparatus[8].",
-                "Major destruction of Iran's naval assets reported, including ships and a key submarine, ensuring no hostile Iranian vessels threaten vital waterways[4].",
-                "Iran's overall naval losses exceed 150+ vessels damaged or destroyed as of late March, with continued targeting of Iranian Navy ships and submarines[6]."
-          ],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "fragmented_resistance",
-          "param_calibration": {
-                "escalation_propensity": 0.45,
-                "iran_force_multiplier": 0.25,
-                "us_tech_advantage": 2.2,
-                "iran_asymmetric_factor": 0.4,
-                "proxy_effectiveness": 0.6,
-                "cyber_intensity": 0.3,
-                "hormuz_mining_probability": 0.15,
-                "oil_price_elasticity": -0.12,
-                "patriot_intercept_rate": 0.92,
-                "iran_mine_warfare_effectiveness": 0.12,
-                "us_mcm_effectiveness": 0.75,
-                "iraq_production_loss_pct": 35,
-                "lng_disruption_pct": 45,
-                "opec_actual_response_mbd": 2.1
-          }
-    },
-    33: {
-          "date": "2026-04-01",
-          "diplomatic_momentum": 0.4,
-          "mediation_active": false,
-          "ceasefire_signals": 0.5,
+          "ceasefire_signals": 0.3,
           "escalation_override": 3,
           "events": [
-                "I cannot provide the specific April 1, 2026 day-by-day summary you've requested. While the search results contain information about Operation Epic Fury's launch on February 28, 2026, and general updates through early March and April 1, 2026, they do not include detailed breakdowns of military strikes, Iranian retaliation, proxy attacks, casualty figures, naval operations, Strait of Hormuz status, or diplomatic developments specifically for April 1, 2026.",
-                "The search results provide:",
-                "Operation launch details**: Operation Epic Fury commenced February 28, 2026 at 1:15 AM ET, with over 1,250 targets struck in the first 48 hours[2]",
-                "General campaign objectives**: Destroying Iranian missiles and production capacity, degrading the navy, weakening proxy networks, and preventing nuclear weapons acquisition[5][6]",
-                "Early campaign scope**: Nearly 900 strikes in the first 12 hours; Israeli forces reported neutralizing approximately 300 Iranian missile launchers and deploying around 4,000 munitions by March 3[4]",
-                "Iranian retaliation**: Hundreds of Iranian missile and drone attacks occurred following initial U.S./Israeli strikes, with Iraqi militias reporting 27 separate operations by March 3[4]",
-                "However, the search results do not contain the granular April 1, 2026 data you need, including specific casualty counts, naval operations details, Strait of Hormuz status, oil price movements, or diplomatic developments for that particular date. To obtain this information, you would need access to more recent CENTCOM statements, defense department briefings, or comprehensive conflict timelines covering that specific date."
+                "I cannot provide a comprehensive JSON summary of March 31, 2026 events based on these search results. While the sources contain some information dated March 31, 2026, they do not provide sufficient detail about specific events that occurred on that particular day.",
+                "Here's what the search results actually document for March 31, 2026:",
+                "Available Information:**",
+                "Secretary of Defense Pete Hegseth and Chairman of the Joint Chiefs of Staff Gen. Dan Caine provided updates on Operation Epic Fury as it entered its second month[1]",
+                "Gen. Caine stated that U.S. forces \"struck more than 11,000 targets\" over the first 30 days of the operation[1]",
+                "Forces were focusing on precision strikes against Iran's manufacturing nodes, component storage sites, research facilities, mine-laying capabilities, and naval assets[1]",
+                "U.S. Navy Adm. Brad Cooper, commander of CENTCOM, provided an update on March 31, 2026[8]"
           ],
           "proxy": {
                 "hezbollah_active": true,
@@ -2038,96 +2122,74 @@ const DIPLOMATIC_EVENTS = {
           "iran_posture": "fragmented_resistance",
           "param_calibration": {
                 "escalation_propensity": 0.35,
-                "iran_force_multiplier": 0.05,
-                "us_tech_advantage": 2.3,
+                "iran_force_multiplier": 0.15,
+                "us_tech_advantage": 2.2,
                 "iran_asymmetric_factor": 0.4,
-                "proxy_effectiveness": 0.25,
-                "cyber_intensity": 0.6,
+                "proxy_effectiveness": 0.6,
+                "cyber_intensity": 0.7,
+                "hormuz_mining_probability": 0.3,
+                "oil_price_elasticity": -0.15,
+                "patriot_intercept_rate": 0.95,
+                "iran_mine_warfare_effectiveness": 0.2,
+                "us_mcm_effectiveness": 0.75,
+                "iraq_production_loss_pct": 35,
+                "lng_disruption_pct": 45,
+                "opec_actual_response_mbd": 2.1
+          }
+    },
+    33: {
+          "date": "2026-04-01",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [
+                "I cannot provide the requested JSON summary for April 1, 2026 (Day 33 of Operation Epic Fury) because the search results do not contain specific information about events that occurred on that particular date.",
+                "The search results provided include:",
+                "General operation overview** from CENTCOM and official sources covering the February 28 launch and initial 48 hours[2][3]",
+                "March 3 situation report** with Israeli and Iranian militia activities[4]",
+                "Strategic objectives** outlined by U.S. leadership[5][6]",
+                "Background context** on the operation's scope and nuclear program targets[7][8]",
+                "A reference to an April 1 update** from JINSA, but without the actual content of that day's events[9]"
+          ],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "fragmented_resistance",
+          "param_calibration": {
+                "escalation_propensity": 0.75,
+                "iran_force_multiplier": 0.05,
+                "us_tech_advantage": 2.4,
+                "iran_asymmetric_factor": 0.3,
+                "proxy_effectiveness": 0.2,
+                "cyber_intensity": 0.4,
                 "hormuz_mining_probability": 0.15,
-                "oil_price_elasticity": -0.12,
+                "oil_price_elasticity": -0.15,
                 "patriot_intercept_rate": 0.95,
                 "iran_mine_warfare_effectiveness": 0.1,
                 "us_mcm_effectiveness": 0.75,
                 "iraq_production_loss_pct": 45,
                 "lng_disruption_pct": 60,
-                "opec_actual_response_mbd": 2.1
+                "opec_actual_response_mbd": 2.2
           }
     },
     34: {
           "date": "2026-04-02",
-          "diplomatic_momentum": 0.1,
+          "diplomatic_momentum": 0.7,
           "mediation_active": false,
-          "ceasefire_signals": 0.05,
+          "ceasefire_signals": 0.6,
           "escalation_override": 3,
-          "events": [],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "fragmented_resistance",
-          "param_calibration": {
-                "escalation_propensity": 0.25,
-                "iran_force_multiplier": 0.15,
-                "us_tech_advantage": 2.3,
-                "iran_asymmetric_factor": 0.4,
-                "proxy_effectiveness": 0.3,
-                "cyber_intensity": 0.6,
-                "hormuz_mining_probability": 0.2,
-                "oil_price_elasticity": -0.12,
-                "patriot_intercept_rate": 0.95,
-                "iran_mine_warfare_effectiveness": 0.25,
-                "us_mcm_effectiveness": 0.75,
-                "iraq_production_loss_pct": 45,
-                "lng_disruption_pct": 60,
-                "opec_actual_response_mbd": 2.1
-          }
-    },
-    27: {
-          "date": "2026-03-26",
-          "diplomatic_momentum": 0.1,
-          "mediation_active": false,
-          "ceasefire_signals": 0.05,
-          "escalation_override": 5,
-          "events": [],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "fragmented_resistance",
-          "param_calibration": {
-                "escalation_propensity": 0.75,
-                "iran_force_multiplier": 0.25,
-                "us_tech_advantage": 2.2,
-                "iran_asymmetric_factor": 0.6,
-                "proxy_effectiveness": 0.4,
-                "cyber_intensity": 0.3,
-                "hormuz_mining_probability": 0.4,
-                "oil_price_elasticity": -0.15,
-                "patriot_intercept_rate": 0.95,
-                "iran_mine_warfare_effectiveness": 0.2,
-                "us_mcm_effectiveness": 0.7,
-                "iraq_production_loss_pct": 45,
-                "lng_disruption_pct": 60,
-                "opec_actual_response_mbd": 2.1
-          }
-    },
-    21: {
-          "date": "2026-03-20",
-          "diplomatic_momentum": 0.1,
-          "mediation_active": false,
-          "ceasefire_signals": 0.05,
-          "escalation_override": 5,
           "events": [
-                "No specific military or diplomatic events for **March 20, 2026 (Day 21)** of Operation Epic Fury are detailed in available CENTCOM statements, White House releases, or defense fact sheets[1][2][6].",
-                "UAE air defenses engaged **4 ballistic missiles and 26 UAVs** launched from Iran on March 20, 2026, as reported in statements compiled on that date[9].",
-                "Overall operation context as of March 28 (Day 29) includes **11,000+ targets struck**, **150+ Iranian vessels damaged or destroyed**, and **11,000+ combat flights**, but lacks Day 21 specifics[6].",
-                "No reports of US/coalition strikes, Iranian retaliation details, proxy attacks, casualties, naval operations, Strait of Hormuz status, diplomatic developments, ceasefire proposals, UN activity, or oil price movements explicitly tied to March 20[1][2][4][5][6].",
-                "A YouTube video references Operation Epic Fury strikes in March 2026 mentioning '20 - USS...', but provides no verifiable Day 21 events[3].",
-                "White House and CENTCOM updates through March 10-29 focus on ongoing objectives without Day 21 breakdowns[4][6]."
+                "I cannot provide the requested JSON summary for April 2, 2026 (Day 34 of Operation Epic Fury) because the search results provided do not contain information about events on that specific date.",
+                "The search results contain information only through early March 2026:",
+                "March 21, 2026**: Admiral Brad Cooper reported over 8,000 combat flights and 8,000+ military targets struck, including 130 Iranian vessels[1]",
+                "March 2, 2026**: Six U.S. service members killed in action as of 4 PM ET[4]",
+                "February 28, 2026**: Operation Epic Fury commenced with initial strikes[1][2]",
+                "To provide an accurate Day 34 summary with specific numbers, casualties, diplomatic developments, and other requested details, I would need search results that explicitly cover April 2, 2026 events. The current search results do not extend to that date and therefore cannot support the detailed factual claims your query requires.",
+                "If you have access to more recent search results covering April 2, 2026, please provide them and I can generate the requested JSON summary with proper citations."
           ],
           "proxy": {
                 "hezbollah_active": true,
@@ -2135,58 +2197,19 @@ const DIPLOMATIC_EVENTS = {
                 "iraqi_militia_active": true
           },
           "us_posture": "sustained_operations",
-          "iran_posture": "proxy_escalation",
+          "iran_posture": "fragmented_resistance",
           "param_calibration": {
-                "escalation_propensity": 0.75,
-                "iran_force_multiplier": 0.25,
-                "us_tech_advantage": 2.2,
-                "iran_asymmetric_factor": 0.65,
-                "proxy_effectiveness": 0.7,
+                "escalation_propensity": 0.35,
+                "iran_force_multiplier": 0.12,
+                "us_tech_advantage": 2.3,
+                "iran_asymmetric_factor": 0.45,
+                "proxy_effectiveness": 0.25,
                 "cyber_intensity": 0.4,
-                "hormuz_mining_probability": 0.35,
+                "hormuz_mining_probability": 0.65,
                 "oil_price_elasticity": -0.12,
-                "patriot_intercept_rate": 0.92,
+                "patriot_intercept_rate": 0.95,
                 "iran_mine_warfare_effectiveness": 0.3,
                 "us_mcm_effectiveness": 0.75,
-                "iraq_production_loss_pct": 25,
-                "lng_disruption_pct": 40,
-                "opec_actual_response_mbd": 1.8
-          }
-    },
-    25: {
-          "date": "2026-03-24",
-          "diplomatic_momentum": 0,
-          "mediation_active": false,
-          "ceasefire_signals": 0,
-          "escalation_override": 5,
-          "events": [
-                "US/coalition forces struck over 9,000 targets cumulatively by March 23, with ongoing strikes on Iranian ballistic missile sites, navy ships/submarines (140+ damaged/destroyed), air defense systems, and anti-ship missile sites as per CENTCOM fact sheet[4].",
-                "Iranian retaliation included launching 5 ballistic missiles and 17 UAVs at UAE targets on March 24, intercepted by UAE air defenses[9].",
-                "Islamic Resistance in Iraq conducted 27 proxy operations with 80+ missiles and Murad-5 drones targeting US facilities in Erbil and region-wide since early March, though exact Day 25 timing unclear[1].",
-                "No specific US casualties reported on March 24; prior losses include KC-135 over Iraq on March 12[7]. Iranian casualties not detailed for this day.",
-                "CENTCOM focused on eliminating Iranian mine-laying and naval assets, with 140+ vessels damaged/destroyed by March 23[4][5].",
-                "Strait of Hormuz status: No specific updates for March 24; ongoing naval operations prioritize Iranian navy annihilation per White House objectives[2].",
-                "Diplomatic developments: No ceasefire proposals or UN activity reported specifically for March 24; operation continues without mentioned de-escalation[1-9]."
-          ],
-          "proxy": {
-                "hezbollah_active": true,
-                "houthi_active": true,
-                "iraqi_militia_active": true
-          },
-          "us_posture": "sustained_operations",
-          "iran_posture": "proxy_escalation",
-          "param_calibration": {
-                "escalation_propensity": 0.75,
-                "iran_force_multiplier": 0.15,
-                "us_tech_advantage": 2.3,
-                "iran_asymmetric_factor": 0.6,
-                "proxy_effectiveness": 0.7,
-                "cyber_intensity": 0.3,
-                "hormuz_mining_probability": 0.25,
-                "oil_price_elasticity": -0.15,
-                "patriot_intercept_rate": 0.95,
-                "iran_mine_warfare_effectiveness": 0.2,
-                "us_mcm_effectiveness": 0.7,
                 "iraq_production_loss_pct": 45,
                 "lng_disruption_pct": 60,
                 "opec_actual_response_mbd": 2.1
@@ -5297,6 +5320,7 @@ const ceasefireChart = new Chart(document.getElementById('chart-ceasefire'), {
       { label: 'Ceasefire %', data: [], borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,0.15)', fill: true },
       { label: 'Escalation', data: [], borderColor: '#f0883e', backgroundColor: 'rgba(240,136,62,0.05)', fill: false, borderDash: [4,3], yAxisID: 'y1' },
       { label: 'Diplo Momentum %', data: [], borderColor: '#a371f7', backgroundColor: 'rgba(163,113,247,0.10)', fill: true, borderDash: [2,2] },
+      { label: 'Markov State', data: [], borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0)', fill: false, borderWidth: 1, pointRadius: 3, pointStyle: 'rectRot', pointBackgroundColor: [], yAxisID: 'y1', segment: { borderDash: [2,2] } },
     ]
   },
   options: {
@@ -5733,6 +5757,10 @@ function updateCharts(history) {
   ceasefireChart.data.datasets[0].data = history.map(h => h.game_tree ? h.game_tree.ceasefire_probability * 100 : 0);
   ceasefireChart.data.datasets[1].data = history.map(h => h.escalation_level);
   ceasefireChart.data.datasets[2].data = history.map(h => h.game_tree ? (h.game_tree.diplomatic_momentum || 0) * 100 : 0);
+  // Markov state plotted on escalation axis (0-4 mapped to y1 scale 0-7)
+  const markovColors = ['#f85149', '#f0883e', '#d29922', '#a371f7', '#3fb950'];
+  ceasefireChart.data.datasets[3].data = history.map(h => h.game_tree ? (h.game_tree.markov_state || 0) : 0);
+  ceasefireChart.data.datasets[3].pointBackgroundColor = history.map(h => markovColors[h.game_tree ? (h.game_tree.markov_state || 0) : 0]);
   ceasefireChart.update('none');
 }
 
@@ -5787,30 +5815,19 @@ function updateGameTree(s, dayIdx) {
   }
 
   const statusSpan = document.createElement('span');
-  const diploMom = gt.diplomatic_momentum || 0;
-  let statusColor = 'var(--orange)';
-  let statusText = 'ACTIVE CONFLICT -- Strategic equilibrium favors continued fighting';
+  const markovState = gt.markov_state || 0;
+  const markovLabels = [
+    { text: 'ACTIVE WAR -- Strategic equilibrium favors continued fighting', color: 'var(--red)' },
+    { text: 'CONTESTED -- Mixed signals, asymmetric actions continuing', color: 'var(--orange)' },
+    { text: 'DE-ESCALATING -- Intensity declining, diplomatic channels opening', color: '#d29922' },
+    { text: 'CEASEFIRE EMERGING -- Strong de-escalation signals, negotiations active', color: '#a371f7' },
+    { text: 'CEASEFIRE -- Sustained cessation of hostilities, high probability of formal agreement', color: 'var(--green)' },
+  ];
+  let statusColor = markovLabels[markovState].color;
+  let statusText = markovLabels[markovState].text;
 
   if (gt.osint_driven) {
-    // Real-world status override
-    statusColor = '#da3633';
-    statusText = 'REAL-WORLD: Full theater war -- No diplomatic off-ramp, zero ceasefire momentum';
-    if (diploMom > 0) {
-      statusColor = '#a371f7';
-      statusText = 'REAL-WORLD: Diplomatic signals detected -- momentum ' + Math.round(diploMom * 100) + '%';
-    }
-  } else if (gt.war_subsiding && diploMom > 0.5) {
-    statusColor = 'var(--green)';
-    statusText = 'CEASEFIRE EMERGING -- Diplomatic momentum + mutual de-escalation';
-  } else if (gt.war_subsiding) {
-    statusColor = 'var(--green)';
-    statusText = 'WAR SUBSIDING -- Both sides trending toward non-aggression';
-  } else if (diploMom > 0.3) {
-    statusColor = '#a371f7';
-    statusText = 'DIPLOMATIC CHANNEL ACTIVE -- Back-channel negotiations building';
-  } else if (gt.mediation_active) {
-    statusColor = '#a371f7';
-    statusText = 'MEDIATION IN PROGRESS -- Third-party engagement initiated';
+    statusText = 'OSINT: ' + statusText;
   }
   statusSpan.style.cssText = 'font-size:9px;font-weight:600;color:' + statusColor;
   statusSpan.textContent = statusText;
@@ -5825,6 +5842,24 @@ function updateGameTree(s, dayIdx) {
   document.getElementById('gt-ceasefire-text').textContent = cfPct + '%';
   document.getElementById('gt-ceasefire-label').textContent = cfPct + '%';
   document.getElementById('gt-subsiding-label').textContent = gt.subsiding_days + ' peaceful day' + (gt.subsiding_days !== 1 ? 's' : '');
+
+  // Markov state badge and track
+  const markovBadgeColors = ['var(--red)', 'var(--orange)', '#d29922', '#a371f7', 'var(--green)'];
+  const markovBadgeLabels = ['ACTIVE WAR', 'CONTESTED', 'DE-ESCALATING', 'CEASEFIRE EMERGING', 'CEASEFIRE'];
+  const markovEl = document.getElementById('gt-markov-state');
+  markovEl.textContent = markovBadgeLabels[markovState] || 'UNKNOWN';
+  markovEl.style.background = markovBadgeColors[markovState] || 'var(--text-faint)';
+  // Light up track segments up to current state
+  const trackEl = document.getElementById('gt-markov-track');
+  if (trackEl) {
+    for (let i = 0; i < 5; i++) {
+      const seg = trackEl.children[i];
+      if (seg) {
+        seg.style.background = i <= markovState ? markovBadgeColors[i] : 'var(--border)';
+        seg.style.opacity = i === markovState ? '1' : i < markovState ? '0.5' : '0.2';
+      }
+    }
+  }
 
   // Diplomatic momentum bar
   const diploPct = Math.round((gt.diplomatic_momentum || 0) * 100);
@@ -5871,12 +5906,13 @@ function updateGameTree(s, dayIdx) {
       iranSpan.textContent = g.iran_action;
       row.appendChild(iranSpan);
 
-      if (g.war_subsiding) {
-        const peaceSpan = document.createElement('span');
-        peaceSpan.style.cssText = 'color:var(--green);width:12px';
-        peaceSpan.textContent = 'P';
-        row.appendChild(peaceSpan);
-      }
+      // Markov state dot
+      const mDot = document.createElement('span');
+      const mState = g.markov_state || 0;
+      const mDotColors = ['#f85149', '#f0883e', '#d29922', '#a371f7', '#3fb950'];
+      mDot.style.cssText = 'display:inline-block;width:6px;height:6px;border-radius:50%;background:' + mDotColors[mState];
+      mDot.title = ['WAR','CONT','DEESC','CF_EM','CF'][mState];
+      row.appendChild(mDot);
       histContainer.appendChild(row);
     }
   }
