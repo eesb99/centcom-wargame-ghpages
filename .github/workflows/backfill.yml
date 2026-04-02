@@ -30,6 +30,7 @@ jobs:
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           RUN_MODE: ${{ github.event.inputs.mode || 'calibrate' }}
         run: |
+          set -e
           if [ "$RUN_MODE" = "backfill" ]; then
             node backfill.js --patch
           else
@@ -45,4 +46,6 @@ jobs:
             git add conflict_timeline.json 2>/dev/null || true
             git commit -m "chore: daily OSINT calibration $(date -u +%Y-%m-%d)"
             git push
+          else
+            echo "No changes to commit (calibration may have had no new data)"
           fi

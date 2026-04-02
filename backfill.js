@@ -339,7 +339,12 @@ async function runDailyCalibration(dryRun) {
 
   const dateLabel = formatDate(todayStr);
   console.log(`\n=== Daily Calibration: Day ${dayNumber} (${dateLabel}) ===\n`);
-  await runCalibrationForDay(dayNumber, todayStr, dryRun);
+  const todaySuccess = await runCalibrationForDay(dayNumber, todayStr, dryRun);
+  if (!todaySuccess) {
+    console.error(`\nERROR: Today's calibration (Day ${dayNumber}) failed.`);
+    return false;
+  }
+  return true;
 }
 
 async function runCalibrationForDay(dayNumber, dateStr, dryRun) {
@@ -427,7 +432,7 @@ Base your estimates on the actual military situation. Be precise.`;
 
   if (!calibration) {
     console.error('  ERROR: Could not get calibration data. Aborting.');
-    return;
+    return false;
   }
 
   console.log('  Calibration received:');
@@ -474,7 +479,7 @@ Base your estimates on the actual military situation. Be precise.`;
   if (dryRun) {
     console.log('\n  [DRY RUN] Would patch DIPLOMATIC_EVENTS with:');
     console.log('  ', JSON.stringify(dayEntry, null, 2).split('\n').join('\n    '));
-    return;
+    return true;
   }
 
   // Step 4: Patch DIPLOMATIC_EVENTS in index.html
@@ -483,7 +488,9 @@ Base your estimates on the actual military situation. Be precise.`;
     console.log(`\n  Patched DIPLOMATIC_EVENTS day ${dayNumber} in index.html`);
   } else {
     console.error(`\n  FAILED to patch day ${dayNumber} — check brace matching or file structure`);
+    return false;
   }
+  return true;
 }
 
 function clampNum(val, min, max, fallback) {
@@ -648,7 +655,8 @@ async function main() {
   console.log(`Mode: ${calibrate ? 'daily-calibration' : dryRun ? 'dry-run' : patch ? 'patch' : 'generate JSON'}`);
 
   if (calibrate) {
-    await runDailyCalibration(dryRun);
+    const success = await runDailyCalibration(dryRun);
+    if (!success) process.exit(1);
     return;
   }
 
