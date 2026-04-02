@@ -478,8 +478,12 @@ Base your estimates on the actual military situation. Be precise.`;
   }
 
   // Step 4: Patch DIPLOMATIC_EVENTS in index.html
-  patchDiplomaticEvents(dayNumber, dayEntry);
-  console.log(`\n  Patched DIPLOMATIC_EVENTS day ${dayNumber} in index.html`);
+  const patched = patchDiplomaticEvents(dayNumber, dayEntry);
+  if (patched) {
+    console.log(`\n  Patched DIPLOMATIC_EVENTS day ${dayNumber} in index.html`);
+  } else {
+    console.error(`\n  FAILED to patch day ${dayNumber} — check brace matching or file structure`);
+  }
 }
 
 function clampNum(val, min, max, fallback) {
@@ -499,11 +503,23 @@ function patchDiplomaticEvents(dayNumber, dayEntry) {
   }
 
   // Find the closing of DIPLOMATIC_EVENTS (matching brace + semicolon)
+  // String-aware: skip over quoted strings so {/} inside event text don't break counting
   let braces = 0;
   let endIdx = -1;
   for (let i = startIdx + startMarker.length - 1; i < html.length; i++) {
-    if (html[i] === '{') braces++;
-    if (html[i] === '}') braces--;
+    const ch = html[i];
+    if (ch === '"' || ch === "'") {
+      // Skip to end of string, handling escapes
+      const quote = ch;
+      i++;
+      while (i < html.length && html[i] !== quote) {
+        if (html[i] === '\\') i++; // skip escaped char
+        i++;
+      }
+      continue;
+    }
+    if (ch === '{') braces++;
+    if (ch === '}') braces--;
     if (braces === 0) { endIdx = i + 1; break; }
   }
   if (endIdx === -1) {
