@@ -48,30 +48,19 @@ function updateGameTree(s, dayIdx) {
   }
 
   const statusSpan = document.createElement('span');
-  const diploMom = gt.diplomatic_momentum || 0;
-  let statusColor = 'var(--orange)';
-  let statusText = 'ACTIVE CONFLICT -- Strategic equilibrium favors continued fighting';
+  const markovState = gt.markov_state || 0;
+  const markovLabels = [
+    { text: 'ACTIVE WAR -- Strategic equilibrium favors continued fighting', color: 'var(--red)' },
+    { text: 'CONTESTED -- Mixed signals, asymmetric actions continuing', color: 'var(--orange)' },
+    { text: 'DE-ESCALATING -- Intensity declining, diplomatic channels opening', color: '#d29922' },
+    { text: 'CEASEFIRE EMERGING -- Strong de-escalation signals, negotiations active', color: '#a371f7' },
+    { text: 'CEASEFIRE -- Sustained cessation of hostilities, high probability of formal agreement', color: 'var(--green)' },
+  ];
+  let statusColor = markovLabels[markovState].color;
+  let statusText = markovLabels[markovState].text;
 
   if (gt.osint_driven) {
-    // Real-world status override
-    statusColor = '#da3633';
-    statusText = 'REAL-WORLD: Full theater war -- No diplomatic off-ramp, zero ceasefire momentum';
-    if (diploMom > 0) {
-      statusColor = '#a371f7';
-      statusText = 'REAL-WORLD: Diplomatic signals detected -- momentum ' + Math.round(diploMom * 100) + '%';
-    }
-  } else if (gt.war_subsiding && diploMom > 0.5) {
-    statusColor = 'var(--green)';
-    statusText = 'CEASEFIRE EMERGING -- Diplomatic momentum + mutual de-escalation';
-  } else if (gt.war_subsiding) {
-    statusColor = 'var(--green)';
-    statusText = 'WAR SUBSIDING -- Both sides trending toward non-aggression';
-  } else if (diploMom > 0.3) {
-    statusColor = '#a371f7';
-    statusText = 'DIPLOMATIC CHANNEL ACTIVE -- Back-channel negotiations building';
-  } else if (gt.mediation_active) {
-    statusColor = '#a371f7';
-    statusText = 'MEDIATION IN PROGRESS -- Third-party engagement initiated';
+    statusText = 'OSINT: ' + statusText;
   }
   statusSpan.style.cssText = 'font-size:9px;font-weight:600;color:' + statusColor;
   statusSpan.textContent = statusText;
@@ -86,6 +75,24 @@ function updateGameTree(s, dayIdx) {
   document.getElementById('gt-ceasefire-text').textContent = cfPct + '%';
   document.getElementById('gt-ceasefire-label').textContent = cfPct + '%';
   document.getElementById('gt-subsiding-label').textContent = gt.subsiding_days + ' peaceful day' + (gt.subsiding_days !== 1 ? 's' : '');
+
+  // Markov state badge and track
+  const markovBadgeColors = ['var(--red)', 'var(--orange)', '#d29922', '#a371f7', 'var(--green)'];
+  const markovBadgeLabels = ['ACTIVE WAR', 'CONTESTED', 'DE-ESCALATING', 'CEASEFIRE EMERGING', 'CEASEFIRE'];
+  const markovEl = document.getElementById('gt-markov-state');
+  markovEl.textContent = markovBadgeLabels[markovState] || 'UNKNOWN';
+  markovEl.style.background = markovBadgeColors[markovState] || 'var(--text-faint)';
+  // Light up track segments up to current state
+  const trackEl = document.getElementById('gt-markov-track');
+  if (trackEl) {
+    for (let i = 0; i < 5; i++) {
+      const seg = trackEl.children[i];
+      if (seg) {
+        seg.style.background = i <= markovState ? markovBadgeColors[i] : 'var(--border)';
+        seg.style.opacity = i === markovState ? '1' : i < markovState ? '0.5' : '0.2';
+      }
+    }
+  }
 
   // Diplomatic momentum bar
   const diploPct = Math.round((gt.diplomatic_momentum || 0) * 100);
@@ -132,12 +139,13 @@ function updateGameTree(s, dayIdx) {
       iranSpan.textContent = g.iran_action;
       row.appendChild(iranSpan);
 
-      if (g.war_subsiding) {
-        const peaceSpan = document.createElement('span');
-        peaceSpan.style.cssText = 'color:var(--green);width:12px';
-        peaceSpan.textContent = 'P';
-        row.appendChild(peaceSpan);
-      }
+      // Markov state dot
+      const mDot = document.createElement('span');
+      const mState = g.markov_state || 0;
+      const mDotColors = ['#f85149', '#f0883e', '#d29922', '#a371f7', '#3fb950'];
+      mDot.style.cssText = 'display:inline-block;width:6px;height:6px;border-radius:50%;background:' + mDotColors[mState];
+      mDot.title = ['WAR','CONT','DEESC','CF_EM','CF'][mState];
+      row.appendChild(mDot);
       histContainer.appendChild(row);
     }
   }

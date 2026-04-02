@@ -106,6 +106,7 @@ const ceasefireChart = new Chart(document.getElementById('chart-ceasefire'), {
       { label: 'Ceasefire %', data: [], borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,0.15)', fill: true },
       { label: 'Escalation', data: [], borderColor: '#f0883e', backgroundColor: 'rgba(240,136,62,0.05)', fill: false, borderDash: [4,3], yAxisID: 'y1' },
       { label: 'Diplo Momentum %', data: [], borderColor: '#a371f7', backgroundColor: 'rgba(163,113,247,0.10)', fill: true, borderDash: [2,2] },
+      { label: 'Markov State', data: [], borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0)', fill: false, borderWidth: 1, pointRadius: 3, pointStyle: 'rectRot', pointBackgroundColor: [], yAxisID: 'y1', segment: { borderDash: [2,2] } },
     ]
   },
   options: {
