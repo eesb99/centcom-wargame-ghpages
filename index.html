@@ -1209,7 +1209,7 @@ const CONFLICT_TIMELINE = {"_metadata": {"title": "Operation Epic Fury — Day-b
 // Sources: CENTCOM, ICT SITREPs, FDD, CSIS, Reuters, Military Times, Wikipedia 2026 Iran war
 const DIPLOMATIC_EVENTS = {
   conflict_start: '2026-02-28',
-  last_updated: '2026-04-02',
+  last_updated: '2026-04-03',
   // param_calibration rationale:
   // Each day's parameters are derived from real OSINT to tune the game-theoretic model.
   // escalation_propensity: how likely each side is to escalate (0=dovish, 1=hawkish)
@@ -2173,6 +2173,76 @@ const DIPLOMATIC_EVENTS = {
                 "us_mcm_effectiveness": 0.75,
                 "iraq_production_loss_pct": 45,
                 "lng_disruption_pct": 60,
+                "opec_actual_response_mbd": 2.1
+          }
+    },
+    25: {
+          "date": "2026-03-24",
+          "diplomatic_momentum": 0.65,
+          "mediation_active": false,
+          "ceasefire_signals": 0.7,
+          "escalation_override": 3,
+          "events": [],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "fragmented_resistance",
+          "param_calibration": {
+                "escalation_propensity": 0.25,
+                "iran_force_multiplier": 0.08,
+                "us_tech_advantage": 2.4,
+                "iran_asymmetric_factor": 0.35,
+                "proxy_effectiveness": 0.4,
+                "cyber_intensity": 0.3,
+                "hormuz_mining_probability": 0.15,
+                "oil_price_elasticity": -0.12,
+                "patriot_intercept_rate": 0.95,
+                "iran_mine_warfare_effectiveness": 0.12,
+                "us_mcm_effectiveness": 0.75,
+                "iraq_production_loss_pct": 45,
+                "lng_disruption_pct": 60,
+                "opec_actual_response_mbd": 2.1
+          }
+    },
+    35: {
+          "date": "2026-04-03",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [
+                "US and Israeli air strikes continued targeting IRGC units, facilities, and leadership using F-35, F-22 aircraft, and Tomahawk missiles[1].",
+                "CENTCOM reports cumulative totals as of April 1: over 12,300 targets struck, 155+ Iranian vessels damaged or destroyed, 13,000+ combat flights[2].",
+                "Iran launched ongoing missile and drone attacks, with many intercepted but some penetrating defenses; cost ratio favors Iran's cheap drones over expensive US air defenses[1].",
+                "US increased maritime presence; 31st MEU (2,200 personnel) and 82nd Airborne elements in CENTCOM AOR, 11th MEU en route; planning forcible entry to seize Kharq Island for nuclear material removal[1].",
+                "President Trump briefed on April 1 on daring plan to insert ground forces into Iran to extract nuclear material, lauding US strikes and criticizing NATO for not securing Strait of Hormuz[1].",
+                "Iranian cyber attacks continued regionally and globally, with threat actors like Altoufan Team active; warnings of massive cyber retaliation[1][6].",
+                "No specific Day 35 casualties, proxy attacks (Hezbollah/Houthi/Iraqi militias), Strait of Hormuz status, ceasefire proposals, UN activity, or oil price movements reported in available sources."
+          ],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "maximum_force",
+          "iran_posture": "proxy_escalation",
+          "param_calibration": {
+                "escalation_propensity": 0.85,
+                "iran_force_multiplier": 0.15,
+                "us_tech_advantage": 2.3,
+                "iran_asymmetric_factor": 1.2,
+                "proxy_effectiveness": 0.6,
+                "cyber_intensity": 0.75,
+                "hormuz_mining_probability": 0.65,
+                "oil_price_elasticity": -0.12,
+                "patriot_intercept_rate": 0.92,
+                "iran_mine_warfare_effectiveness": 0.4,
+                "us_mcm_effectiveness": 0.7,
+                "iraq_production_loss_pct": 35,
+                "lng_disruption_pct": 45,
                 "opec_actual_response_mbd": 2.1
           }
     },
