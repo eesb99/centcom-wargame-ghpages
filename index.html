@@ -1209,7 +1209,7 @@ const CONFLICT_TIMELINE = {"_metadata": {"title": "Operation Epic Fury — Day-b
 // Sources: CENTCOM, ICT SITREPs, FDD, CSIS, Reuters, Military Times, Wikipedia 2026 Iran war
 const DIPLOMATIC_EVENTS = {
   conflict_start: '2026-02-28',
-  last_updated: '2026-04-03',
+  last_updated: '2026-04-05',
   // param_calibration rationale:
   // Each day's parameters are derived from real OSINT to tune the game-theoretic model.
   // escalation_propensity: how likely each side is to escalate (0=dovish, 1=hawkish)
@@ -2243,6 +2243,113 @@ const DIPLOMATIC_EVENTS = {
                 "us_mcm_effectiveness": 0.7,
                 "iraq_production_loss_pct": 35,
                 "lng_disruption_pct": 45,
+                "opec_actual_response_mbd": 2.1
+          }
+    },
+    15: {
+          "date": "2026-03-14",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": true,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [
+                "US-Israeli coalition conducted continuous airstrikes, including on Kharq Island and Iran's ballistic missile production facilities, contributing to over 15,000 total targets struck as of March 13; SecDef Hegseth stated Iran's entire ballistic missile production capacity functionally destroyed[1][4].",
+                "Iranian drone and missile attacks continued but reduced in frequency (drones down 95%, missiles down 90%); regional air defenses intercepted most, with attacks on Gulf states persisting[1].",
+                "Iranian sea drones attacked oil tankers in Strait of Hormuz, damaging and destroying several tankers in the previous 24 hours; Strait remains closed, increasing escalation risks[1][2].",
+                "Proxy Iraqi militias attacked US Embassy and Camp Victory in Iraq[1].",
+                "US naval operations: 60 Iranian ships and 30 minelayers damaged or destroyed; Amphibious Ready Group (ARG) and 31st Marine Expeditionary Unit (MEU) en route to Middle East[1].",
+                "US casualties: All crew members of KC-135 Stratotanker confirmed deceased after crash over Iraq on March 13 (four confirmed deceased); earlier report of six deceased in midair collision[1][5].",
+                "Diplomatic: Trump administration temporarily waived sanctions on Russian oil already loaded in tankers for 30 days[1]."
+          ],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "proxy_escalation",
+          "param_calibration": {
+                "escalation_propensity": 0.85,
+                "iran_force_multiplier": 0.05,
+                "us_tech_advantage": 2.3,
+                "iran_asymmetric_factor": 0.4,
+                "proxy_effectiveness": 0.7,
+                "cyber_intensity": 0.3,
+                "hormuz_mining_probability": 0.2,
+                "oil_price_elasticity": -0.15,
+                "patriot_intercept_rate": 0.95,
+                "iran_mine_warfare_effectiveness": 0.1,
+                "us_mcm_effectiveness": 0.7,
+                "iraq_production_loss_pct": 45,
+                "lng_disruption_pct": 70,
+                "opec_actual_response_mbd": 2.1
+          }
+    },
+    36: {
+          "date": "2026-04-04",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [
+                "US Air Force F-15E Strike Eagle shot down by Iranian air defenses over southwestern Iran, triggering a massive Combat Search and Rescue (CSAR) operation.[1]",
+                "A-10 Thunderbolt II crashes near Strait of Hormuz at 23:29 UTC after taking heavy Iranian ground fire while supporting CSAR and counter-drone operations.[1]",
+                "Pentagon casualty update as of April 3: 13 US troops killed and 365 wounded in Operation Epic Fury, with Army suffering 247 wounded, Navy 63, Air Force 36, Marines 19.[4]",
+                "Ongoing search for one of two F-15E crew members downed in Iran, continuing into April 4.[4]",
+                "US forces and allies surpass 10,000 Iranian military targets struck in Week 4 of Operation Epic Fury, including destruction of Iranian navy assets.[2]"
+          ],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "proxy_escalation",
+          "param_calibration": {
+                "escalation_propensity": 0.85,
+                "iran_force_multiplier": 0.15,
+                "us_tech_advantage": 2.2,
+                "iran_asymmetric_factor": 1.4,
+                "proxy_effectiveness": 0.7,
+                "cyber_intensity": 0.6,
+                "hormuz_mining_probability": 0.45,
+                "oil_price_elasticity": -0.12,
+                "patriot_intercept_rate": 0.92,
+                "iran_mine_warfare_effectiveness": 0.35,
+                "us_mcm_effectiveness": 0.65,
+                "iraq_production_loss_pct": 35,
+                "lng_disruption_pct": 28,
+                "opec_actual_response_mbd": 1.8
+          }
+    },
+    37: {
+          "date": "2026-04-05",
+          "diplomatic_momentum": 0.1,
+          "mediation_active": false,
+          "ceasefire_signals": 0.05,
+          "escalation_override": 5,
+          "events": [],
+          "proxy": {
+                "hezbollah_active": true,
+                "houthi_active": true,
+                "iraqi_militia_active": true
+          },
+          "us_posture": "sustained_operations",
+          "iran_posture": "fragmented_resistance",
+          "param_calibration": {
+                "escalation_propensity": 0.75,
+                "iran_force_multiplier": 0.25,
+                "us_tech_advantage": 2.2,
+                "iran_asymmetric_factor": 0.6,
+                "proxy_effectiveness": 0.4,
+                "cyber_intensity": 0.3,
+                "hormuz_mining_probability": 0.15,
+                "oil_price_elasticity": -0.15,
+                "patriot_intercept_rate": 0.92,
+                "iran_mine_warfare_effectiveness": 0.2,
+                "us_mcm_effectiveness": 0.7,
+                "iraq_production_loss_pct": 45,
+                "lng_disruption_pct": 60,
                 "opec_actual_response_mbd": 2.1
           }
     },
