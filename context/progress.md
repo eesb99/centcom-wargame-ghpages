@@ -17,8 +17,33 @@
 | Phase 9: OSINT Extension Days 7-11 + Strike Data | Complete | 2026-03-10 | 100% |
 | Phase 10: Algorithm Reliability Audit | Complete | 2026-03-10 | 100% |
 | Phase 11: OSINT Backfill + Ceasefire Analysis | Complete | 2026-03-26 | 100% |
+| Phase 12: DIPLOMATIC_EVENTS Restructure + Day 39 | Complete | 2026-04-07 | 100% |
 
 
+
+## Phase 12: DIPLOMATIC_EVENTS Restructure + Day 39 (2026-04-07) - COMPLETE
+
+**Duration:** ~1 hour
+**Status:** 100% - Critical structural bug fixed, Day 39 calibrated, MC ceasefire analysis
+
+### Work Done
+1. **Mac Mini health check** -- SSH OK, launchd running, 26/26 tests passing
+2. **Critical bug fix** -- Days 12-38 were nested inside Day 6's param_calibration (invisible to sim). Restructured all 38 days to correct depth in `days: {}`
+3. **Day 39 calibration** -- Ran `backfill.js --calibrate` (iran_force_multiplier=0.15, ceasefire_signals=0.05)
+4. **MC ceasefire analysis** -- 200 runs x 90 days: median CF crosses 50% at Day 75, 72% of runs >50% by Day 90
+
+### Key Metrics
+- OSINT corridor: Days 1-39 (was 1-27, but 12-38 were inaccessible)
+- Ceasefire probability: 8% (Day 39), median 55% by Day 75
+- Iran force multiplier: 0.15 (fragmented resistance)
+- Markov state: CONTESTED (100% of runs at Day 39)
+
+### Validation
+- 26/26 tests passing
+- JSON parser: PARSE OK (no more conversion failures)
+- All 38 days accessible via `DIPLOMATIC_EVENTS.days[N]`
+
+---
 
 ## Phase 11: OSINT Backfill + Ceasefire Analysis (2026-03-26) - COMPLETE
 

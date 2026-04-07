@@ -2,16 +2,16 @@
 
 ## Current State
 
-- **Status**: OSINT data extended to Day 27, combat model calibrated, reliability audited, live on GitHub Pages
+- **Status**: OSINT data extended to Day 39, DIPLOMATIC_EVENTS restructured, Markov ceasefire model, live on GitHub Pages
 - **URL**: https://eesb99.github.io/centcom-wargame-ghpages/
 - **Repo**: https://github.com/eesb99/centcom-wargame-ghpages
 - **Branch**: main
-- **Last Updated**: 2026-03-26
+- **Last Updated**: 2026-04-07
 - **Primary Instance**: Mac Mini (launchd daily calibration at 03:00 UTC)
 - **Fallback**: GitHub Actions (07:00 UTC)
-- **OSINT Coverage**: Days 1-27 (Feb 28 - Mar 26) with full strike data + param_calibration
-- **Key Features**: Shooter-target SEAD model, asymmetric dominance, naval capacity gating, 26 unit tests, sensitivity analysis, historical validation, nonlinear war weariness, amplified economic pressure, coalition pressure index, congressional authorization clock, Iraq/LNG/OPEC economic dynamics, $108.75 Brent baseline, $85-200 oil range
-- **Known Issue**: "Run Full Simulation" button unresponsive (pre-existing, see memory/troubleshooting-run-button.md)
+- **OSINT Coverage**: Days 1-39 (Feb 28 - Apr 7) with full param_calibration
+- **Key Features**: Shooter-target SEAD model, asymmetric dominance, naval capacity gating, 26 unit tests, sensitivity analysis, historical validation, nonlinear war weariness, amplified economic pressure, coalition pressure index, congressional authorization clock, Iraq/LNG/OPEC economic dynamics, $108.75 Brent baseline, $85-200 oil range, 5-state Observed Markov ceasefire model
+- **Known Issue**: "Run Full Simulation" button unresponsive (pre-existing)
 
 ## Architecture (Post-Session 3)
 
@@ -39,9 +39,61 @@ tests/        7 files - combat, game-tree, escalation, monte-carlo, integration,
 - Works via concatenation; test-helper uses `vm.runInThisContext` to load all files
 
 ### Three-Phase Simulation
-1. **OSINT Corridor (Days 1-27)**: Real events drive actions + params calibrated to reality
-2. **Active Extrapolation (Days 28-34)**: Trends continue with 8%/day decay
-3. **Stabilization (Days 35+)**: Parameters converge, model runs procedurally
+1. **OSINT Corridor (Days 1-39)**: Real events drive actions + params calibrated to reality
+2. **Stochastic Extrapolation (Days 40+)**: Markov transitions with feature-conditioned adjustments
+3. **Ceasefire Model**: 5-state Observed Markov Model (ACTIVE_WAR -> CONTESTED -> DE_ESCALATING -> CEASEFIRE_EMERGING -> CEASEFIRE)
+
+---
+
+## Session 12 Summary (2026-04-07)
+
+### Goals
+- Mac Mini health check: SSH, launchd, calibration pipeline status
+- Fix DIPLOMATIC_EVENTS structural bug (Days 12-38 invisible to sim)
+- Run Day 39 calibration
+- Ceasefire probability Monte Carlo analysis
+
+### Decisions Made
+- **Full restructure over surgical fix**: The fallback inserter had nested Days 12-38 inside Day 6's param_calibration. Eval-based extraction + JSON.stringify rebuild was safer than line-by-line brace surgery.
+- **GH Actions is the reliable calibration path**: Launchd failed today (JSON parse error) but GH Actions succeeded. The fallback is actually more reliable than the primary.
+
+### Findings
+
+**CRITICAL BUG FIXED: Days 12-38 were invisible to simulation.**
+The `patchDiplomaticEventsFallback()` in backfill.js had been inserting day entries at the wrong brace depth -- inside Day 6's `param_calibration` object instead of as siblings in `days: {}`. This meant `DIPLOMATIC_EVENTS.days[12]` through `DIPLOMATIC_EVENTS.days[38]` returned undefined. Only Days 1-11 were accessible. The sim was running without OSINT calibration for Days 12-38 since the mass insertion.
+
+**Fix**: Eval'd the full DIPLOMATIC_EVENTS object, extracted all 38 day entries (including those nested inside param_calibration), rebuilt a clean `days: {}` with all entries at correct depth, serialized back as JSON.
+
+**Ceasefire Monte Carlo (200 runs, 90 days):**
+
+| Day | Median CF% | P5 | P95 | >50% runs | State |
+|-----|-----------|-----|-----|-----------|-------|
+| 1 | 2.0% | 2.0% | 2.0% | 0% | ACTIVE_WAR |
+| 14 | 8.0% | 8.0% | 8.0% | 0% | CONTESTED |
+| 21 | 20.0% | 20.0% | 20.0% | 0% | DE_ESCALATING |
+| 39 | 8.0% | 8.0% | 8.0% | 0% | CONTESTED |
+| 60 | 20.0% | 2.0% | 90.0% | 45% | CONTESTED |
+| 75 | 55.0% | 8.0% | 90.0% | 68% | CEASEFIRE |
+| 90 | 55.0% | 8.0% | 90.0% | 72% | CEASEFIRE |
+
+**Day 39 OSINT (Apr 7):** ceasefire_signals=0.05, diplomatic_momentum=0.08, no mediation. Iran force multiplier=0.15. Day 38 had transient spike (CF signals 0.7, mediation active) that collapsed.
+
+### Implementation
+- `index.html`: Restructured DIPLOMATIC_EVENTS -- all 38 days moved to correct depth in `days: {}`, Day 39 calibrated and inserted
+- `conflict_timeline.json`: Updated to Day 37 coverage
+
+### Commits
+- `933980e` - fix: restructure DIPLOMATIC_EVENTS + Day 39 calibration
+
+### Challenges & Solutions
+1. **Brace depth diagnosis**: Took multiple trace scripts to confirm Days 12-38 were at depth 5 (inside param_cal) instead of depth 3 (inside days). The brace counter showed balanced braces overall, masking the structural issue.
+2. **Launchd JSON parse failure**: The JS-to-JSON converter in backfill.js couldn't parse the malformed DIPLOMATIC_EVENTS. GH Actions fallback saved the day. Root cause: the orphaned braces from fallback inserter created invalid JSON even though valid JS.
+3. **Fish shell heredoc issues on Mac Mini**: Can't use `<< 'EOF'` heredocs via SSH to fish shell. Workaround: write script locally, `scp` to Mac Mini, execute remotely.
+
+### Next Steps
+- [ ] Harden `patchDiplomaticEventsFallback()` or remove it entirely (prefer failing loudly so GH Actions picks up)
+- [ ] Debug "Run Full Simulation" button
+- [ ] Investigate Day 38 ceasefire spike (CF signals 0.7 -> 0.05 in one day -- Perplexity hallucination?)
 
 ---
 
