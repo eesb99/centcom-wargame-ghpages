@@ -2717,39 +2717,41 @@ const DIPLOMATIC_EVENTS = {
     },
     "43": {
       "date": "2026-04-11",
-      "diplomatic_momentum": 1,
+      "diplomatic_momentum": 0.7,
       "mediation_active": true,
-      "ceasefire_signals": 1,
-      "escalation_override": 2,
+      "ceasefire_signals": 0.8,
+      "escalation_override": 3,
       "events": [
-        "No specific military or diplomatic events for **Operation Epic Fury** on **April 11, 2026 (Day 43)** are detailed in available CENTCOM fact sheets, defense reports, or news sources, which cover up to April 10, 2026 [1][2].",
-        "CENTCOM's latest fact sheet (April 6) reports cumulative **13,000+ targets struck** and **155+ Iranian vessels damaged/destroyed**, but lacks daily breakdowns [1].",
-        "Atlantic Council update as of **April 10** notes **three US aircraft carriers** (USS Abraham Lincoln, USS Gerald R. Ford, USS George H.W. Bush) deployed, with **60% of B-1 bombers** striking from RAF Fairford; no April 11 events [2].",
-        "No reports of **US/coalition strikes**, **Iranian retaliation**, **proxy attacks** (Hezbollah/Houthi/Iraqi militias), **casualties**, **naval operations**, **Strait of Hormuz status**, **diplomatic developments**, **ceasefire proposals**, **UN activity**, or **oil price movements** specific to April 11 [1][2][3][4][5][6].",
-        "Campaign losses to date include **1 A-10**, **1 crew member status unknown**, and **16 MQ-9 Reapers**, but not attributed to Day 43 [4]."
+        "14:00 UTC: Israel Defense Forces launched largest single-day aerial campaign against Lebanon, striking over 100 Hezbollah command nodes.[1]",
+        "14:00 UTC: UAE Ministry of Defense reported successful interception of 23 ballistic missiles and 56 UAVs; falling shrapnel damaged commercial structures in Marina area and Dubai Internet City.[1]",
+        "18:00 UTC: Drones struck Buzurgan oil field in Maysan, Iraq, causing operational damage to extraction facilities (proxy attack by Iraqi militia).[1]",
+        "04:00 UTC: Unidentified aircraft struck Iranian Lavan oil refinery and petrochemical facilities on Siri Island; IDF officially denied involvement (US/coalition strike).[1]",
+        "15:00 UTC: US Secretary of War Pete Hegseth and Chairman of Joint Chiefs General Dan Caine held Pentagon briefing, declaring primary military objectives of Operation Epic Fury accomplished, confirming destruction of Iranian fleet and air defense networks.[1]",
+        "11:00 UTC: Kuwaiti air defenses intercepted 4 cruise missiles, 31 drones, and 9 ballistic missiles; drone impacts recorded at Kuwait Petroleum Company oil complex in Shuwaikh and Ministries Complex in Kuwait City (Iranian/proxy retaliation).[1]",
+        "19:00 UTC: Israeli military eliminated Masoud Zare, commander of Iranian army air defense academy, in precision aerial strike in Shahin Shahr.[1]"
       ],
       "proxy": {
-        "hezbollah_active": false,
-        "houthi_active": false,
-        "iraqi_militia_active": false
+        "hezbollah_active": true,
+        "houthi_active": true,
+        "iraqi_militia_active": true
       },
-      "us_posture": "ceasefire",
-      "iran_posture": "negotiate",
+      "us_posture": "sustained_operations",
+      "iran_posture": "fragmented_resistance",
       "param_calibration": {
-        "escalation_propensity": 0.1,
-        "iran_force_multiplier": 0.02,
-        "us_tech_advantage": 2.5,
-        "iran_asymmetric_factor": 0.1,
-        "proxy_effectiveness": 0.1,
-        "cyber_intensity": 0.05,
-        "hormuz_mining_probability": 0.01,
-        "oil_price_elasticity": -0.01,
-        "patriot_intercept_rate": 0.98,
-        "iran_mine_warfare_effectiveness": 0.05,
-        "us_mcm_effectiveness": 0.9,
-        "iraq_production_loss_pct": 0,
-        "lng_disruption_pct": 0,
-        "opec_actual_response_mbd": 0.1
+        "escalation_propensity": 0.35,
+        "iran_force_multiplier": 0.05,
+        "us_tech_advantage": 2.3,
+        "iran_asymmetric_factor": 0.6,
+        "proxy_effectiveness": 0.7,
+        "cyber_intensity": 0.4,
+        "hormuz_mining_probability": 0.15,
+        "oil_price_elasticity": -0.12,
+        "patriot_intercept_rate": 0.92,
+        "iran_mine_warfare_effectiveness": 0.2,
+        "us_mcm_effectiveness": 0.75,
+        "iraq_production_loss_pct": 35,
+        "lng_disruption_pct": 25,
+        "opec_actual_response_mbd": 2.1
       }
     }
   }
