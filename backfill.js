@@ -338,6 +338,13 @@ async function runDailyCalibration(dryRun) {
   }
 
   const dateLabel = formatDate(todayStr);
+
+  // Skip if today's day already exists (e.g., GH Actions fallback already pushed it)
+  if (existingDays.has(dayNumber)) {
+    console.log(`\n=== Day ${dayNumber} (${dateLabel}) already calibrated — skipping ===\n`);
+    return true;
+  }
+
   console.log(`\n=== Daily Calibration: Day ${dayNumber} (${dateLabel}) ===\n`);
   const todaySuccess = await runCalibrationForDay(dayNumber, todayStr, dryRun);
   if (!todaySuccess) {
@@ -534,24 +541,15 @@ function patchDiplomaticEvents(dayNumber, dayEntry) {
     return false;
   }
 
-  // Extract the JS object text and convert to JSON-parseable format:
-  // - Strip comments (// ...)
-  // - Add quotes to unquoted keys
-  // - Handle trailing commas
+  // Evaluate the JS object directly -- the source is our own index.html, fully trusted.
+  // Previous approach used regex transforms to convert JS->JSON, but those corrupted
+  // strings containing colon patterns (e.g., "including:") by misidentifying them as keys.
   let objText = html.substring(startIdx + 'const DIPLOMATIC_EVENTS = '.length, endIdx);
-  let jsonText = objText
-    .replace(/\/\/[^\n]*/g, '')                           // strip line comments
-    .replace(/,(\s*[}\]])/g, '$1')                        // remove trailing commas
-    .replace(/([{,]\s*)([a-zA-Z_]\w*)(\s*:)/g, '$1"$2"$3') // quote unquoted alpha keys
-    .replace(/^(\s+)(\d+)(\s*:)/gm, '$1"$2"$3')             // quote unquoted numeric keys (line-anchored)
-    .replace(/(:\s*|[,\[]\s*)'([^'\\]*(\\.[^'\\]*)*)'/g, (m, prefix, inner) => prefix + '"' + inner.replace(/"/g, '\\"') + '"'); // single->double quotes (only value positions), escape inner "s
-
   let diplo;
   try {
-    diplo = JSON.parse(jsonText);
+    diplo = new Function('return ' + objText)();
   } catch (e) {
-    console.error('  ERROR: Could not parse DIPLOMATIC_EVENTS as JSON:', e.message);
-    // Fallback: rebuild from scratch preserving existing days via regex
+    console.error('  ERROR: Could not evaluate DIPLOMATIC_EVENTS:', e.message);
     console.log('  Attempting regex-based day insertion...');
     return patchDiplomaticEventsFallback(html, startIdx, endIdx, dayNumber, dayEntry);
   }
@@ -584,7 +582,8 @@ function patchDiplomaticEventsFallback(html, startIdx, endIdx, dayNumber, dayEnt
   // Find the last "}" before endIdx that closes the "days" object
   // Strategy: insert new day entry as text before the closing "}  }"
   const entryJson = JSON.stringify(dayEntry, null, 6).replace(/\n/g, '\n    ');
-  const insertion = `    ${dayNumber}: ${entryJson},\n`;
+  // Use quoted key and NO trailing comma (the next entry or closing brace handles it)
+  const insertion = `    "${dayNumber}": ${entryJson}\n`;
 
   // Find "days: {" inside DIPLOMATIC_EVENTS
   const daysMarker = html.indexOf('"days":', startIdx) !== -1 ?
@@ -602,7 +601,15 @@ function patchDiplomaticEventsFallback(html, startIdx, endIdx, dayNumber, dayEnt
     return false;
   }
 
-  const patched = html.substring(0, closingPattern) + insertion + html.substring(closingPattern);
+  // Ensure the previous day's closing "}" has a trailing comma before we insert
+  const beforeInsertion = html.substring(0, closingPattern);
+  const lastBrace = beforeInsertion.lastIndexOf('}');
+  let prefix = beforeInsertion;
+  if (lastBrace !== -1 && beforeInsertion.substring(lastBrace, lastBrace + 2) !== '},') {
+    prefix = beforeInsertion.substring(0, lastBrace) + '},' + beforeInsertion.substring(lastBrace + 1);
+  }
+
+  const patched = prefix + insertion + html.substring(closingPattern);
   // Update last_updated
   const finalPatched = patched.replace(
     /last_updated:\s*['"][^'"]*['"]/,
