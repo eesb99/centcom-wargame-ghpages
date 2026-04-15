@@ -320,7 +320,8 @@ async function runDailyCalibration(dryRun) {
     return;
   }
 
-  // Gap detection: find missing days and backfill them first
+  // Gap detection: find missing days and backfill them first.
+  // Note: this set is NOT refreshed after gap fills -- safe because dayNumber is never in gaps.
   const existingDays = new Set(getExistingDayNumbers());
   const missingDays = [];
   for (let d = 1; d < dayNumber; d++) {
@@ -548,6 +549,9 @@ function patchDiplomaticEvents(dayNumber, dayEntry) {
   let diplo;
   try {
     diplo = new Function('return ' + objText)();
+    if (typeof diplo !== 'object' || !diplo.days || typeof diplo.last_updated !== 'string') {
+      throw new Error('Unexpected shape: missing .days or .last_updated');
+    }
   } catch (e) {
     console.error('  ERROR: Could not evaluate DIPLOMATIC_EVENTS:', e.message);
     console.log('  Attempting regex-based day insertion...');
@@ -601,11 +605,13 @@ function patchDiplomaticEventsFallback(html, startIdx, endIdx, dayNumber, dayEnt
     return false;
   }
 
-  // Ensure the previous day's closing "}" has a trailing comma before we insert
+  // Ensure the previous day's closing "}" has a trailing comma before we insert.
+  // Search only within the DIPLOMATIC_EVENTS block (startIdx..closingPattern), not the entire file.
   const beforeInsertion = html.substring(0, closingPattern);
-  const lastBrace = beforeInsertion.lastIndexOf('}');
+  const searchFrom = startIdx;
+  const lastBrace = beforeInsertion.lastIndexOf('}', closingPattern);
   let prefix = beforeInsertion;
-  if (lastBrace !== -1 && beforeInsertion.substring(lastBrace, lastBrace + 2) !== '},') {
+  if (lastBrace > searchFrom && beforeInsertion.substring(lastBrace, lastBrace + 2) !== '},') {
     prefix = beforeInsertion.substring(0, lastBrace) + '},' + beforeInsertion.substring(lastBrace + 1);
   }
 
