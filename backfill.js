@@ -83,7 +83,7 @@ const CONFIG = {
 };
 
 // ── Perplexity API Client ──
-async function queryPerplexity(query) {
+async function queryPerplexity(query, options = {}) {
   if (!CONFIG.api_key) {
     console.error('ERROR: PERPLEXITY_API_KEY not set.');
     console.error('Set it via: export PERPLEXITY_API_KEY=your_key');
@@ -93,6 +93,10 @@ async function queryPerplexity(query) {
 
   const MAX_RETRIES = 3;
   const TIMEOUT_MS = 30000;
+  const shape = options.shape || null;
+  const shapePattern = shape === 'object' ? /\{[\s\S]*\}/
+                     : shape === 'array'  ? /\[[\s\S]*\]/
+                     : null;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
@@ -138,7 +142,19 @@ Be precise — cite specific numbers from CENTCOM statements, news reports, and 
         }
         return null;
       }
-      return data.choices?.[0]?.message?.content || null;
+      const content = data.choices?.[0]?.message?.content || null;
+      if (shapePattern && content && !shapePattern.test(content)) {
+        const preview = content.replace(/\s+/g, ' ').slice(0, 120);
+        console.error(`  Response missing expected ${shape} shape (attempt ${attempt}/${MAX_RETRIES}): ${preview}`);
+        if (attempt < MAX_RETRIES) {
+          const delay = Math.pow(2, attempt - 1) * 1000;
+          console.log(`  Retrying in ${delay / 1000}s...`);
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+        return null;
+      }
+      return content;
     } catch (e) {
       if (e.name === 'AbortError') {
         console.error(`  Request timed out after ${TIMEOUT_MS / 1000}s (attempt ${attempt}/${MAX_RETRIES})`);
@@ -203,7 +219,7 @@ Include a "sources" array with URLs or source names you referenced.
 Include a "confidence" field (0-1) indicating data reliability.`;
 
     console.log(`  Querying: ${cat.id}...`);
-    const raw = await queryPerplexity(structuredQuery);
+    const raw = await queryPerplexity(structuredQuery, { shape: 'object' });
 
     if (raw) {
       try {
@@ -369,7 +385,7 @@ ceasefire proposals, UN activity, oil price movements.
 Be specific with numbers and sources. Return as a JSON array of strings.`;
 
     console.log('  Querying events...');
-    const eventsRaw = await queryPerplexity(eventsQuery);
+    const eventsRaw = await queryPerplexity(eventsQuery, { shape: 'array' });
     if (eventsRaw) {
       try {
         const match = eventsRaw.match(/\[[\s\S]*\]/);
@@ -425,7 +441,7 @@ Return ONLY a JSON object with these fields (all numbers between the given range
 Base your estimates on the actual military situation. Be precise.`;
 
     console.log('  Querying parameter calibration...');
-    const calibRaw = await queryPerplexity(calibQuery);
+    const calibRaw = await queryPerplexity(calibQuery, { shape: 'object' });
     if (calibRaw) {
       try {
         const match = calibRaw.match(/\{[\s\S]*\}/);
