@@ -2,14 +2,14 @@
 
 ## Current State
 
-- **Status**: OSINT data extended to Day 39, DIPLOMATIC_EVENTS restructured, Markov ceasefire model, live on GitHub Pages
+- **Status**: OSINT data extended through Day 55, queryPerplexity hardened against refusals, live on GitHub Pages
 - **URL**: https://eesb99.github.io/centcom-wargame-ghpages/
 - **Repo**: https://github.com/eesb99/centcom-wargame-ghpages
 - **Branch**: main
-- **Last Updated**: 2026-04-07
-- **Primary Instance**: Mac Mini (launchd daily calibration at 03:00 UTC)
+- **Last Updated**: 2026-04-23
+- **Primary Instance**: Mac Mini (launchd daily calibration at 03:00 KL = 19:00 UTC prev day)
 - **Fallback**: GitHub Actions (07:00 UTC)
-- **OSINT Coverage**: Days 1-39 (Feb 28 - Apr 7) with full param_calibration
+- **OSINT Coverage**: Days 1-55 (Feb 28 - Apr 23) with full param_calibration
 - **Key Features**: Shooter-target SEAD model, asymmetric dominance, naval capacity gating, 26 unit tests, sensitivity analysis, historical validation, nonlinear war weariness, amplified economic pressure, coalition pressure index, congressional authorization clock, Iraq/LNG/OPEC economic dynamics, $108.75 Brent baseline, $85-200 oil range, 5-state Observed Markov ceasefire model
 - **Known Issue**: "Run Full Simulation" button unresponsive (pre-existing)
 
@@ -42,6 +42,59 @@ tests/        7 files - combat, game-tree, escalation, monte-carlo, integration,
 1. **OSINT Corridor (Days 1-39)**: Real events drive actions + params calibrated to reality
 2. **Stochastic Extrapolation (Days 40+)**: Markov transitions with feature-conditioned adjustments
 3. **Ceasefire Model**: 5-state Observed Markov Model (ACTIVE_WAR -> CONTESTED -> DE_ESCALATING -> CEASEFIRE_EMERGING -> CEASEFIRE)
+
+---
+
+## Session 13 Summary (2026-04-23)
+
+### Goals
+- Diagnose why CENTCOM GHA jobs were marked "all failed" in email notifications (04-20, 04-21, 04-22)
+- Decide whether data pipeline is actually broken
+- Harden Perplexity query path against intermittent refusals
+
+### Findings
+
+**Root cause of GHA failures**: Perplexity API intermittently returns 200-OK responses with prose/refusal content (no JSON block) for the `param_calibration` query. `backfill.js` extracted via regex `\{[\s\S]*\}`, got no match, hit the `if (!calibration) { abort }` branch. The existing retry only covered network/API errors, not content-shape failures.
+
+**GHA failure signature (04-21 07:39 UTC):**
+```
+Events found: 0
+Querying parameter calibration...
+ERROR: Could not get calibration data. Aborting.
+```
+
+**Data pipeline is actually healthy.** Every day 04-19 through 04-23 is on `origin/main`:
+
+| Date | Mac Mini primary | GHA fallback | On main |
+|------|------------------|--------------|---------|
+| 04-20 | commit 4c663e1 | "Could not get calibration" | macmini |
+| 04-21 | skipped (already done) | Events=0, refusal | e7f2460 |
+| 04-22 | commit 1fcaeac | "Could not get calibration" | macmini |
+| 04-23 | commit 71b38f3 | success 07:40 UTC | both |
+
+The email "all jobs failed" was noise from the redundant GHA runs that Perplexity happened to refuse while macmini primary had already pushed the day.
+
+### Decisions Made
+- **Option 2 over options 1/3**: Add content-shape retry to `queryPerplexity` rather than muting email or gating GHA on "already calibrated". Retry fixes the actual flakiness for both runners; other options only hide the symptom.
+- **Shape validation via regex, not JSON.parse**: Cheaper (one regex test) and matches the downstream extraction pattern exactly. Avoids false retries on valid-but-wrapped JSON.
+- **Wire the shape hint at 3 call sites**: events (`array`), calibration (`object`), backfill category (`object`). Legacy `queryPerplexity(query)` without options still works unchanged.
+
+### Implementation
+**`backfill.js`** -- `queryPerplexity(query, options = {})` now accepts `{ shape: 'object' | 'array' }`:
+- If `shape` set and response content doesn't match `\{[\s\S]*\}` or `\[[\s\S]*\]`, logs 120-char preview and retries with existing exponential backoff (1s -> 2s -> 4s)
+- All 26 tests still pass
+
+### Commits
+- `87fe9a5` - fix: retry queryPerplexity on missing JSON shape to survive refusals
+
+### Challenges & Solutions
+1. **Local repo was 5 commits behind origin**: Remote had 04-20 through 04-23 calibrations that never arrived locally. Initial `git log` in session startup was stale. Fixed with `git fetch --all` + `git pull --ff-only` before committing.
+2. **Timing confusion**: Mac Mini 03:00 KL = 19:00 UTC prev day, GHA 07:00 UTC. Macmini runs ~12h before GHA for the same "day number", but GHA still sometimes fails with "Events=0", meaning Perplexity refused both queries that morning (not an index.html sync issue).
+
+### Next Steps
+- [ ] Monitor next 3 GHA runs (04-24 → 04-26) for retry-on-refusal effectiveness
+- [ ] Consider option 3 long-term: gate GHA to early-exit if today's calibration is already on `main` (kills redundant runs entirely)
+- [ ] Debug "Run Full Simulation" button (still outstanding from Session 7+)
 
 ---
 

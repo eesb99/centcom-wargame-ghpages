@@ -18,8 +18,34 @@
 | Phase 10: Algorithm Reliability Audit | Complete | 2026-03-10 | 100% |
 | Phase 11: OSINT Backfill + Ceasefire Analysis | Complete | 2026-03-26 | 100% |
 | Phase 12: DIPLOMATIC_EVENTS Restructure + Day 39 | Complete | 2026-04-07 | 100% |
+| Phase 13: Perplexity Refusal Hardening | Complete | 2026-04-23 | 100% |
 
 
+
+## Phase 13: Perplexity Refusal Hardening (2026-04-23) - COMPLETE
+
+**Duration:** ~30 minutes
+**Status:** 100% - GHA failures root-caused, queryPerplexity hardened with shape-based retry
+
+### Work Done
+1. **Diagnosed GHA "all jobs failed" emails** -- 04-20, 04-21, 04-22 scheduled runs aborted with `ERROR: Could not get calibration data`
+2. **Confirmed data pipeline is healthy** -- all days 04-19 through 04-23 on `origin/main` via Mac Mini primary; GHA failures were redundant fallback runs Perplexity refused
+3. **Added shape-based retry to queryPerplexity** -- optional `{ shape: 'object' | 'array' }` triggers retry (with existing exponential backoff) when response lacks expected JSON pattern
+4. **Wired shape hint at 3 call sites** -- events (`array`), param calibration (`object`), backfill category query (`object`)
+
+### Root Cause
+Perplexity API intermittently returns 200-OK responses with prose/refusal content for the military calibration prompt. `backfill.js` extracted via `\{[\s\S]*\}`, got no match, hit abort. Existing retry only covered network/HTTP errors, not content-shape failures.
+
+### Commits
+- `87fe9a5` - fix: retry queryPerplexity on missing JSON shape to survive refusals
+
+### Validation
+- 26/26 tests passing
+- Node syntax check OK
+- Legacy `queryPerplexity(query)` (no options) still works unchanged
+- Next scheduled GHA run (04-24 07:00 UTC) will be the first live test
+
+---
 
 ## Phase 12: DIPLOMATIC_EVENTS Restructure + Day 39 (2026-04-07) - COMPLETE
 
