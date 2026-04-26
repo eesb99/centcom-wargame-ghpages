@@ -83,6 +83,54 @@ const CONFIG = {
 };
 
 // ── Perplexity API Client ──
+// Refusal markers — content-level filter for Perplexity refusals that pass shape check
+// (e.g. ["I cannot provide events for this date.", "The search results...", ...])
+const REFUSAL_MARKERS = [
+  /\bI cannot (provide|generate|answer|give|isolate|accurately)\b/i,
+  /\bI do not have\b/i,
+  /\bsearch results (provided|do not|only|appear|are limited|contain|lack|don.t|provide)/i,
+  /\bwould need access to\b/i,
+  /\binformation is not (contained|available|present)\b/i,
+  /\bunable to (provide|locate|access|isolate)\b/i,
+  /\bno (specific|granular|day-by-day|reliable|further)\b.{0,40}\b(available|provided|reported|found)\b/i,
+  /\bbased on (the|available) search results.{0,80}(no |cannot |unable)/i,
+  /\bdoes not (contain|include|isolate|specify)\b/i,
+  /\black(s|ing)? (the |specific |granular )/i,
+  /\bhave (significant |notable )?limitations\b/i,
+  /\bcontain no .{0,40}\b(information|data|details|breakdown)\b/i,
+  /\bto accurately answer\b/i,
+];
+
+function isRefusalString(s) {
+  if (typeof s !== 'string') return false;
+  return REFUSAL_MARKERS.some(re => re.test(s));
+}
+
+// Returns true if content is parseable but the parsed value is dominated by refusal text.
+// For arrays: refusal if first element is a refusal AND >=30% match, OR >=50% match overall.
+// (Refusals almost always lead with "I cannot...", so first-element + lower threshold catches
+//  cases where 3-4 events are refusals and the rest are meta-prose about sources.)
+// For objects/strings: presence of any refusal marker = refusal.
+function detectRefusalInContent(content, shape) {
+  if (!content || typeof content !== 'string') return false;
+  if (shape === 'array') {
+    const match = content.match(/\[[\s\S]*\]/);
+    if (!match) return false;
+    let parsed;
+    try { parsed = JSON.parse(match[0]); } catch { return false; }
+    if (!Array.isArray(parsed) || parsed.length === 0) return false;
+    const refusalCount = parsed.filter(isRefusalString).length;
+    const ratio = refusalCount / parsed.length;
+    if (ratio >= 0.5) return true;
+    if (isRefusalString(parsed[0]) && ratio >= 0.3) return true;
+    return false;
+  }
+  if (shape === 'object') {
+    return isRefusalString(content);
+  }
+  return isRefusalString(content);
+}
+
 async function queryPerplexity(query, options = {}) {
   if (!CONFIG.api_key) {
     console.error('ERROR: PERPLEXITY_API_KEY not set.');
@@ -94,8 +142,10 @@ async function queryPerplexity(query, options = {}) {
   const MAX_RETRIES = 3;
   const TIMEOUT_MS = 30000;
   const shape = options.shape || null;
+  // Array pattern requires `[` followed by whitespace then a string/object/array opener.
+  // This rejects citation-bracket false positives like `[1][4]` that have digits.
   const shapePattern = shape === 'object' ? /\{[\s\S]*\}/
-                     : shape === 'array'  ? /\[[\s\S]*\]/
+                     : shape === 'array'  ? /\[\s*["\{\[]/
                      : null;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -146,6 +196,17 @@ Be precise — cite specific numbers from CENTCOM statements, news reports, and 
       if (shapePattern && content && !shapePattern.test(content)) {
         const preview = content.replace(/\s+/g, ' ').slice(0, 120);
         console.error(`  Response missing expected ${shape} shape (attempt ${attempt}/${MAX_RETRIES}): ${preview}`);
+        if (attempt < MAX_RETRIES) {
+          const delay = Math.pow(2, attempt - 1) * 1000;
+          console.log(`  Retrying in ${delay / 1000}s...`);
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+        return null;
+      }
+      if (shape && content && detectRefusalInContent(content, shape)) {
+        const preview = content.replace(/\s+/g, ' ').slice(0, 160);
+        console.error(`  Response shape-valid but refusal-dominated (attempt ${attempt}/${MAX_RETRIES}): ${preview}`);
         if (attempt < MAX_RETRIES) {
           const delay = Math.pow(2, attempt - 1) * 1000;
           console.log(`  Retrying in ${delay / 1000}s...`);
@@ -388,7 +449,7 @@ Be specific with numbers and sources. Return as a JSON array of strings.`;
     const eventsRaw = await queryPerplexity(eventsQuery, { shape: 'array' });
     if (eventsRaw) {
       try {
-        const match = eventsRaw.match(/\[[\s\S]*\]/);
+        const match = eventsRaw.match(/\[\s*["\{\[][\s\S]*\]/);
         if (match) events = JSON.parse(match[0]);
       } catch (e) {
         // Fallback: split by newlines/bullets
@@ -396,6 +457,19 @@ Be specific with numbers and sources. Return as a JSON array of strings.`;
           .map(l => l.replace(/^[-*\d.)\s]+/, '').trim())
           .filter(l => l.length > 20)
           .slice(0, 7);
+      }
+    }
+    // Strip refusal-flavored items that may have slipped through (e.g. dict-fragment
+    // fallback split, or Perplexity returning a hybrid response). If the parsed result
+    // is dominated by refusals, drop everything — let the day run on params alone.
+    if (events.length > 0) {
+      const refusalCount = events.filter(isRefusalString).length;
+      const ratio = refusalCount / events.length;
+      if (ratio >= 0.5 || (events.length > 0 && isRefusalString(events[0]) && ratio >= 0.3)) {
+        console.error(`  Events array refusal-dominated (${refusalCount}/${events.length}), discarding.`);
+        events = [];
+      } else if (refusalCount > 0) {
+        events = events.filter(e => !isRefusalString(e));
       }
     }
     console.log(`  Events found: ${events.length}`);
