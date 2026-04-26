@@ -20,8 +20,54 @@
 | Phase 12: DIPLOMATIC_EVENTS Restructure + Day 39 | Complete | 2026-04-07 | 100% |
 | Phase 13: Perplexity Refusal Hardening | Complete | 2026-04-23 | 100% |
 | Phase 14: Day 55 Refusal Cleanup + Macmini Cron Diagnosis | Complete | 2026-04-26 | 100% |
+| Phase 15: Content-Based Refusal Filter + Days 22, 39 Cleanup | Complete | 2026-04-26 | 100% |
 
 
+
+## Phase 15: Content-Based Refusal Filter + Days 22, 39 Cleanup (2026-04-26) - COMPLETE
+
+**Duration:** ~30 minutes
+**Status:** 100% — shape-only hardening extended with content-level filter; days 22 and 39 cleaned; full corpus refusal-free
+
+### Goals
+- Resolve the open follow-up from Phase 14: queryPerplexity ships a content-based refusal filter so days 22 and 39 (and any future refusals wrapped in valid JSON) can be cleaned automatically.
+
+### Findings (Phase 14 failure modes that motivated this)
+- **Mode A (day 39):** Perplexity returned `["I cannot provide events for this date.", "The search results...", ...]`. Shape `\[[\s\S]*\]` matched, JSON.parse succeeded, parser dumped 7 refusal strings as "events".
+- **Mode B (day 22):** Perplexity returned an *object* like `{"error": "...", "explanation": "...", "general_march_updates": "..."}`. Source citations `[1]`, `[2][4]` matched the loose array shape regex by accident, JSON.parse on the citation match failed, fallback newline-split dumped object key-value lines as "events".
+
+### Implementation (`backfill.js`)
+1. **`REFUSAL_MARKERS` regex set + `isRefusalString()` helper** — covers ten phrasing variants the AI uses to refuse: "I cannot ...", "search results provide/do not/lack...", "would need access to", "does not contain/include/isolate", "have (significant) limitations", "contain no ... information", "to accurately answer", etc.
+2. **`detectRefusalInContent()`** — for `shape: 'array'`, parses the matched bracket content, returns `true` if `≥50%` of items are refusals OR the first item is a refusal AND `≥30%` are refusals. The first-element heuristic catches the day-39 pattern (lead with "I cannot..." then meta-prose about sources, where item-by-item ratio is only 42%). For `shape: 'object'`, any refusal marker in the raw content triggers retry.
+3. **Tightened array shape pattern** — from `/\[[\s\S]*\]/` to `/\[\s*["\{\[]/`. Real JSON arrays of strings/objects/arrays start with `[` followed by whitespace then `"`/`{`/`[`. Citation brackets `[1][4]` start with a digit and no longer pass.
+4. **Post-parse refusal sweep in `runCalibrationForDay`** — after the events array is built (whether from JSON.parse or the newline fallback), filter out refusal-flavored items. If `≥50%` (or first-element + `≥30%`) are refusals, the array is dropped to `[]` rather than committed to the day entry.
+
+### Smoke test (8 cases, all pass)
+| Case | Expected | Result |
+|---|---|---|
+| Day 39 actual refusal array | DETECTED | ✓ |
+| Legit events array | PASS | ✓ |
+| Refusal as raw object | DETECTED | ✓ |
+| Legit param object | PASS | ✓ |
+| 1/5 refusal mix (false-positive risk) | PASS | ✓ |
+| 50/50 refusal split | DETECTED | ✓ |
+| Day 22 actual refusal array | DETECTED | ✓ |
+| First refusal + 1/6 ratio | PASS | ✓ |
+
+### Cleanup runs
+- **Day 39 (Apr 7):** 7 events found on first try. Real OSINT — Apr 8 ceasefire announcement, Iranian navy obliteration stats (150 warships, 97% mines), Operation Epic Fury totals (10,200 sorties, 13,000 targets), naval blockade enforcement, Iranian air force neutralized, US 13 KIA cumulative.
+- **Day 22 (Mar 21):** First attempt rejected by tightened shape regex (`[]` empty array failed `\[\s*["\{\[]/`). Retry attempt 2 returned 6 real events — Natanz nuclear facility strike with bunker busters, Trump 48h ultimatum on Hormuz reopening, Iranian first ballistic missile attack on Diego Garcia, 8000 targets struck cumulative, Jerusalem Old City missile impact, Strait of Hormuz threatened closure.
+- **Final corpus sweep:** 310 events across all 58 days. Zero refusal markers detected.
+
+### Validation
+- 26/26 tests pass (`node --test tests/*.test.js`)
+- `node -c backfill.js` → syntax OK
+- Live page deploys with new content (HTTP 200, days 22 and 39 entries updated)
+
+### Commits
+- `fbf42e9` - fix: content-based refusal filter + tightened array shape, clean days 22 + 39
+
+---
 
 ## Phase 14: Day 55 Refusal Cleanup + Macmini Cron Diagnosis (2026-04-26) - COMPLETE
 
@@ -63,10 +109,9 @@
 
 ### Next Steps (open)
 - [x] **Macmini timezone bug fixed (2026-04-26)**: plist Hour changed `3` → `9` (local MYT), so cron now fires 09:00 MYT = 01:00 UTC, ~6h before GHA. dayNumber correctly resolves to today_UTC. Macmini = primary, GHA = fallback. Reloaded via `launchctl unload + load`. Next fire: 2026-04-27 09:00 MYT.
-- [x] **Sweep for refusal-corrupted days 1-54 (2026-04-26)**: scanned all 291 events with regex markers (`I cannot provide`, `search results`, `would need access to`, etc.). **2 hits found**: Day 22 (Mar 21, 7/7 events corrupt) and Day 39 (Apr 7, 7/7 events corrupt). **Re-calibration attempt failed** — Perplexity wrapped refusal in a valid JSON array, bypassing shape check. New day 39 had same refusal pattern; new day 22 had empty events. Reverted both from backup; no commit. The shape-validation hardening (Phase 13) catches *non-JSON* refusals but not refusals that come pre-wrapped in `[...]`.
-- [ ] **Day 58 (Apr 26) re-calibration**: revisit on Apr 28+ once Apr 26 news has archived. Same delete-and-recalibrate flow.
-- [ ] **Add content-based refusal filter to `queryPerplexity`**: shape-only validation insufficient. Add a refusal-marker regex sweep over the parsed array contents — if >50% of events match refusal patterns, treat as a retryable failure (same path as shape miss). Markers: `/^I cannot/`, `/search results.{0,30}(do not|provide|appear)/`, `/would need access/`, etc. Apply in `runCalibrationForDay` after `events = JSON.parse(...)`.
-- [ ] **Days 22 and 39 still corrupted**: cannot be cleaned until the content-based filter lands. Revisit after that fix.
+- [x] **Sweep for refusal-corrupted days 1-54 (2026-04-26)**: scanned all 291 events with regex markers (`I cannot provide`, `search results`, `would need access to`, etc.). **2 hits found**: Day 22 (Mar 21, 7/7 events corrupt) and Day 39 (Apr 7, 7/7 events corrupt). First re-calibration attempt failed — Perplexity wrapped refusal in valid JSON array (day 39) and citation brackets passed loose shape regex (day 22). Reverted; deferred to Phase 15.
+- [x] **Content-based refusal filter (Phase 15, 2026-04-26)**: shipped in commit `fbf42e9`. Both days re-calibrated cleanly. Final sweep across all 310 events in days 1-58: zero refusal markers.
+- [ ] **Day 58 (Apr 26) re-calibration**: revisit on Apr 28+ once Apr 26 news has archived.
 
 ---
 

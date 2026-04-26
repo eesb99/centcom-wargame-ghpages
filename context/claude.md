@@ -12,7 +12,6 @@
 - **Key Features**: Shooter-target SEAD model, asymmetric dominance, naval capacity gating, 26 unit tests, sensitivity analysis, historical validation, nonlinear war weariness, amplified economic pressure, coalition pressure index, congressional authorization clock, Iraq/LNG/OPEC economic dynamics, $108.75 Brent baseline, $85-200 oil range, 5-state Observed Markov ceasefire model
 - **Known Issues**:
   - "Run Full Simulation" button unresponsive (pre-existing)
-  - Days 22 (Mar 21) and 39 (Apr 7) still have refusal-text events. Shape-only hardening (Phase 13) doesn't catch refusals pre-wrapped in valid JSON arrays. Needs content-based refusal filter in `queryPerplexity`.
   - Day 58 (Apr 26) has empty events[] — re-calibrate on Apr 28+ once news archives
 
 ## Architecture (Post-Session 3)
