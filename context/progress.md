@@ -62,9 +62,11 @@
 2. **First Perplexity retry triggered**: Showed the hardening shipped on Apr 23 is doing its job — exactly the failure mode that produced the day 55 corruption is now caught and retried.
 
 ### Next Steps (open)
-- [ ] **Fix macmini timezone bug**: change plist `Hour 3` (MYT) to `Hour 19` (UTC) so dayNumber lines up. Restores primary/fallback redundancy.
+- [x] **Macmini timezone bug fixed (2026-04-26)**: plist Hour changed `3` → `9` (local MYT), so cron now fires 09:00 MYT = 01:00 UTC, ~6h before GHA. dayNumber correctly resolves to today_UTC. Macmini = primary, GHA = fallback. Reloaded via `launchctl unload + load`. Next fire: 2026-04-27 09:00 MYT.
+- [x] **Sweep for refusal-corrupted days 1-54 (2026-04-26)**: scanned all 291 events with regex markers (`I cannot provide`, `search results`, `would need access to`, etc.). **2 hits found**: Day 22 (Mar 21, 7/7 events corrupt) and Day 39 (Apr 7, 7/7 events corrupt). **Re-calibration attempt failed** — Perplexity wrapped refusal in a valid JSON array, bypassing shape check. New day 39 had same refusal pattern; new day 22 had empty events. Reverted both from backup; no commit. The shape-validation hardening (Phase 13) catches *non-JSON* refusals but not refusals that come pre-wrapped in `[...]`.
 - [ ] **Day 58 (Apr 26) re-calibration**: revisit on Apr 28+ once Apr 26 news has archived. Same delete-and-recalibrate flow.
-- [ ] **Audit for other refusal-corrupted days**: scan `events[]` arrays for "I cannot provide" / "search results" / "would need access to" markers across days 1-54 (calibrated before the fix).
+- [ ] **Add content-based refusal filter to `queryPerplexity`**: shape-only validation insufficient. Add a refusal-marker regex sweep over the parsed array contents — if >50% of events match refusal patterns, treat as a retryable failure (same path as shape miss). Markers: `/^I cannot/`, `/search results.{0,30}(do not|provide|appear)/`, `/would need access/`, etc. Apply in `runCalibrationForDay` after `events = JSON.parse(...)`.
+- [ ] **Days 22 and 39 still corrupted**: cannot be cleaned until the content-based filter lands. Revisit after that fix.
 
 ---
 

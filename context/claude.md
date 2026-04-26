@@ -7,12 +7,12 @@
 - **Repo**: https://github.com/eesb99/centcom-wargame-ghpages
 - **Branch**: main
 - **Last Updated**: 2026-04-26
-- **Primary Instance (effective)**: GitHub Actions (07:00 UTC daily). Macmini launchd `Hour 3` is local MYT = 19:00 UTC prior day → dayNumber off-by-one → always skips. Macmini = no-op until plist fixed.
+- **Primary Instance**: Mac Mini launchd `Hour 9` MYT = 01:00 UTC daily (fixed 2026-04-26). Fallback: GitHub Actions 07:00 UTC. Both compute correct dayNumber.
 - **OSINT Coverage**: Days 1-58 (Feb 28 - Apr 26) with full param_calibration
 - **Key Features**: Shooter-target SEAD model, asymmetric dominance, naval capacity gating, 26 unit tests, sensitivity analysis, historical validation, nonlinear war weariness, amplified economic pressure, coalition pressure index, congressional authorization clock, Iraq/LNG/OPEC economic dynamics, $108.75 Brent baseline, $85-200 oil range, 5-state Observed Markov ceasefire model
 - **Known Issues**:
   - "Run Full Simulation" button unresponsive (pre-existing)
-  - Macmini cron timezone bug — plist Hour is local not UTC; primary/fallback redundancy effectively lost
+  - Days 22 (Mar 21) and 39 (Apr 7) still have refusal-text events. Shape-only hardening (Phase 13) doesn't catch refusals pre-wrapped in valid JSON arrays. Needs content-based refusal filter in `queryPerplexity`.
   - Day 58 (Apr 26) has empty events[] — re-calibrate on Apr 28+ once news archives
 
 ## Architecture (Post-Session 3)
