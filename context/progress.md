@@ -19,8 +19,54 @@
 | Phase 11: OSINT Backfill + Ceasefire Analysis | Complete | 2026-03-26 | 100% |
 | Phase 12: DIPLOMATIC_EVENTS Restructure + Day 39 | Complete | 2026-04-07 | 100% |
 | Phase 13: Perplexity Refusal Hardening | Complete | 2026-04-23 | 100% |
+| Phase 14: Day 55 Refusal Cleanup + Macmini Cron Diagnosis | Complete | 2026-04-26 | 100% |
 
 
+
+## Phase 14: Day 55 Refusal Cleanup + Macmini Cron Diagnosis (2026-04-26) - COMPLETE
+
+**Duration:** ~25 minutes
+**Status:** 100% — corrupted day 55 cleaned, macmini cron timezone bug root-caused (not yet fixed)
+
+### Goals
+- Check page health
+- Backfill any missed calibrations
+
+### Findings
+
+**Page health:** Live HTTPS 200, all 58 days (Feb 28 → Apr 26) present in `DIPLOMATIC_EVENTS`. Strictly nothing missed.
+
+**Two data-quality issues discovered:**
+- Day 55 (Apr 23) — `events[]` contained Perplexity refusal prose ("I cannot provide..."). Calibrated by Apr 23 GHA run *before* refusal-hardening fix `87fe9a5` landed.
+- Day 58 (Apr 26) — `events: []` empty; calibrated by today's GHA run at 07:37 UTC when Apr 26 news cycle was incomplete. Left alone — re-querying same day likely yields same emptiness.
+
+**Macmini cron is effectively a no-op (timezone bug):**
+- Plist: `Hour 3` is interpreted as **local MYT** = `19:00 UTC prior day`
+- `backfill.js` computes `dayNumber` from `new Date()` in UTC → at 19:00 UTC, "today UTC" is still yesterday → macmini targets `today_MYT - 2` in conflict-day terms
+- That day was already calibrated by yesterday's GHA at 07:00 UTC (which lines up with UTC date) → macmini hits `=== Day N already calibrated — skipping ===` every run
+- All Apr 24, 25, 26 commits on `origin/main` are by `github-actions[bot]`, not macmini
+
+### Implementation
+1. Backed up `index.html`
+2. Deleted day 55 entry (lines 3336-3374) — kept day 54 and 56 surrounding it
+3. Ran `node backfill.js --calibrate` — gap detection found day 55 missing, queried Perplexity
+4. **Hardening confirmed working:** first attempt got `Response missing expected object shape`, retry on attempt 2 returned valid JSON
+5. New day 55 has real OSINT: Tiffani tanker seizure, blockade enforcement, Pentagon briefing, US-Iran negotiation signals
+6. Committed + pushed; GitHub Pages re-deployed within ~60s
+
+### Commits
+- `63c141d` - fix: re-calibrate day 55 (2026-04-23) — replace Perplexity refusal with real events
+
+### Challenges & Solutions
+1. **Force re-query for existing day**: `--calibrate` skips days already in index.html. Solution: delete the day's entry, then run — gap detection backfills it. Documented as runbook in auto-memory `project_data_quality_runbook.md`.
+2. **First Perplexity retry triggered**: Showed the hardening shipped on Apr 23 is doing its job — exactly the failure mode that produced the day 55 corruption is now caught and retried.
+
+### Next Steps (open)
+- [ ] **Fix macmini timezone bug**: change plist `Hour 3` (MYT) to `Hour 19` (UTC) so dayNumber lines up. Restores primary/fallback redundancy.
+- [ ] **Day 58 (Apr 26) re-calibration**: revisit on Apr 28+ once Apr 26 news has archived. Same delete-and-recalibrate flow.
+- [ ] **Audit for other refusal-corrupted days**: scan `events[]` arrays for "I cannot provide" / "search results" / "would need access to" markers across days 1-54 (calibrated before the fix).
+
+---
 
 ## Phase 13: Perplexity Refusal Hardening (2026-04-23) - COMPLETE
 
